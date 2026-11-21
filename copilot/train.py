@@ -35,10 +35,12 @@ def _ya_ejecutado(lote: str) -> bool:
 
 
 def evaluar(lote: str, ideas: list[dict], fichero: Path, aprueba_fn: Callable, criterios_version: int,
-            alinear: bool) -> list[dict]:
+            alinear: bool, previas: Path | None = None) -> list[dict]:
     """Ejecuta todas las variantes de `ideas` sobre `fichero` y devuelve las filas (sin registrarlas).
-    alinear=True (D27): estrategia y Buy & Hold se miden solo desde el primer día en que la variante puede operar."""
-    velas = cargar_velas(fichero)
+    alinear=True (D27): estrategia y Buy & Hold se miden solo desde el primer día en que la variante puede operar.
+    previas: velas anteriores (p. ej. TRAIN antes de TEST); el motor las recorre, pero solo se mide `fichero`."""
+    antes = cargar_velas(previas) if previas else []
+    velas = antes + cargar_velas(fichero)
     sha = hashlib.sha256(fichero.read_bytes()).hexdigest()
     commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=registro.RAIZ,
                             capture_output=True, text=True).stdout.strip()
@@ -47,7 +49,7 @@ def evaluar(lote: str, ideas: list[dict], fichero: Path, aprueba_fn: Callable, c
     for idea in ideas:
         for var in idea["configuraciones_permitidas"]:
             f = estrategias.crear(idea["id"], var)
-            i0 = estrategias.calentamiento(idea["id"], var) + 1 if alinear else 0
+            i0 = len(antes) or (estrategias.calentamiento(idea["id"], var) + 1 if alinear else 0)
             med = (lambda r: metricas(recortar(r, i0))) if i0 else metricas
             m, bh = med(backtest(velas, f, BINANCE_SPOT)), med(r_bh)
             extra = {}
