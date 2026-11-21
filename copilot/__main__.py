@@ -13,6 +13,7 @@
   robustez2   segunda búsqueda, Prompt 5: otra época y TEST (una sola vez)
   riesgo2     segunda búsqueda, Prompts 6 y 7: cartera y exposición (una sola vez)
   test        evaluación final en TEST (regla D21, una sola vez)
+  resumen     resumen del paper trading en vivo (solo lee los registros)
   hoy         un ciclo en vivo con datos de hoy (bloqueado mientras TEST siga cerrado)
   en-marcha   funcionamiento continuo en vivo, un ciclo al día (bloqueado mientras TEST siga cerrado)
   repeticion AAAA-MM-DD AAAA-MM-DD   paper trading día a día sobre fechas de TRAIN, con registros propios
@@ -180,6 +181,13 @@ def riesgo2() -> int:
     return 0
 
 
+def resumen() -> int:
+    from copilot import resumen as rs
+
+    print(rs.texto())
+    return 0
+
+
 def test() -> int:
     from copilot import evaluacion_test as et
 
@@ -245,7 +253,7 @@ if __name__ == "__main__":
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
-    ordenes = {"train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
+    ordenes = {"resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}
