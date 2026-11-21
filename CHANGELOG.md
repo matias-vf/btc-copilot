@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## 2026-11-21. Prompt 8: deterioro de estrategias y reglas de parada (v1)
+- Reglas fijadas antes de ejecutar (D15). Módulo `copilot/vigilancia.py` y orden `python -m copilot vigilancia`.
+- Controles diarios: datos, drawdown frente al backtest, referencia de entradas aleatorias, rentabilidad móvil, volatilidad y SMA 200.
+- Registro de solo añadir `registros/vigilancia.jsonl` para el modo en vivo; estrategias suspendidas seguidas "en la sombra".
+- Simulación en Bitstamp 2013-2016: reglas v1 demasiado duras (D16). Pendiente decidir la versión 2.
+
 ## 2026-11-21. Prompt 7: gestión del riesgo y tamaño de posición
 - Nuevos Prompts 7, 8 y 9 del usuario sustituyen a las Partes 7-9 del maestro (D13).
 - Reglas fijadas antes de ejecutar (D13); idea R1 registrada; orden `python -m copilot riesgo`.

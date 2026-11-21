@@ -190,3 +190,9 @@ el registro. Todo (alertas, suspensiones, reactivaciones, estado diario) va a `r
 
 **Prueba antes de usarlo en vivo:** se simula la vigilancia día a día en la otra época (Bitstamp 2013-2016), con la
 referencia de TRAIN. Es una prueba del sistema de vigilancia, no de una estrategia nueva: no se anota como experimento.
+
+## D16. 2026-11-21. Resultado del Prompt 8 (reglas de vigilancia v1)
+Simulación en Bitstamp 2013-2016: la regla de drawdown funciona (parada de emergencia el 2013-04-11), pero la regla
+"peor que la mediana aleatoria" suspende por ruido el primer día y, sin reactivación, deja el copiloto apagado mientras
+las estrategias suspendidas ganan miles de por cien en la sombra. Falta exigir volumen > 0 en los datos. Las reglas v1
+no se tocan; queda pendiente que el usuario decida una versión 2 antes del Prompt 9. Informe en `docs/vigilancia.md`.

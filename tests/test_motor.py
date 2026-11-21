@@ -236,3 +236,52 @@ class TestRiesgo(unittest.TestCase):
         alterna = lambda h, pos: 1.0 if len(h) == 1 else 0.0
         r = backtest(velas_fijas([100, 100, 110, 110]), alterna, SIN_COSTES)
         self.assertEqual(len(operaciones(r)), 1)
+
+
+class TestVigilancia(unittest.TestCase):
+    def test_problemas_datos(self):
+        from datetime import datetime, timezone
+        from copilot.vigilancia import problemas_datos
+        v = velas_aleatorias(450)
+        self.assertEqual(problemas_datos(v), [])
+        self.assertTrue(problemas_datos(v[:100]))                                   # poca historia
+        hueco = v[:-1] + [v[-1]._replace(fecha=v[-1].fecha + timedelta(days=2))]
+        self.assertTrue(any("falta" in x for x in problemas_datos(hueco)))
+        self.assertTrue(any("duplicada" in x for x in problemas_datos(v + [v[-1]])))
+        salto = v[:-1] + [v[-1]._replace(open=v[-2].close * 1.2, high=v[-2].close * 1.3)]
+        self.assertTrue(any("apertura" in x for x in problemas_datos(salto)))
+        cierre = datetime(v[-1].fecha.year, v[-1].fecha.month, v[-1].fecha.day, tzinfo=timezone.utc) + timedelta(days=1)
+        self.assertEqual(problemas_datos(v, cierre + timedelta(hours=2)), [])
+        self.assertTrue(any("desfasados" in x for x in problemas_datos(v, cierre + timedelta(hours=30))))
+
+    def test_mediana_azar(self):
+        from copilot.vigilancia import mediana_azar
+        la = [0.0] + [0.01 * i for i in range(1, 400)]                              # sube 1 % (log) cada día
+        m = mediana_azar(la, 0, 365, 100, 3, 0.0, semilla=1)
+        self.assertAlmostEqual(m, exp(1.0) - 1, places=9)                           # 100 días siempre suman 1,0
+        self.assertLess(mediana_azar(la, 0, 365, 100, 3, 0.01, semilla=1), m)       # los costes restan
+        self.assertEqual(mediana_azar(la, 0, 365, 365, 1, 0.0, semilla=1), exp(3.65) - 1)
+
+    def test_vigilancia_causal_y_suspende(self):
+        from copilot import vigilancia as vg
+        v = velas_aleatorias(900, semilla=5)
+        ref = vg.referencia(v[:600])
+        a = vg.vigilar(v, ref, desde=600, hasta=750)
+        alterado = v[:751] + [x._replace(close=x.close * 0.3, low=x.low * 0.3) for x in v[751:]]
+        b = vg.vigilar(alterado, ref, desde=600, hasta=750)
+        self.assertEqual(a["eventos"], b["eventos"])                                 # el futuro no cambia el pasado
+        self.assertEqual(a["diario"], b["diario"])
+        for d in a["diario"]:
+            for k, emite in d["emite_senales"].items():
+                if emite:
+                    self.assertEqual(d["estados"][k], "ACTIVA")
+
+    def test_registrar_solo_anade(self):
+        import tempfile
+        from pathlib import Path
+        from copilot import vigilancia as vg
+        with tempfile.TemporaryDirectory() as d:
+            ruta = Path(d) / "v.jsonl"
+            vg.registrar({"eventos": [{"tipo": "alerta", "fecha": "2020-01-01"}],
+                          "diario": [{"fecha": "2020-01-01", "estados": {}}]}, ruta)
+            self.assertEqual([e["datos"]["tipo"] for e in registro.leer(ruta)], ["alerta", "estado_diario"])

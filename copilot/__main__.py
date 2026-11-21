@@ -7,6 +7,7 @@
   robustez    Prompt 5: otra época (Bitstamp), regímenes, sensibilidad y veredicto (una sola vez)
   cartera     Prompt 6: correlaciones y cartera inversa a la volatilidad (una sola vez)
   riesgo      Prompt 7: simulaciones de exposición, riesgo por operación y volatilidad (una sola vez)
+  vigilancia  Prompt 8: simula la vigilancia diaria del deterioro en la otra época
   anticipacion comprueba en TRAIN que ninguna variante registrada mira el futuro (no muestra resultados)
 """
 
@@ -120,11 +121,19 @@ def riesgo() -> int:
     return 0
 
 
+def vigilancia() -> int:
+    from copilot import vigilancia as vg
+
+    vg.simular_otra_epoca()
+    print("Simulación de vigilancia hecha. Informe en docs/vigilancia.md")
+    return 0
+
+
 if __name__ == "__main__":
     ordenes = {"verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
-               "riesgo": riesgo}
+               "riesgo": riesgo, "vigilancia": vigilancia}
     if len(sys.argv) != 2 or sys.argv[1] not in ordenes:
         print(__doc__)
         sys.exit(2)

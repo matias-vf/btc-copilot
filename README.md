@@ -18,7 +18,7 @@ Solo descarga precios públicos.
 | Prompt 5: robustez y filtrado | Parcial: falta TRAIN frente a TEST (necesita «UNLOCK») |
 | Prompt 6: cartera combinada | Hecho, provisional (`docs/cartera.md`) |
 | Prompt 7: riesgo y tamaño de posición | Hecho, provisional (`docs/riesgo.md`) |
-| Prompt 8: deterioro y reglas de parada | Pendiente |
+| Prompt 8: deterioro y reglas de parada | Hecho (reglas v1); pendiente decidir v2 (`docs/vigilancia.md`) |
 | Prompt 9: copiloto y paper trading | Pendiente |
 
 ## Estructura
@@ -35,11 +35,13 @@ copilot/
   robustez.py               Prompt 5: otra época, regímenes, sensibilidad y veredicto
   cartera.py                Prompt 6: correlaciones y cartera inversa a la volatilidad
   riesgo.py                 Prompt 7: exposición, riesgo por operación y volatilidad objetivo
+  vigilancia.py             Prompt 8: vigilancia diaria del deterioro y reglas de parada
   __main__.py               órdenes: verificar, registrar, descargar, anticipacion
 registros/
   ideas.jsonl               registro de estrategias (una por línea)
   experimentos.jsonl        cada variante probada, con contador acumulado
   senales.jsonl             señales del copiloto (vacío por ahora)
+  vigilancia.jsonl          alertas, suspensiones y estado diario en vivo (vacío por ahora)
 data/
   *.csv                     velas diarias
   FUENTES.md                procedencia, calidad y limitaciones
@@ -50,6 +52,7 @@ docs/resultados_train.md    tabla de resultados en TRAIN
 docs/robustez.md            Prompt 5: las dos épocas lado a lado
 docs/cartera.md             Prompt 6: cartera frente a Buy & Hold
 docs/riesgo.md              Prompt 7: comparación de configuraciones de riesgo y límites
+docs/vigilancia.md          Prompt 8: simulación de la vigilancia y su lectura
 tests/                      pruebas automáticas
 ```
 
