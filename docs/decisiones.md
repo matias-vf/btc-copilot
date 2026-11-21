@@ -291,3 +291,15 @@ Lote `busqueda2-train-v1` (experimentos 91 a 101). Con el criterio v2 aprueban 9
 N3 n=50; N4 x=10 % y x=20 % (experimentales). No aprueban N1 L=1 ni N3 n=150 y n=200. Ninguna alerta de "demasiado
 bueno"; el diagnóstico de un día más de retraso no muestra filtración. N2 n=5 y n=10 operan más de una vez por semana
 y no aprueban con costes x2 ni x3. Tabla y lectura en `docs/resultados_train_v2.md`.
+
+## D27. 2026-11-21. Arreglos de la revisión de código (aprobados por el usuario: «si»)
+1. **Ventana de comparación alineada (regla nueva, desde ahora):** cada variante se compara con Buy & Hold solo desde
+   el primer día en que puede operar (tras su periodo de arranque). Antes, Buy & Hold contaba meses en los que la
+   variante aún no podía operar, y eso cambiaba veredictos (N3 n=200: Sharpe 0,66 frente a 0,72 en todo TRAIN, pero
+   0,70 frente a 0,47 en su ventana). Periodo de arranque (índice de la primera vela con señal posible): N1 7·L,
+   N2 n-1, N3 n, N4 364. Se aplica a la segunda búsqueda en TRAIN (nuevo lote `busqueda2-train-v2`; el lote
+   `busqueda2-train-v1` queda en el registro tal cual), en la otra época y donde haga falta. En TEST no cambia nada:
+   ahí las estrategias llegan con la historia de TRAIN y no tienen arranque. La primera búsqueda no se reevalúa.
+2. **N1 comprueba la fecha:** el domingo de hace L semanas se busca por fecha, no solo contando velas. Si falta una
+   vela y la fecha no coincide, N1 no opera. En TRAIN y TEST no hay huecos, así que sus resultados no cambian.
+3. **Menos código repetido:** las ejecuciones de lotes y el formato de porcentajes pasan a una sola función cada uno.
