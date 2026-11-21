@@ -393,3 +393,26 @@ class TestArreglosD27(unittest.TestCase):
         m = metricas(recortar(backtest(velas, estrategias.crear("T1", "sma_n=100")), i0))
         self.assertAlmostEqual(m["sharpe"], reg["metricas"]["sharpe"], places=5)
         self.assertAlmostEqual(m["max_drawdown"], reg["metricas"]["max_drawdown"], places=5)
+
+
+class TestUniverso(unittest.TestCase):
+    def test_mil_variantes_unicas(self):
+        from copilot import universo as U
+        cat = U.catalogo()
+        self.assertEqual(len(cat), 1000)
+        self.assertEqual(len({(c[1], U.texto_variante(c[4])) for c in cat}), 1000)
+
+    def test_rapido_igual_que_motor_y_causal(self):
+        from copilot import universo as U
+        v = velas_aleatorias(500, semilla=11)
+        cat = U.catalogo()
+        for uid, fid, fn, ref, p in cat[::37]:                     # 28 variantes repartidas por todas las familias
+            var = U.texto_variante(p)
+            with self.subTest(uid=uid, fid=fid):
+                sig = U.senales(fid, var, v)
+                self.assertTrue(all(0.0 <= s <= 1.0 for s in sig))
+                a = U.backtest_rapido(v, sig)
+                b = backtest(v, lambda h, pos, s=sig: s[len(h) - 1])
+                self.assertEqual(a.equity, b.equity)
+                self.assertTrue(U.causal(fid, var, v, cortes=[300, 450]))
+                self.assertEqual(U.como_estrategia(fid, var)(v[:400], 0.0), sig[399])
