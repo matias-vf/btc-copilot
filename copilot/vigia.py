@@ -34,7 +34,7 @@ def observar(velas: list[Vela], t: dict, ahora: datetime, posicion: float, posic
     obs = {"tipo": "observacion", "fecha_hora_utc": ahora.isoformat(timespec="minutes"), "precio": p,
            "cambio_24h": t["cambio_24h"], "domingo_decision": domingo.isoformat(), "nivel_n1": nivel,
            "posicion_n1": posicion, "avisos": [],
-           "nota": "OBSERVACIÓN del vigía: no es una señal ni una orden. Solo decide la regla de N1 con el cierre del domingo."}
+           "nota": "OBSERVACIÓN del vigía: no es una señal ni una orden. Solo deciden las reglas registradas (N1 el domingo, N1D cada cierre diario)."}
     nivel_d = next((v.close for v in velas if v.fecha == hoy - timedelta(days=28)), None)  # N1D compara con hace 28 días
     if nivel_d is not None:
         sube = t["precio"] > nivel_d
