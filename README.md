@@ -17,7 +17,9 @@ Solo descarga precios públicos.
 | Prompt 4: ejecutar estrategias en TRAIN | Hecho (`docs/resultados_train.md`) |
 | Prompt 5: robustez y filtrado | Parcial: falta TRAIN frente a TEST (necesita «UNLOCK») |
 | Prompt 6: cartera combinada | Hecho, provisional (`docs/cartera.md`) |
-| Parte 7: copiloto | Pendiente |
+| Prompt 7: riesgo y tamaño de posición | Hecho, provisional (`docs/riesgo.md`) |
+| Prompt 8: deterioro y reglas de parada | Pendiente |
+| Prompt 9: copiloto y paper trading | Pendiente |
 
 ## Estructura
 ```
@@ -32,6 +34,7 @@ copilot/
   train.py                  Prompt 4: ejecuta y registra todas las variantes en TRAIN
   robustez.py               Prompt 5: otra época, regímenes, sensibilidad y veredicto
   cartera.py                Prompt 6: correlaciones y cartera inversa a la volatilidad
+  riesgo.py                 Prompt 7: exposición, riesgo por operación y volatilidad objetivo
   __main__.py               órdenes: verificar, registrar, descargar, anticipacion
 registros/
   ideas.jsonl               registro de estrategias (una por línea)
@@ -46,6 +49,7 @@ docs/costes.md              costes de operativa y de dónde salen
 docs/resultados_train.md    tabla de resultados en TRAIN
 docs/robustez.md            Prompt 5: las dos épocas lado a lado
 docs/cartera.md             Prompt 6: cartera frente a Buy & Hold
+docs/riesgo.md              Prompt 7: comparación de configuraciones de riesgo y límites
 tests/                      pruebas automáticas
 ```
 

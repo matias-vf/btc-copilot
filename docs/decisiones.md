@@ -156,3 +156,10 @@ diversificación) y la concentración (un solo activo; peso de B1).
 **Regla de elección:** son admisibles las configuraciones sin apalancamiento, sin ruina y con drawdown máximo de como
 mucho el 35 % en las DOS épocas. Entre ellas, la de mayor Sharpe en TRAIN; si dos difieren en menos de 0,05, la de menor
 exposición media. Si ninguna es admisible, la de menor drawdown en la peor época, y se dice que el 35 % no es alcanzable.
+
+## D14. 2026-11-21. Resultado del Prompt 7 (provisional)
+Lote `prompt7-riesgo-v1`: 11 configuraciones x 2 épocas (experimentos 63 a 84). Elegida por la regla de D13: exposición
+fija del 25 % de C1. Apalancamiento: arruina en la otra época (2013-04-10, -69 % en un día); confirmado que no se usa.
+La regla de riesgo por operación no controla a T1. La volatilidad objetivo del 30 % se queda fuera por 0,8 puntos de
+drawdown en TRAIN; no se reajusta a posteriori. Límites del copiloto en `docs/riesgo.md`, sección 5.
+Corrección técnica: las métricas ya no dividen por cero cuando el capital llega a 0 (ruina); no cambia ningún resultado anterior.

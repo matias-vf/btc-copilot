@@ -1,5 +1,12 @@
 # Historial de cambios
 
+## 2026-11-21. Prompt 7: gestión del riesgo y tamaño de posición
+- Nuevos Prompts 7, 8 y 9 del usuario sustituyen a las Partes 7-9 del maestro (D13).
+- Reglas fijadas antes de ejecutar (D13); idea R1 registrada; orden `python -m copilot riesgo`.
+- 11 configuraciones (exposición 25-200 %, riesgo por operación 1/2/5 %, volatilidad objetivo 30/45 %) en dos épocas.
+- Elegida: exposición del 25 % (drawdown -17 % en TRAIN, -21 % en la otra época). El apalancamiento se arruina en 2013.
+- Corregida la división por cero de las métricas con capital 0.
+
 ## 2026-11-21. Prompt 6: cartera combinada (provisional)
 - Reglas fijadas antes de ejecutar (D11) y cartera registrada como idea C1.
 - Orden `python -m copilot cartera`: correlaciones, pesos inversos a la volatilidad (90 días), reequilibrio mensual.
