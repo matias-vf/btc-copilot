@@ -365,3 +365,17 @@ lo que indica algo de suerte (`docs/robustez_v2.md`).
   una estrategia nueva, registrada antes de probarla y validada con todo el proceso.
 - Avisos del vigía: precio a menos del 3 % del nivel de N1, o movimiento de más del 5 % en 24 h.
 - Sus observaciones aparecen en el resumen diario de las 20:00.
+
+## D34. 2026-11-21. «Si lo ve muy claro, puede operar»: se prueba N1D (N1 con revisión diaria), reglas fijadas ANTES
+El usuario pidió que el copiloto pueda operar fuera del domingo cuando lo vea muy claro, y eligió «Probar N1 diaria».
+"Muy claro" no puede ser una intuición: tiene que ser una regla registrada y probada.
+- **N1D:** al cierre de cada día, si close_t / close_(t-28) - 1 > 0 -> comprado desde la apertura de t+1; si no,
+  liquidez. Es la regla de N1 L=4 comprobada todos los días (equivale a la familia T2 con L = 28; T2 con 90, 180 y 365
+  días se descartó en la primera búsqueda). Una sola variante (L = 28). Idea registrada con `busqueda: 3`.
+- **Proceso, el mismo de la segunda búsqueda:** criterio v2 (menos drawdown y Sharpe >= Buy & Hold) con ventana alineada
+  en TRAIN y en la otra época, TEST como segunda validación (ya visto) y regla de costes (si da más de una orden por
+  semana, también debe aprobar en TRAIN con costes x2). Lotes `busqueda3-*-v1`.
+- **Si aprueba todo:** entra en el copiloto como EXPERIMENTAL junto a N1 L=4, con pesos inversos a la volatilidad
+  (método D11, mensual) y exposición total máxima del 25 %. Podrá operar cualquier día, siempre en paper trading.
+- **Si no aprueba:** el copiloto sigue solo con N1 L=4 (domingos) y el vigía sigue sin operar.
+- Aviso: en los diagnósticos de N1 (D29), decidir otros días de la semana dio un Sharpe algo menor que el domingo.
