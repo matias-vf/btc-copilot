@@ -305,7 +305,7 @@ class TestVigilanciaV2(unittest.TestCase):
         r = vg.vigilar(v, ref, desde, version="v1")
         sus = [(e["fecha"], e["estrategia"]) for e in r["eventos"] if e["tipo"] == "suspension"]
         self.assertEqual(sus, [("2013-01-01", "T1 sma_n=100"), ("2013-01-02", "B1 N=20,M=10"),
-                               ("2013-04-11", "B1 N=55,M=20"), ("2013-04-11", "C1 al 25 %")])
+                               ("2013-04-11", "B1 N=55,M=20"), ("2013-04-11", vg.CARTERA)])
         r2 = vg.vigilar(v, ref, desde, version="v2")
         for k, e in r2["estados"].items():          # solo se reactivan las suspensiones por azar
             for s in e["historial"]:
@@ -347,8 +347,8 @@ class TestEstrategiasV2(unittest.TestCase):
         self.assertEqual(f(v2, 0), 0.0)
 
     def _variantes_v2(self):
-        ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"].get("busqueda") == 2]
-        return [(i["id"], x) for i in ideas for x in i["configuraciones_permitidas"]]
+        from copilot import train2
+        return [(i["id"], x) for i in train2.ideas_v2() for x in i["configuraciones_permitidas"]]
 
     def test_once_variantes_se_construyen(self):
         vs = self._variantes_v2()

@@ -13,8 +13,10 @@ from copilot.costes import BINANCE_SPOT
 from copilot.motor import Resultado, Vela, backtest
 
 REGISTRO = registro.REGISTROS / "vigilancia.jsonl"
-COMPONENTES = [("B1", "N=20,M=10"), ("B1", "N=55,M=20"), ("T1", "sma_n=100")]
-CARTERA = "C1 al 25 %"
+# Estrategias vigiladas por grupo (pesos C1). Por defecto, las de la primera búsqueda (reproduce D16 y D18).
+GRUPOS_C1 = {"B1": [("B1", "N=20,M=10"), ("B1", "N=55,M=20")], "T1": [("T1", "sma_n=100")]}
+COMPONENTES = [k for ks in GRUPOS_C1.values() for k in ks]
+CARTERA = "Cartera al 25 %"
 VENTANA_AZAR, N_AZAR = 365, 200
 VENTANA_MOVIL = 180
 MIN_VELAS = 400
@@ -99,18 +101,20 @@ def _vol30(velas, t) -> float:
     return sqrt(sum((v - m) ** 2 for v in lr) / (len(lr) - 1)) * sqrt(365)
 
 
-def series(velas) -> dict[str, Resultado]:
+def series(velas, grupos: dict | None = None) -> dict[str, Resultado]:
     """Resultados causales de cada componente y de la cartera al 25 %."""
-    base = {f"{e} {v}": backtest(velas, estrategias.crear(e, v)) for e, v in COMPONENTES}
-    mangas = {g: [(ca.rents(r), ca.exposiciones(r)) for k, r in base.items() if k.startswith(g)] for g in ("B1", "T1")}
+    grupos = grupos or GRUPOS_C1
+    base = {f"{e} {v}": backtest(velas, estrategias.crear(e, v)) for ks in grupos.values() for e, v in ks}
+    mangas = {g: [(ca.rents(base[f"{e} {v}"]), ca.exposiciones(base[f"{e} {v}"])) for e, v in ks]
+              for g, ks in grupos.items()}
     c, _ = ca.cartera([v.fecha for v in velas], mangas)
     base[CARTERA] = riesgo.escalar(c, velas, EXPOSICION)[0]
     return base
 
 
-def referencia(velas_train) -> dict:
-    s = series(velas_train)
-    ref = {"peor_dd": {}, "p5_180": {}}
+def referencia(velas_train, grupos: dict | None = None) -> dict:
+    s = series(velas_train, grupos)
+    ref = {"peor_dd": {}, "p5_180": {}, "grupos": grupos or GRUPOS_C1}
     for k, r in s.items():
         eq = [r.capital] + r.equity
         ref["peor_dd"][k] = _dd(eq)
@@ -127,7 +131,7 @@ def vigilar(velas, ref: dict, desde: int, hasta: int | None = None, ahora=None, 
     version "v1" = reglas D15; "v2" = reglas D17."""
     v2 = version != "v1"
     hasta = len(velas) - 1 if hasta is None else hasta
-    s = series(velas)
+    s = series(velas, ref.get("grupos"))
     log_acum = [0.0]
     for a, b in zip(velas, velas[1:]):
         log_acum.append(log_acum[-1] + log(b.close / a.close))

@@ -14,7 +14,8 @@ def aprueba_v2(m: dict, bh: dict) -> dict:
 
 
 def ideas_v2() -> list[dict]:
-    return [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"].get("busqueda") == 2]
+    return [e["datos"] for e in registro.leer(registro.IDEAS)
+            if e["datos"].get("busqueda") == 2 and e["datos"]["familia"] not in ("Cartera", "Riesgo")]
 
 
 def ejecutar() -> list[dict]:
