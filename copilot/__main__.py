@@ -8,13 +8,19 @@
   cartera     Prompt 6: correlaciones y cartera inversa a la volatilidad (una sola vez)
   riesgo      Prompt 7: simulaciones de exposición, riesgo por operación y volatilidad (una sola vez)
   vigilancia  Prompt 8: simula la vigilancia diaria del deterioro en la otra época
+  senal AAAA-MM-DD   ficha del copiloto para una fecha de TRAIN (no escribe en ningún registro)
+  hoy         un ciclo en vivo con datos de hoy (bloqueado mientras TEST siga cerrado)
+  en-marcha   funcionamiento continuo en vivo, un ciclo al día (bloqueado mientras TEST siga cerrado)
+  repeticion AAAA-MM-DD AAAA-MM-DD   paper trading día a día sobre fechas de TRAIN, con registros propios
+  parar "motivo"     parada de emergencia manual (kill switch) del paper trading en vivo
+  reanudar "motivo"  reanuda tras una parada (solo tú puedes hacerlo)
   anticipacion comprueba en TRAIN que ninguna variante registrada mira el futuro (no muestra resultados)
 """
 
 import json
 import subprocess
 import sys
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from copilot import datos, registro
 from copilot.estrategias_iniciales import entradas
@@ -129,8 +135,71 @@ def vigilancia() -> int:
     return 0
 
 
+def senal(fecha: str) -> int:
+    from datetime import date
+    from copilot import copiloto as cp, vigilancia as vg
+
+    velas = [v for v in motor_velas() if v.fecha <= date.fromisoformat(fecha)]
+    f = velas[-1].fecha
+    ahora = datetime(f.year, f.month, f.day, tzinfo=timezone.utc) + timedelta(days=1, minutes=5)
+    print(cp.ficha(cp.decidir(velas, {}, 0.0, None, vg.problemas_datos(velas, ahora), None, ahora)))
+    print("(Ficha sin historial de paper: supone que hoy no hay posiciones abiertas.)")
+    return 0
+
+
+def motor_velas():
+    from copilot import motor
+    return motor.cargar_velas()
+
+
+def hoy() -> int:
+    from copilot import copiloto as cp
+    try:
+        print(cp.ficha(cp.ciclo(cp.velas_en_vivo(), cp.RUTAS_VIVO)))
+    except datos.DatosTestBloqueados as e:
+        print(f"BLOQUEADO: {e}\nLos precios de hoy son posteriores al 01/01/2023 (TEST). "
+              "El modo en vivo necesita tu decisión sobre esos datos (docs/decisiones.md).")
+        return 1
+    return 0
+
+
+def en_marcha() -> int:
+    from copilot import copiloto as cp
+    try:
+        cp.en_marcha()
+    except datos.DatosTestBloqueados as e:
+        print(f"BLOQUEADO: {e}")
+        return 1
+    return 0
+
+
+def repeticion(desde: str, hasta: str) -> int:
+    from datetime import date
+    from copilot import copiloto as cp, panel
+
+    carpeta = registro.RAIZ / "repeticion" / f"{desde}_{hasta}"
+    cp.repeticion(date.fromisoformat(desde), date.fromisoformat(hasta), carpeta)
+    cmp = cp.comparar(carpeta)
+    panel.generar(cmp, carpeta / "panel.html", f"Copiloto BTC: repetición {desde} a {hasta}")
+    print(cp.ficha(cmp["senales"][-1]))
+    print(f"\nRepetición guardada en {carpeta.relative_to(registro.RAIZ)}; panel en panel.html")
+    return 0
+
+
+def _parada(tipo: str, motivo: str) -> int:
+    from copilot import copiloto as cp
+    registro.anadir(cp.RUTAS_VIVO["paper"], {"tipo": tipo, "fecha": datetime.now(timezone.utc).date().isoformat(),
+                                             "motivo": motivo, "por": "usuario"})
+    print(f"{tipo} registrada: {motivo}")
+    return 0
+
+
 if __name__ == "__main__":
-    ordenes = {"verificar": verificar, "registrar": registrar, "descargar": descargar,
+    con_args = {"senal": senal, "repeticion": repeticion,
+                "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
+    if len(sys.argv) >= 3 and sys.argv[1] in con_args:
+        sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
+    ordenes = {"hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}

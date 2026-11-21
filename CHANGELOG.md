@@ -1,5 +1,14 @@
 # Historial de cambios
 
+## 2026-11-21. Prompt 9: copiloto y paper trading
+- Ciclo diario: datos, orden pendiente en la apertura, valoración, límite de pérdidas, vigilancia v2, señal y seguimiento.
+- Ficha de señal COMPRA/VENTA/MANTENER/NO OPERAR con precio, estrategias, justificación, riesgo, invalidación,
+  histórico, estado de validación, sesión de Nueva York y contexto de mercado.
+- Paper trading con 100 USD ficticios, costes, límite del 25 %, 3 posiciones, pérdida máxima del 35 %, kill switch.
+- Órdenes nuevas: `senal`, `hoy`, `en-marcha`, `repeticion`, `parar`, `reanudar`. Panel HTML local.
+- Lectura visual de capturas (pantalla compartida) que nunca cambia la decisión.
+- Repetición técnica 2021-2022 (`docs/paper_repeticion.md`). Modo en vivo bloqueado hasta decidir sobre TEST (D19).
+
 ## 2026-11-21. Vigilancia v2 (aprobada por el usuario)
 - Reglas v2 (D17): azar por debajo del percentil 25 durante 30 días; reactivación automática solo de esas suspensiones;
   alertas de volatilidad solo al entrar o salir de la banda; sin señales con velas de volumen 0.

@@ -19,7 +19,7 @@ Solo descarga precios públicos.
 | Prompt 6: cartera combinada | Hecho, provisional (`docs/cartera.md`) |
 | Prompt 7: riesgo y tamaño de posición | Hecho, provisional (`docs/riesgo.md`) |
 | Prompt 8: deterioro y reglas de parada | Hecho, reglas v2 (`docs/vigilancia_v2.md`; la v1 en `docs/vigilancia.md`) |
-| Prompt 9: copiloto y paper trading | Pendiente |
+| Prompt 9: copiloto y paper trading | Construido y probado en repetición; **en vivo bloqueado** hasta decidir sobre TEST |
 
 ## Estructura
 ```
@@ -36,6 +36,9 @@ copilot/
   cartera.py                Prompt 6: correlaciones y cartera inversa a la volatilidad
   riesgo.py                 Prompt 7: exposición, riesgo por operación y volatilidad objetivo
   vigilancia.py             Prompt 8: vigilancia diaria del deterioro y reglas de parada
+  copiloto.py               Prompt 9: ciclo diario, señales, ficha, lectura visual, modo en vivo
+  paper.py                  Prompt 9: cuenta simulada de 100 USD con costes y límites
+  panel.py                  Prompt 9: panel HTML local
   __main__.py               órdenes: verificar, registrar, descargar, anticipacion
 registros/
   ideas.jsonl               registro de estrategias (una por línea)
@@ -54,6 +57,10 @@ docs/cartera.md             Prompt 6: cartera frente a Buy & Hold
 docs/riesgo.md              Prompt 7: comparación de configuraciones de riesgo y límites
 docs/vigilancia.md          Prompt 8: simulación de la vigilancia con las reglas v1
 docs/vigilancia_v2.md       Prompt 8: simulación con las reglas v2 (las vigentes)
+docs/copiloto.md            Prompt 9: cómo funciona el copiloto y sus límites
+docs/pantalla_compartida.md Prompt 9: cómo analizar un gráfico con Claude
+docs/paper_repeticion.md    Prompt 9: repetición 2021-2022, paper frente a backtest
+repeticion/                 registros y panel de cada repetición
 tests/                      pruebas automáticas
 ```
 
@@ -88,7 +95,20 @@ historial de cambios). Este paso no usa librerías extra.
    python -m copilot anticipacion
    ```
    La última línea debe decir `0 con anticipación`.
-6. (Opcional) Para volver a descargar los datos:
+6. Para ver la ficha del copiloto en una fecha de TRAIN (por ejemplo, el 31/12/2022):
+   ```powershell
+   python -m copilot senal 2022-12-31
+   ```
+7. Para ver el panel de la repetición, abre en el navegador el archivo
+   `repeticion1-01-01_2022-12-31\panel.html` (doble clic desde el Explorador de archivos).
+8. Parada de emergencia del paper trading en vivo (y para reanudar):
+   ```powershell
+   python -m copilot parar "motivo"
+   ```
+   ```powershell
+   python -m copilot reanudar "motivo"
+   ```
+9. (Opcional) Para volver a descargar los datos:
    ```powershell
    python -m copilot descargar
    ```

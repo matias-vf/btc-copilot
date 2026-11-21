@@ -216,3 +216,14 @@ Simulación en Bitstamp 2013-2016 (`docs/vigilancia_v2.md`): ninguna suspensión
 2013-04-11/15, que solo se reactivan con aprobación del usuario; 3 días sin señales por volumen 0 (parón de Bitstamp en
 enero de 2015); 53 alertas frente a 446 en la v1. La v2 queda como versión por defecto. La v1 se puede reproducir
 (`version="v1"`) y tiene una prueba automática que lo comprueba.
+
+## D19. 2026-11-21. Copiloto y paper trading (Prompt 9)
+- Copiloto integrado (`copilot/copiloto.py`, `copilot/paper.py`, `copilot/panel.py`): estrategias B1 20/10, B1 55/20 y
+  T1 SMA 100, pesos C1, exposición máxima 25 %, vigilancia v2, parada manual y automática, registros de solo añadir.
+- Suspensión = sin entradas nuevas; las salidas siempre se permiten. Parada = se cierra todo. Datos malos = ningún cambio.
+- Reequilibrios menores de 1 punto de exposición no se ejecutan (evita órdenes mínimas).
+- Repetición técnica 2021-2022 sobre TRAIN: paper +11,9 % frente a backtest +9,8 %; diferencias explicadas en
+  `docs/paper_repeticion.md`. Es una prueba del sistema, no de las estrategias.
+- **Pendiente del usuario:** el modo en vivo y el mes de paper trading real necesitan precios posteriores al 01/01/2023,
+  que son TEST. `python -m copilot hoy` y `en-marcha` se niegan a funcionar hasta que el usuario decida.
+- El proyecto no se considera terminado hasta superar el mes de paper trading real.
