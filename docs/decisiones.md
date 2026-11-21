@@ -517,3 +517,16 @@ puede ser propio de BTC o suerte, y el paper trading en vivo es la prueba que fa
 - **Aviso:** el TEST del oro ya se vio (D43, D44), así que aquí tampoco es una prueba limpia; la que decide es el paper.
 - Las reglas que dependen del domingo (F05) o de días de fin de semana (parte de F21) no operan nunca en bolsa: se dejan
   así, porque cambiarlas sería crear reglas nuevas.
+
+## D46. 2026-11-21. Resultado de la búsqueda en el oro y copiloto del oro
+Lotes `oro-universo-*-v1` (`docs/oro_universo.md`). En TRAIN, 510 de 1000 cumplen el criterio v2 y los costes (Buy & Hold
+de GLD cayó un 23 % en 2011-2018, así que casi cualquier regla que pase tiempo fuera "cae menos"), pero ninguna llega a un
+Sharpe deflactado de 0,95 (el mayor, 0,442). Solo 4 cumplen el criterio también en la otra época y en TEST, y se eligen
+según D45, **SIN significación estadística**: U0976 (F28, momentum 28 días solo con volatilidad baja, percentil 50),
+U0979 (F28, 90 días, percentil 50), U0980 (F28, 90 días, percentil 75) y U0136 (F02, cruce SMA 50/100 con banda 1 %).
+Son débiles: su Sharpe en TRAIN está entre -0,17 y 0,15.
+**Copiloto del oro:** mismas piezas que el de BTC, con su propia cuenta de paper (100 USD ficticios) y sus registros en
+`registros/oro/`; exposición máxima 25 %, pesos inversos a la volatilidad (mensual), vigilancia v2 con la referencia de
+TRAIN del oro, costes 0,05 % por lado, datos diarios de Yahoo. En bolsa no se consideran fallo los fines de semana ni los
+festivos (huecos de hasta 4 días) y los datos se dan por actuales hasta 4 días después de la última vela. Se ejecuta en la
+tarea diaria, después del de BTC. El vigía horario sigue siendo solo de BTC.
