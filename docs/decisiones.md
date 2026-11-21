@@ -163,3 +163,30 @@ fija del 25 % de C1. Apalancamiento: arruina en la otra época (2013-04-10, -69 
 La regla de riesgo por operación no controla a T1. La volatilidad objetivo del 30 % se queda fuera por 0,8 puntos de
 drawdown en TRAIN; no se reajusta a posteriori. Límites del copiloto en `docs/riesgo.md`, sección 5.
 Corrección técnica: las métricas ya no dividen por cero cuando el capital llega a 0 (ruina); no cambia ningún resultado anterior.
+
+## D15. 2026-11-21. Reglas del Prompt 8 (deterioro y parada), fijadas ANTES de poner nada en marcha
+**Qué se vigila cada día:** los tres componentes (B1 20/10, B1 55/20, T1 SMA 100) y la cartera C1 al 25 % de exposición.
+**Referencia histórica:** solo TRAIN (backtest). Nunca se recalcula con datos nuevos.
+
+**Reglas de SUSPENSIÓN (paran las señales nuevas):**
+1. *Peor que el azar:* rentabilidad de los últimos 365 días por debajo de la mediana de 200 estrategias de entradas
+   aleatorias con los mismos días en el mercado, el mismo número de entradas y los mismos costes (0,16 % por lado), en
+   esos mismos 365 días. Si la estrategia no estuvo en el mercado ningún día de la ventana, no se compara.
+2. *Drawdown:* drawdown desde el inicio de la vigilancia peor que el peor drawdown del backtest en TRAIN (B1 20/10
+   -54,3 %, B1 55/20 -59,1 %, T1 -64,5 %). Para la cartera al 25 % (-17,4 %): se suspenden TODAS las señales (parada de emergencia).
+3. *Datos:* no se generan señales ese día si falta una vela, hay duplicados, OHLC incoherente, la última vela tiene
+   más de 26 horas, el cierre se mueve más de un 50 % en un día o la apertura se separa más de un 5 % del cierre anterior.
+   Tampoco con menos de 400 velas de historia (indicadores y ventana de 365 días).
+
+**ALERTAS (avisan, no paran):**
+- Drawdown peor que el 75 % del peor del backtest.
+- Rentabilidad de los últimos 180 días por debajo del percentil 5 de las rentabilidades de 180 días en TRAIN.
+- Volatilidad de 30 días por encima del percentil 95 o por debajo del percentil 5 de TRAIN (cambio de mercado).
+- Precio que cruza la SMA 200 (cambio de tendencia general).
+
+**Después de una suspensión:** la estrategia no se borra. Se sigue calculando su resultado hipotético ("en la sombra")
+para registrar qué habría pasado. No hay reactivación automática: solo con aprobación explícita del usuario, anotada en
+el registro. Todo (alertas, suspensiones, reactivaciones, estado diario) va a `registros/vigilancia.jsonl`, de solo añadir.
+
+**Prueba antes de usarlo en vivo:** se simula la vigilancia día a día en la otra época (Bitstamp 2013-2016), con la
+referencia de TRAIN. Es una prueba del sistema de vigilancia, no de una estrategia nueva: no se anota como experimento.
