@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## 2026-11-21. Copiloto del oro en marcha
+- Búsqueda propia en el oro con el universo de 1000: 4 reglas sin significación estadística (D45, D46).
+- El copiloto admite un segundo mercado (`python -m copilot hoy oro`): cuenta de paper propia, datos de Yahoo,
+  calendario de bolsa en la vigilancia, costes del oro. Primer ciclo en vivo el 2026-11-21.
+- La tarea diaria y el resumen de las 20:00 incluyen el oro.
+
 ## 2026-11-21. Tercera búsqueda (1000 estrategias) y oro
 - 1000 variantes en 31 familias: ninguna supera el Sharpe deflactado (D39); se añaden 5 marcadas sin significación (D40, D41).
 - Copiloto de BTC con 7 estrategias EXPERIMENTALES (N1, N1D y 5 del universo).

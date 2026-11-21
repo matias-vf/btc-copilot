@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from copilot import copiloto as cp, paper, registro
 from copilot.motor import pct
 
 
-def texto(rutas: dict = cp.RUTAS_VIVO) -> str:
+def texto(rutas: dict | None = None, mercado: str = "BTC") -> str:
+    rutas = rutas or cp.RUTAS_VIVO
     cuenta, ent = paper.cargar(rutas["paper"])
     sen = [e["datos"] for e in registro.leer(rutas["senales"]) if e["datos"]["tipo"] == "senal"]
     vig = [e["datos"] for e in registro.leer(rutas["vigilancia"])]
     if not sen or not cuenta.valoraciones:
-        return "El paper trading en vivo aún no tiene ningún día registrado."
+        return f"{mercado}: el paper trading en vivo aún no tiene ningún día registrado."
     s, v = sen[-1], cuenta.valoraciones[-1]
     inicio = next(d["fecha"] for d in ent if d["tipo"] == "inicio")
     dias = (date.fromisoformat(v["fecha"]) - date.fromisoformat(inicio)).days + 1
@@ -22,9 +23,10 @@ def texto(rutas: dict = cp.RUTAS_VIVO) -> str:
     eventos = [d for d in vig if d.get("tipo") in ("alerta", "suspension", "reactivacion", "parada_emergencia", "datos")
                and d.get("fecha") == s["vela"]]
     cerradas = cuenta.operaciones_cerradas
-    l = [f"Día {dias} de paper trading (desde el {inicio}; el mes mínimo termina el 2026-12-21).",
-         f"Última vela procesada: {s['vela']} (UTC). Precio BTC: {s['precio_referencia']:,.2f} USDT.",
-         f"Decisión: {s['decision']}. Exposición a BTC: {pct(s['exposicion_objetivo'])} (máximo 25 %).",
+    fin_mes = date.fromisoformat(inicio) + timedelta(days=30)
+    l = [f"[{mercado}] Día {dias} de paper trading (desde el {inicio}; el mes mínimo termina el {fin_mes}).",
+         f"Última vela procesada: {s['vela']}. Precio {s['activo']}: {s['precio_referencia']:,.2f}.",
+         f"Decisión: {s['decision']}. Exposición a {s['activo']}: {pct(s['exposicion_objetivo'])} (máximo 25 %).",
          "Por qué: " + " ".join(s["justificacion"]),
          f"Capital ficticio: {v['valor']:.2f} USD ({v['valor'] - cuenta.capital_inicial:+.2f} USD, "
          f"{pct(v['valor'] / cuenta.capital_inicial - 1)}). Drawdown máximo: {pct(cuenta.drawdown())}.",
@@ -35,7 +37,7 @@ def texto(rutas: dict = cp.RUTAS_VIVO) -> str:
     l += [f"Se invalida si: {x}" for x in s.get("invalidacion", [])]
     l += [f"Vigilancia: {e['tipo']} - {e['estrategia']}: {e['motivo']}" for e in eventos]
     l += [f"Aviso: {a}" for a in s.get("avisos", [])]
-    obs = [e["datos"] for e in registro.leer(registro.REGISTROS / "vigia.jsonl")]         if (registro.REGISTROS / "vigia.jsonl").exists() else []
+    obs = [e["datos"] for e in registro.leer(registro.REGISTROS / "vigia.jsonl")]         if mercado == "BTC" and (registro.REGISTROS / "vigia.jsonl").exists() else []  # el vigía solo vigila BTC
     hoy = [o for o in obs if o["fecha_hora_utc"][:10] == datetime.now(timezone.utc).date().isoformat()]
     if obs:
         o = obs[-1]

@@ -430,11 +430,11 @@ def comparar(carpeta_o_rutas, velas=None) -> dict:
 # --- Comunicación -----------------------------------------------------------------
 
 def ficha(s: dict) -> str:
-    l = [f"=== {s['decision']} === BTC · {s['par']} · vela {s['temporalidad']} del {s['vela']} (UTC)",
-         f"Precio de referencia: {s['precio_referencia']:,.2f} USDT · válida hasta {s['valida_hasta_utc'][:16]} UTC",
+    l = [f"=== {s['decision']} === {s['activo']} · {s['par']} · vela {s['temporalidad']} del {s['vela']} (UTC)",
+         f"Precio de referencia: {s['precio_referencia']:,.2f} {'USD' if s['activo'] == 'ORO' else 'USDT'} · válida hasta {s['valida_hasta_utc'][:16]} UTC",
          f"Hora en Nueva York: {s['sesion']['hora_nueva_york']} · sesiones activas: "
          f"{', '.join(s['sesion']['sesiones_activas']) or 'ninguna'}",
-         f"Exposición a BTC: {s['exposicion_anterior']:.1%} -> {s['exposicion_objetivo']:.1%} del capital (máximo 25 %)", ""]
+         f"Exposición a {s['activo']}: {s['exposicion_anterior']:.1%} -> {s['exposicion_objetivo']:.1%} del capital (máximo 25 %)", ""]
     for a in s["avisos"]:
         l.append(f"AVISO: {a}")
     l.append("Por qué:")

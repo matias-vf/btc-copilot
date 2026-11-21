@@ -241,6 +241,10 @@ def resumen() -> int:
     from copilot import resumen as rs
 
     print(rs.texto())
+    oro = registro.REGISTROS / "oro"
+    if (oro / "paper.jsonl").exists():
+        print()
+        print(rs.texto({k: oro / f"{k}.jsonl" for k in ("senales", "paper", "vigilancia")}, "ORO"))
     return 0
 
 

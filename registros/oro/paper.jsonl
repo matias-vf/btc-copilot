@@ -1,0 +1,2 @@
+{"datos":{"capital":100.0,"fecha":"2026-11-20","tipo":"inicio"},"fecha_hora":"2026-11-21T22:37:09+00:00","hash":"7fb7e8eabcbcb72f7aa7052014199ef6057dbff6ad4723114ca11ec3cf2beb36","hash_prev":"0000000000000000000000000000000000000000000000000000000000000000","n":1}
+{"datos":{"exposicion":0.0,"fecha":"2026-11-20","precio":322.869995,"tipo":"valoracion","valor":100.0},"fecha_hora":"2026-11-21T22:37:09+00:00","hash":"3439cc33d6883792651bcf840d6cdd612e83a41ea3c45a36787d3c8be2723511","hash_prev":"7fb7e8eabcbcb72f7aa7052014199ef6057dbff6ad4723114ca11ec3cf2beb36","n":2}
