@@ -107,6 +107,21 @@ class TestCopiloto(unittest.TestCase):
         self.assertEqual(cp.nivel_n1(h), next(x.close for x in h if x.fecha == base))
         self.assertEqual(cp.domingo_siguiente(date(2020, 11, 15)), date(2020, 11, 22))  # domingo -> el siguiente
 
+    def test_poner_al_dia_recupera_dias(self):
+        with tempfile.TemporaryDirectory() as d:
+            rutas = {k: Path(d) / f"{k}.jsonl" for k in ("senales", "paper", "vigilancia")}
+            velas = cargar_velas(train.FICHERO)
+            i = next(k for k, x in enumerate(velas) if x.fecha == date(2020, 11, 15))
+            cierre = lambda t: datetime(velas[t].fecha.year, velas[t].fecha.month, velas[t].fecha.day,
+                                        tzinfo=timezone.utc) + timedelta(days=1, minutes=5)
+            self.assertEqual(len(cp.poner_al_dia(rutas, velas[: i + 1], cierre(i))), 1)   # primera vez: solo hoy
+            s = cp.poner_al_dia(rutas, velas[: i + 4], cierre(i + 3))                      # 3 días sin encender
+            self.assertEqual([x["vela"] for x in s], [velas[i + k].fecha.isoformat() for k in (1, 2, 3)])
+            self.assertEqual([x.get("recuperada_tarde", False) for x in s], [True, True, False])
+            self.assertEqual(cp.poner_al_dia(rutas, velas[: i + 4], cierre(i + 3)), [])    # nada nuevo
+            ejec = [e["datos"] for e in registro.leer(rutas["paper"]) if e["datos"]["tipo"] == "ejecucion"]
+            self.assertEqual(ejec[0]["fecha"], velas[i + 1].fecha.isoformat())             # compra del domingo, lunes
+
     def test_lectura_visual(self):
         s = {"precio_referencia": 20000.0}
         self.assertFalse(cp.lectura_visual({"activo": "ETH/USDT", "temporalidad": "1d"}, s)["usable"])

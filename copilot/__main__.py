@@ -191,7 +191,17 @@ def test() -> int:
 def hoy() -> int:
     from copilot import copiloto as cp
     try:
-        print(cp.ficha(cp.ciclo(cp.velas_en_vivo(), cp.RUTAS_VIVO)))
+        velas = cp.velas_en_vivo()
+        senales = cp.poner_al_dia(velas=velas)
+        if not senales:
+            print("Nada nuevo: la última vela cerrada ya tiene su señal.")
+        for s in senales:
+            print(cp.ficha(s))
+        if senales:
+            from copilot import panel
+            panel.generar(cp.comparar(cp.RUTAS_VIVO, velas), registro.REGISTROS / "panel_vivo.html",
+                          "Copiloto BTC: paper trading en vivo")
+            print("Panel actualizado: registros/panel_vivo.html")
     except datos.DatosTestBloqueados as e:
         print(f"BLOQUEADO: {e}\nLos precios de hoy son posteriores al 01/01/2023 (TEST). "
               "El modo en vivo necesita tu decisión sobre esos datos (docs/decisiones.md).")

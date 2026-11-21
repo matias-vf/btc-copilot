@@ -246,7 +246,7 @@ def _ultima(entradas, tipo):
 
 
 def ciclo(velas, rutas: dict, ahora: datetime | None = None, vig: tuple[dict, list] | None = None,
-          solo_validadas: bool = True) -> dict:
+          solo_validadas: bool = True, recuperada: bool = False) -> dict:
     """Un día del copiloto, justo después del cierre de la vela velas[-1]. Solo usa velas hasta hoy."""
     v = velas[-1]
     ahora = ahora or datetime.now(timezone.utc)
@@ -298,6 +298,10 @@ def ciclo(velas, rutas: dict, ahora: datetime | None = None, vig: tuple[dict, li
     obj_prev = previa["exposicion_objetivo"] if previa else 0.0
     senal = decidir(velas, posiciones, obj_prev, dia, problemas, parada, ahora, solo_validadas)
     senal["cuenta"] = {"valor": val["valor"], "exposicion": val["exposicion"], "drawdown": cuenta.drawdown_actual()}
+    if recuperada:
+        senal["recuperada_tarde"] = True
+        senal["avisos"].append("Señal calculada tarde (el copiloto no estaba en marcha a su hora); la orden de paper "
+                               "se simula al precio de apertura que habría tenido.")
     registro.anadir(rutas["senales"], senal)
     # 5) Seguimiento de señales pasadas (1, 7 y 30 días)
     for s in senales:
@@ -446,20 +450,41 @@ def lectura_visual(lectura: dict, s: dict) -> dict:
 # --- Modo en vivo -----------------------------------------------------------------
 
 def velas_en_vivo() -> list[Vela]:
-    """Últimas velas diarias cerradas de Binance. Hoy siempre cae en TEST: lanza DatosTestBloqueados hasta «UNLOCK»."""
+    """Últimas velas diarias cerradas de Binance (datos públicos de mercado, sin claves). Lanza RuntimeError si la
+    historia descargada tiene huecos, duplicados u OHLC incoherente: con datos malos no se generan señales."""
     ayer = datetime.now(timezone.utc).date() - timedelta(days=1)
     filas = datos.descargar_binance(ayer - timedelta(days=900), ayer)
+    v = datos.validar(filas)
+    malos = {k: v[k] for k in ("duplicados", "huecos", "ohlc_incoherentes") if v[k]}
+    if malos or not v["ordenadas"]:
+        raise RuntimeError(f"datos de Binance con problemas: {malos}")
     return [Vela(date.fromisoformat(f[0]), *map(float, f[1:6])) for f in filas]
+
+
+def poner_al_dia(rutas: dict = RUTAS_VIVO, velas: list[Vela] | None = None, ahora: datetime | None = None) -> list[dict]:
+    """Procesa todas las velas cerradas que aún no tienen señal, en orden. La primera vez solo la última.
+    Los días que se procesan tarde (ordenador apagado) se marcan como "recuperada_tarde"."""
+    velas = velas if velas is not None else velas_en_vivo()
+    ahora = ahora or datetime.now(timezone.utc)
+    hechas = {e["datos"]["vela"] for e in registro.leer(rutas["senales"]) if e["datos"]["tipo"] == "senal"}
+    ultima = max(hechas) if hechas else None
+    pendientes = [t for t, x in enumerate(velas) if ultima is None and t == len(velas) - 1
+                  or ultima is not None and x.fecha.isoformat() > ultima]
+    out = []
+    for t in pendientes:
+        f = velas[t].fecha
+        a_tiempo = datetime(f.year, f.month, f.day, tzinfo=timezone.utc) + timedelta(days=1, minutes=5)
+        tarde = t < len(velas) - 1
+        out.append(ciclo(velas[: t + 1], rutas, a_tiempo if tarde else ahora, recuperada=tarde))
+    return out
 
 
 def en_marcha() -> None:
     """Funcionamiento continuo: un ciclo cada día a las 00:05 UTC mientras el ordenador esté encendido."""
     while True:
         try:
-            s = ciclo(velas_en_vivo(), RUTAS_VIVO)
-            print(ficha(s))
-        except datos.DatosTestBloqueados:
-            raise
+            for s in poner_al_dia():
+                print(ficha(s))
         except Exception as e:  # error de funcionamiento: se registra y se reintenta en 10 minutos
             registro.anadir(RUTAS_VIVO["paper"], {"tipo": "error", "fecha_hora_utc": datetime.now(timezone.utc).isoformat(),
                                                   "error": repr(e)})
