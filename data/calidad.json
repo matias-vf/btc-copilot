@@ -1,0 +1,72 @@
+{
+  "btcusdt_binance_1d_train.csv": {
+    "fuente": "Binance spot BTCUSDT, GET https://data-api.binance.vision/api/v3/klines (interval=1d)",
+    "pedido": [
+      "2017-08-17",
+      "2022-12-31"
+    ],
+    "descargado_utc": "2026-11-21T13:21:36+00:00",
+    "sha256": "b207c011db78dc6dbc9cd8386ff44070762f84ac7d82a983af0c5e884be4c617",
+    "primera": "2017-08-17",
+    "ultima": "2022-12-31",
+    "velas": 1963,
+    "dias_esperados": 1963,
+    "duplicados": [],
+    "huecos": [],
+    "ohlc_incoherentes": [],
+    "dias_volumen_cero": [],
+    "ordenadas": true
+  },
+  "btcusd_bitstamp_1d_2011_2016.csv": {
+    "fuente": "Bitstamp BTC/USD, GET https://www.bitstamp.net/api/v2/ohlc/btcusd/ (step=86400)",
+    "pedido": [
+      "2011-01-01",
+      "2016-12-31"
+    ],
+    "descargado_utc": "2026-11-21T13:21:40+00:00",
+    "sha256": "b875c516c32fe719719ab7c89f1a14cf07d2a7a90c1f9866e0c676430a7de90b",
+    "primera": "2011-08-18",
+    "ultima": "2016-12-31",
+    "velas": 1963,
+    "dias_esperados": 1963,
+    "duplicados": [],
+    "huecos": [],
+    "ohlc_incoherentes": [],
+    "dias_volumen_cero": [
+      "2011-08-23",
+      "2011-08-26",
+      "2011-08-27",
+      "2011-08-28",
+      "2011-08-29",
+      "2011-08-31",
+      "2011-09-03",
+      "2011-09-05",
+      "2011-09-09",
+      "2011-09-10",
+      "2011-09-11",
+      "2011-09-12",
+      "2011-09-30",
+      "2011-10-01",
+      "2011-10-02",
+      "2011-10-15",
+      "2011-10-16",
+      "2011-10-18",
+      "2011-10-19",
+      "2011-10-22",
+      "2011-10-23",
+      "2011-10-27",
+      "2011-11-02",
+      "2011-11-03",
+      "2011-11-07",
+      "2011-11-23",
+      "2011-11-27",
+      "2011-12-04",
+      "2011-12-09",
+      "2011-12-17",
+      "2015-01-06",
+      "2015-01-07",
+      "2015-01-08"
+    ],
+    "ordenadas": true
+  }
+}
