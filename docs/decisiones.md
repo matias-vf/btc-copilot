@@ -545,3 +545,24 @@ tarea diaria, después del de BTC. El vigía horario sigue siendo solo de BTC.
   5 superan el Sharpe deflactado, se completa con las que cumplan las tres épocas, marcadas «SIN significación estadística».
 - **Copiloto del Nasdaq:** las del paso 1 que aprueben más las elegidas en el paso 2, con su propia cuenta de 100 USD
   ficticios en `registros/nasdaq/`, exposición máxima 25 %, igual que el oro.
+
+## D48. 2026-11-21. Intradía en QQQ (elegido por el usuario: «Probar intradía en QQQ»), fijado ANTES de descargar velas de 5 minutos
+El usuario pidió que el bot mire el mercado todo el día y use la Day Trader skill. Decidir "a ojo" mirando TradingView no
+se puede medir ni validar, así que no se hace. Se registra una regla intradía publicada y un programa la vigila.
+- **Regla I01, ruptura del rango de apertura de 5 minutos (ORB)**, Zarattini y Aziz (2023), «Can Day Trading Really Be
+  Profitable?», SSRN 4416622 (reglas comprobadas en el propio artículo), en versión **solo compra**:
+  si la primera vela de 5 minutos de la sesión (9:30-9:35, hora de Nueva York) cierra por encima de su apertura, se compra
+  en la apertura de la segunda vela; stop en el mínimo de la primera vela; objetivo a 10 veces el riesgo; si no salta ni
+  el stop ni el objetivo, se cierra al cierre de la última vela (15:55-16:00). Si la primera vela es bajista o plana, no
+  se opera ese día. Nunca se mantiene una posición de un día para otro.
+- **Tamaño:** exposición = min(25 %, 1 % / distancia al stop), es decir, como mucho un 1 % del capital en riesgo y como
+  mucho el 25 % del capital (el artículo usa el 1 % de riesgo; aquí sin apalancamiento).
+- **Costes:** 0,05 % por lado (D42). Si el precio salta por encima del stop, la salida se simula en la apertura de esa vela.
+- **Datos:** Yahoo da como mucho los últimos 60 días en velas de 5 minutos. **Es una muestra muy corta**: no hay TRAIN ni
+  TEST separados posibles, ni otra época. Se prueba en esos días y la prueba real es el paper trading en vivo.
+- **Criterio:** en esos días, rentabilidad neta > 0 y Sharpe (diario, 252 días) >= Buy & Hold de QQQ en los mismos días.
+  Si lo cumple, entra en paper como EXPERIMENTAL con su propia cuenta de 100 USD ficticios (`registros/nasdaq_intradia/`).
+  Si no, no se usa.
+- **Vigilancia:** una tarea de Windows cada 5 minutos en días laborables; el programa solo actúa dentro del horario de
+  bolsa de Nueva York (lo calcula él, con los cambios de horario). De la Day Trader skill se usa la idea de entrada,
+  salida y tamaño; **nunca** la pieza que envía órdenes a un bróker.

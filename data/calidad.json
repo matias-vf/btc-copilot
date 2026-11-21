@@ -150,5 +150,70 @@
     "ordenadas": true,
     "huecos_largos": [],
     "velas_en_fin_de_semana": []
+  },
+  "qqq_yahoo_1d_otra_epoca_1999_2010.csv": {
+    "fuente": "Yahoo Finance QQQ 1d",
+    "pedido": [
+      "1999-03-10",
+      "2010-12-31"
+    ],
+    "descargado_utc": "2026-11-21T22:45:50+00:00",
+    "sha256": "3af56a49aa35e588054b98f6bdc0ca812af91d53d529142b15d0631a24b33564",
+    "primera": "1999-03-10",
+    "ultima": "2010-12-31",
+    "velas": 2974,
+    "dias_esperados": 4315,
+    "duplicados": [],
+    "huecos": [],
+    "ohlc_incoherentes": [],
+    "dias_volumen_cero": [],
+    "ordenadas": true,
+    "huecos_largos": [
+      "2001-09-10 -> 2001-09-17",
+      "2006-12-29 -> 2007-01-03"
+    ],
+    "velas_en_fin_de_semana": []
+  },
+  "qqq_yahoo_1d_train_2011_2018.csv": {
+    "fuente": "Yahoo Finance QQQ 1d",
+    "pedido": [
+      "2011-01-01",
+      "2018-12-31"
+    ],
+    "descargado_utc": "2026-11-21T22:45:50+00:00",
+    "sha256": "b7452717baf602ac2176ba288d53bee5af60addd4c0fa93c56de4e466fcaf536",
+    "primera": "2011-01-03",
+    "ultima": "2018-12-31",
+    "velas": 2012,
+    "dias_esperados": 2920,
+    "duplicados": [],
+    "huecos": [],
+    "ohlc_incoherentes": [],
+    "dias_volumen_cero": [],
+    "ordenadas": true,
+    "huecos_largos": [
+      "2012-10-26 -> 2012-10-31"
+    ],
+    "velas_en_fin_de_semana": []
+  },
+  "qqq_yahoo_1d_test_2019_2026.csv": {
+    "fuente": "Yahoo Finance QQQ 1d",
+    "pedido": [
+      "2019-01-01",
+      "2026-11-20"
+    ],
+    "descargado_utc": "2026-11-21T22:45:50+00:00",
+    "sha256": "5f33e72a8802b7ae8eb1625ec7d64e2a91992e4b5330495f7d1dcada32d76095",
+    "primera": "2019-01-02",
+    "ultima": "2026-11-20",
+    "velas": 1984,
+    "dias_esperados": 2880,
+    "duplicados": [],
+    "huecos": [],
+    "ohlc_incoherentes": [],
+    "dias_volumen_cero": [],
+    "ordenadas": true,
+    "huecos_largos": [],
+    "velas_en_fin_de_semana": []
   }
 }
