@@ -443,3 +443,14 @@ Lectura: con 1000 reglas parecidas, los buenos resultados históricos no se dist
 reversión (RSI, Bollinger, estocástico, Williams, Darvas) no cumplen ni el criterio v2 en TRAIN.
 Nota de método: N = 1000 trata las variantes como si fueran independientes, aunque muchas están muy correlacionadas;
 eso hace la corrección más dura. La regla se fijó así antes de ver resultados y se aplica tal cual (`docs/universo_resultados.md`).
+
+## D40. 2026-11-21. Diversificar sin la corrección estadística (elegido por el usuario: «Añadir sin corrección, marcadas»)
+Fijado ANTES de evaluar las candidatas en la otra época y en TEST:
+- **Candidatas:** las 508 variantes que cumplen el criterio v2 y la regla de costes en TRAIN (ventana desde la vela 365).
+  Se quita la exigencia del Sharpe deflactado (D36.3); el Sharpe deflactado se sigue usando solo para ordenarlas.
+- **Robustez:** criterio v2 en la otra época (Bitstamp, desde la vela 365) y en TEST. Lotes `universo-otra-epoca-v2` y
+  `universo-test-v2`.
+- **Selección:** como mucho 5, en orden de mayor Sharpe deflactado en TRAIN, saltando las que tengan correlación diaria
+  mayor de 0,9 con N1, N1D o con otra ya elegida.
+- Entran en el copiloto marcadas «EXPERIMENTAL, SIN significación estadística», junto a N1 y N1D, con pesos inversos a la
+  volatilidad (mensual) y exposición total máxima del 25 %. La prueba que decide es el paper trading en vivo.
