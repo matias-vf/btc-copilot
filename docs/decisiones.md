@@ -346,3 +346,12 @@ lo que indica algo de suerte (`docs/robustez_v2.md`).
   EXPERIMENTAL. N1 solo decide los domingos; la ficha da el nivel del domingo siguiente para entrar o invalidar.
   Corrección: el riesgo de N1 hasta la próxima decisión es una mala semana de TRAIN (percentil 5), porque no tiene un
   precio de salida fijo entre domingos; antes la ficha podía mostrar un 0 % engañoso.
+
+## D32. 2026-11-21. Repetición técnica 2023-2026 y paper trading en vivo en marcha
+- Repetición día a día con N1 L=4 sobre 2023-2026: paper +51,7 % (Sharpe 1,16, drawdown -9,6 %) frente a backtest
+  +48,5 % (1,24, -8,8 %). Sin suspensiones ni paradas (`docs/paper_repeticion_test.md`).
+- Paper trading en vivo iniciado el 2026-11-21 con 100 USD ficticios. Primer ciclo: vela del 2026-11-20, NO OPERAR.
+- Funcionamiento continuo: tarea programada de Windows «BTCCopilot diario» (01:15 hora local, se recupera si el
+  ordenador estaba apagado) que ejecuta `tools/diario.cmd`: ciclo, verificación de registros y commit local de
+  `registros/`. Se quita con `Unregister-ScheduledTask -TaskName "BTCCopilot diario"`.
+- El proyecto no se da por terminado hasta superar al menos un mes de paper trading en vivo (no antes del 2026-12-21).

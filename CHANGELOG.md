@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## 2026-11-21. Segunda búsqueda completa y paper trading en vivo
+- Revisión de código: N1 por fecha, ventana alineada con Buy & Hold, ejecución de lotes y formato unificados (D27).
+- TRAIN alineado: 10 de 11 aprueban; Prompt 5: solo N1 L=4 sobrevive (D28, D29); exposición 25 % (D30, D31).
+- Copiloto con N1 L=4 como EXPERIMENTAL; recupera días perdidos y valida la historia descargada.
+- Repetición 2023-2026: paper reproduce el backtest (D32). Paper trading en vivo desde el 2026-11-21, tarea diaria.
+
 ## 2026-11-21. Segunda búsqueda, Prompt 4: N1-N4 en TRAIN
 - Orden `python -m copilot train2`: 11 variantes ejecutadas y registradas con el criterio v2.
 - Aprueban 9 de 11 en TRAIN; N2 n=5 y n=10 son frágiles a los costes (D26, `docs/resultados_train_v2.md`).
