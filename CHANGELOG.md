@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## 2026-11-21. Prompt 5: robustez y filtrado (parcial)
+- Reglas de robustez fijadas antes de ejecutar (D9). Orden `python -m copilot robustez`.
+- 29 variantes probadas en Bitstamp 2011-2016 (x1 y x3), regímenes de mercado y sensibilidad completa (`docs/robustez.md`).
+- Veredicto provisional: conservar B1 y T1; descartar P1, T2 y M1. TRAIN frente a TEST pendiente de «UNLOCK».
+
 ## 2026-11-21. Prompt 4: ejecución en TRAIN
 - Orden `python -m copilot train`: ejecuta las 31 variantes registradas y anota cada una en el registro de experimentos.
 - 10 variantes superan a Buy & Hold en rentabilidad, drawdown y Sharpe en TRAIN. Ninguna dispara las alertas de "demasiado bueno".

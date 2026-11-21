@@ -94,3 +94,9 @@ cerca de las comisiones reales de Bitstamp en esos años). Cada ejecución se an
 **TRAIN frente a TEST.** Necesita los datos de TEST. Se hará solo cuando el usuario escriba «UNLOCK». Medida: correlación
 de rangos de Spearman entre el Sharpe de las variantes en TRAIN y en TEST, por estrategia. Superficie estable si es
 >= 0,5; ruido si es < 0. Entre medias, dudosa.
+
+## D10. 2026-11-21. Resultado del Prompt 5 (provisional)
+Lote `prompt5-otra-epoca-v1`: 29 variantes de T1, T2, B1 y P1 en Bitstamp 2011-2016, anotadas en el registro (contador 32 a 60).
+Aplicando D9 sin cambios: CONSERVAR (provisional) B1 y T1; DESCARTAR P1, T2 y M1. Seis alertas de "demasiado bueno"
+revisadas sin indicios de filtración (`docs/robustez.md`, sección 5). La consistencia TRAIN frente a TEST queda pendiente
+de «UNLOCK»; el veredicto de B1 y T1 no es definitivo hasta entonces.

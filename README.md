@@ -15,7 +15,7 @@ Solo descarga precios públicos.
 | Prompt 2: registros y datos | Hecho |
 | Prompt 3: motor de backtesting | Hecho |
 | Prompt 4: ejecutar estrategias en TRAIN | Hecho (`docs/resultados_train.md`) |
-| Prompt 5: robustez y filtrado | Pendiente |
+| Prompt 5: robustez y filtrado | Parcial: falta TRAIN frente a TEST (necesita «UNLOCK») |
 
 ## Estructura
 ```
@@ -28,6 +28,7 @@ copilot/
   estrategias.py            reglas exactas de cada estrategia
   anticipacion.py           comprobación automática de que nada mira el futuro
   train.py                  Prompt 4: ejecuta y registra todas las variantes en TRAIN
+  robustez.py               Prompt 5: otra época, regímenes, sensibilidad y veredicto
   __main__.py               órdenes: verificar, registrar, descargar, anticipacion
 registros/
   ideas.jsonl               registro de estrategias (una por línea)
@@ -40,6 +41,7 @@ data/
 docs/decisiones.md          decisiones tomadas y por qué
 docs/costes.md              costes de operativa y de dónde salen
 docs/resultados_train.md    tabla de resultados en TRAIN
+docs/robustez.md            Prompt 5: las dos épocas lado a lado
 tests/                      pruebas automáticas
 ```
 
