@@ -233,3 +233,18 @@ El usuario escribió exactamente «UNLOCK». Se cambia `TEST_DESBLOQUEADO = True
 los datos desde el 2023-01-01 se pueden descargar y leer. Todas las reglas (estrategias, criterios D3, robustez D9,
 cartera D11, riesgo D13, vigilancia D17) quedaron fijadas antes de este momento y no se cambian a la vista de TEST.
 Las pruebas del bloqueo siguen comprobando la lógica forzando el bloqueo dentro de la prueba.
+
+## D21. 2026-11-21. Regla de TEST, decidida por el usuario ANTES de ver ningún resultado
+Respuesta del usuario: «Mismo criterio: fuera».
+- **Qué se evalúa:** las 6 variantes de las estrategias conservadas (B1: 20/10 y 55/20; T1: SMA 100, 150, 200 y cruce
+  50/200), con costes x1, en TEST = 2023-01-01 a 2026-11-20. Se ejecuta el motor sobre TRAIN + TEST seguidos (las
+  posiciones y los indicadores vienen de TRAIN) y se mide solo el tramo de TEST, partiendo del capital al cierre del
+  2022-12-31. Buy & Hold se mide igual. Lote `test-v1` en el registro de experimentos.
+- **Aprueba TEST** una variante si cumple los tres criterios de D3 frente a Buy & Hold en TEST: más rentabilidad,
+  menos drawdown máximo y Sharpe igual o mayor.
+- **Consecuencia:** solo las variantes que estaban en el copiloto (B1 20/10, B1 55/20, T1 SMA 100) y aprueben TEST
+  siguen en el copiloto, ahora como VALIDADAS. Las que fallen salen del copiloto (no se borran del registro). Si un
+  grupo (B1 o T1) se queda sin variantes, su peso pasa al otro. Si no queda ninguna, el copiloto solo dirá NO OPERAR.
+- **Consistencia (D9):** Spearman entre el Sharpe de TRAIN y el de TEST de las variantes de T1 (4 variantes). B1 solo
+  tiene 2 variantes, así que su "clasificación" solo indica si el orden se mantiene.
+- **Información adicional:** la cartera C1 al 25 % en TEST (y si respeta el límite del 35 % de drawdown).
