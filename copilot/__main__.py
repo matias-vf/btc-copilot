@@ -124,8 +124,8 @@ def riesgo() -> int:
 def vigilancia() -> int:
     from copilot import vigilancia as vg
 
-    vg.simular_otra_epoca()
-    print("Simulación de vigilancia hecha. Informe en docs/vigilancia.md")
+    vg.simular_otra_epoca("v2")
+    print("Simulación de vigilancia (reglas v2) hecha. Informe en docs/vigilancia_v2.md")
     return 0
 
 

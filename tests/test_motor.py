@@ -285,3 +285,29 @@ class TestVigilancia(unittest.TestCase):
             vg.registrar({"eventos": [{"tipo": "alerta", "fecha": "2020-01-01"}],
                           "diario": [{"fecha": "2020-01-01", "estados": {}}]}, ruta)
             self.assertEqual([e["datos"]["tipo"] for e in registro.leer(ruta)], ["alerta", "estado_diario"])
+
+
+class TestVigilanciaV2(unittest.TestCase):
+    def test_volumen_cero_solo_en_v2(self):
+        from copilot.vigilancia import problemas_datos
+        v = velas_aleatorias(450)
+        parado = v[:-1] + [v[-1]._replace(volumen=0.0)]
+        self.assertTrue(any("volumen 0" in x for x in problemas_datos(parado)))
+        self.assertEqual(problemas_datos(parado, version="v1"), [])
+
+    def test_v1_reproduce_el_resultado_registrado(self):
+        from datetime import date
+        from copilot import robustez, train, vigilancia as vg
+        from copilot.motor import cargar_velas
+        ref = vg.referencia(cargar_velas(train.FICHERO))
+        v = cargar_velas(robustez.FICHERO)
+        desde = next(i for i, x in enumerate(v) if x.fecha >= date(2013, 1, 1))
+        r = vg.vigilar(v, ref, desde, version="v1")
+        sus = [(e["fecha"], e["estrategia"]) for e in r["eventos"] if e["tipo"] == "suspension"]
+        self.assertEqual(sus, [("2013-01-01", "T1 sma_n=100"), ("2013-01-02", "B1 N=20,M=10"),
+                               ("2013-04-11", "B1 N=55,M=20"), ("2013-04-11", "C1 al 25 %")])
+        r2 = vg.vigilar(v, ref, desde, version="v2")
+        for k, e in r2["estados"].items():          # solo se reactivan las suspensiones por azar
+            for s in e["historial"]:
+                if s["hasta"] is not None:
+                    self.assertIn("aleatorio", s["motivo"])

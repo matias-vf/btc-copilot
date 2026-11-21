@@ -18,7 +18,7 @@ Solo descarga precios públicos.
 | Prompt 5: robustez y filtrado | Parcial: falta TRAIN frente a TEST (necesita «UNLOCK») |
 | Prompt 6: cartera combinada | Hecho, provisional (`docs/cartera.md`) |
 | Prompt 7: riesgo y tamaño de posición | Hecho, provisional (`docs/riesgo.md`) |
-| Prompt 8: deterioro y reglas de parada | Hecho (reglas v1); pendiente decidir v2 (`docs/vigilancia.md`) |
+| Prompt 8: deterioro y reglas de parada | Hecho, reglas v2 (`docs/vigilancia_v2.md`; la v1 en `docs/vigilancia.md`) |
 | Prompt 9: copiloto y paper trading | Pendiente |
 
 ## Estructura
@@ -52,7 +52,8 @@ docs/resultados_train.md    tabla de resultados en TRAIN
 docs/robustez.md            Prompt 5: las dos épocas lado a lado
 docs/cartera.md             Prompt 6: cartera frente a Buy & Hold
 docs/riesgo.md              Prompt 7: comparación de configuraciones de riesgo y límites
-docs/vigilancia.md          Prompt 8: simulación de la vigilancia y su lectura
+docs/vigilancia.md          Prompt 8: simulación de la vigilancia con las reglas v1
+docs/vigilancia_v2.md       Prompt 8: simulación con las reglas v2 (las vigentes)
 tests/                      pruebas automáticas
 ```
 

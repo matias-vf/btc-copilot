@@ -210,3 +210,9 @@ Cambios de la v2 (lo demás, igual que en la v1):
 5. **Datos:** además, no se generan señales si la última vela tiene volumen 0.
 Aviso: la v2 se diseñó después de ver la simulación v1 en Bitstamp 2013-2016, así que volver a simularla en esos mismos
 datos es una prueba débil. Su prueba de verdad será el paper trading.
+
+## D18. 2026-11-21. Resultado de la vigilancia v2
+Simulación en Bitstamp 2013-2016 (`docs/vigilancia_v2.md`): ninguna suspensión por azar; 4 suspensiones por drawdown el
+2013-04-11/15, que solo se reactivan con aprobación del usuario; 3 días sin señales por volumen 0 (parón de Bitstamp en
+enero de 2015); 53 alertas frente a 446 en la v1. La v2 queda como versión por defecto. La v1 se puede reproducir
+(`version="v1"`) y tiene una prueba automática que lo comprueba.

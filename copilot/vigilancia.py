@@ -23,7 +23,7 @@ EXPOSICION = 0.25
 
 # --- Datos ------------------------------------------------------------------
 
-def problemas_datos(velas: Sequence[Vela], ahora: datetime | None = None) -> list[str]:
+def problemas_datos(velas: Sequence[Vela], ahora: datetime | None = None, version: str = "v2") -> list[str]:
     """Problemas que impiden generar señales hoy (D15, regla 3). Mira las dos últimas velas y la historia."""
     p = []
     if len(velas) < MIN_VELAS:
@@ -37,6 +37,8 @@ def problemas_datos(velas: Sequence[Vela], ahora: datetime | None = None) -> lis
         p.append(f"falta al menos una vela entre {a.fecha} y {b.fecha}")
     if not (b.low <= min(b.open, b.close) and b.high >= max(b.open, b.close) and b.low > 0):
         p.append(f"OHLC incoherente el {b.fecha}")
+    if version != "v1" and b.volumen <= 0:
+        p.append(f"volumen 0 el {b.fecha} (mercado parado o vela de relleno)")
     if a.close > 0 and abs(b.close / a.close - 1) > 0.5:
         p.append(f"el cierre se mueve {b.close / a.close - 1:+.0%} en un día")
     if a.close > 0 and abs(b.open / a.close - 1) > 0.05:
@@ -50,8 +52,13 @@ def problemas_datos(velas: Sequence[Vela], ahora: datetime | None = None) -> lis
 
 # --- Referencia aleatoria ---------------------------------------------------
 
-def mediana_azar(log_acum: list[float], ini: int, fin: int, dias: int, entradas: int, tasa: float,
-                 semilla: int) -> float:
+def mediana_azar(log_acum, ini, fin, dias, entradas, tasa, semilla) -> float:
+    d = distribucion_azar(log_acum, ini, fin, dias, entradas, tasa, semilla)
+    return d[len(d) // 2]
+
+
+def distribucion_azar(log_acum: list[float], ini: int, fin: int, dias: int, entradas: int, tasa: float,
+                      semilla: int) -> list[float]:
     """Mediana de N_AZAR estrategias con `entradas` tramos al azar que suman `dias` días dentro de (ini, fin].
     log_acum[t] = suma de log-rentabilidades diarias de BTC hasta t, así cada tramo cuesta O(1)."""
     rnd, W, res = random.Random(semilla), fin - ini, []
@@ -68,8 +75,7 @@ def mediana_azar(log_acum: list[float], ini: int, fin: int, dias: int, entradas:
             lr += log_acum[pos + L] - log_acum[pos]
             pos += L
         res.append(exp(lr) * (1 - tasa) ** (2 * entradas) - 1)
-    res.sort()
-    return res[len(res) // 2]
+    return sorted(res)
 
 
 # --- Referencia de TRAIN ----------------------------------------------------
@@ -116,8 +122,10 @@ def referencia(velas_train) -> dict:
 
 # --- Vigilancia día a día ---------------------------------------------------
 
-def vigilar(velas, ref: dict, desde: int, hasta: int | None = None, ahora=None) -> dict:
-    """Simula la vigilancia diaria desde el índice `desde`. Todo lo del día t usa solo velas hasta t."""
+def vigilar(velas, ref: dict, desde: int, hasta: int | None = None, ahora=None, version: str = "v2") -> dict:
+    """Simula la vigilancia diaria desde el índice `desde`. Todo lo del día t usa solo velas hasta t.
+    version "v1" = reglas D15; "v2" = reglas D17."""
+    v2 = version != "v1"
     hasta = len(velas) - 1 if hasta is None else hasta
     s = series(velas)
     log_acum = [0.0]
@@ -126,20 +134,34 @@ def vigilar(velas, ref: dict, desde: int, hasta: int | None = None, ahora=None) 
     log_acum.append(log_acum[-1])  # relleno para el índice t+1
     tasa = BINANCE_SPOT.por_lado()
     expo = {k: ca.exposiciones(r) for k, r in s.items() if k != CARTERA}
-    est = {k: {"estado": "ACTIVA", "pico": None, "alerta_dd": False, "alerta_180": False, "suspension": None}
-           for k in s}
+    est = {k: {"estado": "ACTIVA", "pico": None, "alerta_dd": False, "alerta_180": False, "suspension": None,
+               "motivo": None, "bajo": 0, "sobre": 0, "historial": []} for k in s}
     eventos, diario = [], []
-    sobre_sma = None
+    sobre_sma, vol_fuera = None, False
+
+    def azar(k, t, eq):
+        """(rentabilidad 365 d, percentil 25, mediana) o None si no estuvo en el mercado."""
+        x, ini = expo[k], t - VENTANA_AZAR
+        dias = sum(1 for i in range(ini + 1, t + 1) if x[i] > 0)
+        if dias == 0:
+            return None
+        entradas = sum(1 for i in range(ini + 1, t + 1) if x[i] > 0 and x[i - 1] == 0) or 1
+        d = distribucion_azar(log_acum, ini, t, dias, entradas, tasa, semilla=t)
+        return eq[t + 1] / eq[ini + 1] - 1, d[len(d) // 4], d[len(d) // 2]
+
     for t in range(desde, hasta + 1):
         f = velas[t].fecha
         hoy = []
-        prob = problemas_datos(velas[: t + 1], ahora if t == hasta else None)
+        prob = problemas_datos(velas[: t + 1], ahora if t == hasta else None, version)
         if prob:
             hoy.append({"tipo": "datos", "estrategia": "todas", "motivo": "; ".join(prob)})
         v30 = _vol30(velas, t)
-        if v30 > ref["vol_p95"] or v30 < ref["vol_p5"]:
+        fuera = v30 > ref["vol_p95"] or v30 < ref["vol_p5"]
+        if (fuera and (not v2 or not vol_fuera)) or (v2 and vol_fuera and not fuera):
             hoy.append({"tipo": "alerta", "estrategia": "mercado",
-                        "motivo": f"volatilidad 30 d {v30:.0%} fuera de [{ref['vol_p5']:.0%}, {ref['vol_p95']:.0%}] de TRAIN"})
+                        "motivo": (f"volatilidad 30 d {v30:.0%} " + ("fuera de" if fuera else "vuelve a")
+                                   + f" [{ref['vol_p5']:.0%}, {ref['vol_p95']:.0%}] de TRAIN")})
+        vol_fuera = fuera
         sma200 = estrategias._sma(velas[: t + 1], 200)
         if sma200:
             ahora_sobre = velas[t].close > sma200
@@ -152,29 +174,43 @@ def vigilar(velas, ref: dict, desde: int, hasta: int | None = None, ahora=None) 
             e["pico"] = max(e["pico"] or eq[t + 1], eq[t + 1])
             dd = eq[t + 1] / e["pico"] - 1
             if e["estado"] == "SUSPENDIDA":
+                # v2: solo las suspensiones por azar se reactivan solas
+                if v2 and e["motivo"] == "azar" and t >= VENTANA_AZAR:
+                    a = azar(k, t, eq)
+                    e["sobre"] = e["sobre"] + 1 if a and a[0] > a[2] else 0
+                    if e["sobre"] >= 30:
+                        e["historial"].append({**e["suspension"], "hasta": f,
+                                               "despues": eq[t + 1] / e["suspension"]["capital"] - 1})
+                        e.update(estado="ACTIVA", motivo=None, suspension=None, sobre=0, bajo=0)
+                        hoy.append({"tipo": "reactivacion", "estrategia": k,
+                                    "motivo": "30 días seguidos por encima de la mediana aleatoria"})
                 continue
-            motivo = None
+            motivo = tipo = None
             if dd < ref["peor_dd"][k]:
-                motivo = f"drawdown {dd:.1%} peor que el peor del backtest ({ref['peor_dd'][k]:.1%})"
+                motivo, tipo = f"drawdown {dd:.1%} peor que el peor del backtest ({ref['peor_dd'][k]:.1%})", "dd"
             elif k != CARTERA and t >= VENTANA_AZAR:
-                x = expo[k]
-                ini = t - VENTANA_AZAR
-                dias = sum(1 for i in range(ini + 1, t + 1) if x[i] > 0)
-                if dias > 0:
-                    entradas = sum(1 for i in range(ini + 1, t + 1) if x[i] > 0 and x[i - 1] == 0) or 1
-                    rs = eq[t + 1] / eq[ini + 1] - 1
-                    med = mediana_azar(log_acum, ini, t, dias, entradas, tasa, semilla=t)
-                    if rs < med:
+                a = azar(k, t, eq)
+                if a:
+                    rs, p25, med = a
+                    if not v2 and rs < med:
                         motivo = f"365 días: {rs:+.1%} frente a {med:+.1%} de la mediana de entradas aleatorias"
+                    if v2:
+                        e["bajo"] = e["bajo"] + 1 if rs < p25 else 0
+                        if e["bajo"] >= 30:
+                            motivo = (f"30 días seguidos por debajo del percentil 25 aleatorio "
+                                      f"(hoy {rs:+.1%} frente a {p25:+.1%})")
+                    tipo = "azar" if motivo else None
             if motivo:
-                e["estado"], e["suspension"] = "SUSPENDIDA", {"fecha": f, "capital": eq[t + 1]}
+                e.update(estado="SUSPENDIDA", motivo=tipo, sobre=0,
+                         suspension={"fecha": f, "capital": eq[t + 1], "motivo": motivo})
                 hoy.append({"tipo": "suspension", "estrategia": k, "motivo": motivo})
                 if k == CARTERA:
                     hoy.append({"tipo": "parada_emergencia", "estrategia": "todas", "motivo": motivo})
                 continue
             if dd < 0.75 * ref["peor_dd"][k] and not e["alerta_dd"]:
                 e["alerta_dd"] = True
-                hoy.append({"tipo": "alerta", "estrategia": k, "motivo": f"drawdown {dd:.1%}, más del 75 % del peor del backtest"})
+                hoy.append({"tipo": "alerta", "estrategia": k,
+                            "motivo": f"drawdown {dd:.1%}, más del 75 % del peor del backtest"})
             elif dd > 0.5 * ref["peor_dd"][k]:
                 e["alerta_dd"] = False
             if t >= VENTANA_MOVIL:
@@ -193,12 +229,13 @@ def vigilar(velas, ref: dict, desde: int, hasta: int | None = None, ahora=None) 
                        "estados": {k: est[k]["estado"] for k in s},
                        "emite_senales": {k: (not prob and not parada and est[k]["estado"] == "ACTIVA")
                                          for k in s if k != CARTERA}})
-    # Resultados posteriores ("en la sombra") de cada suspensión
+    # Suspensiones aún abiertas: resultado en la sombra hasta el último día vigilado
     for k, e in est.items():
         if e["suspension"]:
             eq_fin = ([s[k].capital] + s[k].equity)[hasta + 1]
-            e["suspension"]["despues"] = eq_fin / e["suspension"]["capital"] - 1
-    return {"eventos": eventos, "diario": diario, "estados": est}
+            e["historial"].append({**e["suspension"], "hasta": None,
+                                   "despues": eq_fin / e["suspension"]["capital"] - 1})
+    return {"eventos": eventos, "diario": diario, "estados": est, "version": version}
 
 
 def registrar(resultado: dict, ruta: Path = REGISTRO) -> None:
@@ -222,7 +259,8 @@ def informe_diario(dia: dict, eventos_hoy: list[dict]) -> str:
     return "\n".join(l)
 
 
-def simular_otra_epoca(salida: Path = registro.RAIZ / "docs" / "vigilancia.md") -> dict:
+def simular_otra_epoca(version: str = "v2", salida: Path | None = None) -> dict:
+    salida = salida or registro.RAIZ / "docs" / ("vigilancia.md" if version == "v1" else f"vigilancia_{version}.md")
     from datetime import date
 
     from copilot import robustez, train
@@ -231,13 +269,13 @@ def simular_otra_epoca(salida: Path = registro.RAIZ / "docs" / "vigilancia.md") 
     ref = referencia(cargar_velas(train.FICHERO))
     v = cargar_velas(robustez.FICHERO)
     desde = next(i for i, x in enumerate(v) if x.fecha >= date(2013, 1, 1))
-    r = vigilar(v, ref, desde)
+    r = vigilar(v, ref, desde, version=version)
     ev, diario = r["eventos"], r["diario"]
     cuenta: dict[str, int] = {}
     for e in ev:
         cuenta[e["tipo"]] = cuenta.get(e["tipo"], 0) + 1
-    l = ["# Vigilancia del deterioro: simulación (Prompt 8)", "",
-         "Generado por `python -m copilot vigilancia`. Reglas fijadas antes: `docs/decisiones.md`, D15.",
+    l = [f"# Vigilancia del deterioro: simulación, reglas {version} (Prompt 8)", "",
+         f"Generado por `python -m copilot vigilancia`. Reglas: `docs/decisiones.md`, {'D15' if version == 'v1' else 'D15 + D17'}.",
          f"Simulación día a día en Bitstamp {v[desde].fecha} a {v[-1].fecha}, con la referencia de TRAIN (Binance 2017-2022).",
          "Es una prueba del sistema de vigilancia; no escribe en `registros/vigilancia.jsonl` (eso solo en vivo).", "",
          "## Referencia de TRAIN", "", "| Serie | Peor drawdown | Percentil 5 de 180 días |", "|---|---|---|"]
@@ -249,14 +287,14 @@ def simular_otra_epoca(salida: Path = registro.RAIZ / "docs" / "vigilancia.md") 
           f"- Eventos: " + ", ".join(f"{k} {n}" for k, n in sorted(cuenta.items())) + ".", ""]
     for k in diario[0]["emite_senales"]:
         l.append(f"- {k}: emite señales {sum(1 for d in diario if d['emite_senales'][k])} de {len(diario)} días.")
-    l += ["", "## Suspensiones y resultado posterior (en la sombra, hasta el final)", "",
-          "| Estrategia | Fecha | Motivo | Resultado después de suspender |", "|---|---|---|---|"]
-    for e in ev:
-        if e["tipo"] == "suspension":
-            sus = r["estados"][e["estrategia"]]["suspension"]
-            l.append(f"| {e['estrategia']} | {e['fecha']} | {e['motivo']} | {sus['despues']:+.1%} |")
-    l += ["", "## Primeros 40 eventos", "", "| Fecha | Tipo | Serie | Motivo |", "|---|---|---|---|"]
-    for e in ev[:40]:
+    l += ["", "## Suspensiones y resultado mientras estuvo suspendida (en la sombra)", "",
+          "| Estrategia | Desde | Hasta | Motivo | Resultado durante la suspensión |", "|---|---|---|---|---|"]
+    for k, e in r["estados"].items():
+        for sus in e["historial"]:
+            l.append(f"| {k} | {sus['fecha']} | {sus['hasta'] or 'sigue suspendida'} | {sus['motivo']} | {sus['despues']:+.1%} |")
+    clave = [e for e in ev if e["tipo"] != "alerta" or e["estrategia"] != "mercado"]
+    l += ["", "## Eventos (sin las alertas de mercado)", "", "| Fecha | Tipo | Serie | Motivo |", "|---|---|---|---|"]
+    for e in clave[:80]:
         l.append(f"| {e['fecha']} | {e['tipo']} | {e['estrategia']} | {e['motivo']} |")
     ult = [e for e in ev if e["fecha"] == diario[-1]["fecha"]]
     l += ["", "## Ejemplo de informe diario (último día)", "", "```", informe_diario(diario[-1], ult), "```", ""]

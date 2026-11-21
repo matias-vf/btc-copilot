@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## 2026-11-21. Vigilancia v2 (aprobada por el usuario)
+- Reglas v2 (D17): azar por debajo del percentil 25 durante 30 días; reactivación automática solo de esas suspensiones;
+  alertas de volatilidad solo al entrar o salir de la banda; sin señales con velas de volumen 0.
+- La v1 sigue disponible y reproducible. Simulación v2 en `docs/vigilancia_v2.md` (D18).
+
 ## 2026-11-21. Prompt 8: deterioro de estrategias y reglas de parada (v1)
 - Reglas fijadas antes de ejecutar (D15). Módulo `copilot/vigilancia.py` y orden `python -m copilot vigilancia`.
 - Controles diarios: datos, drawdown frente al backtest, referencia de entradas aleatorias, rentabilidad móvil, volatilidad y SMA 200.
