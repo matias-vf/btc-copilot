@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## 2026-11-21. Tercera búsqueda (1000 estrategias) y oro
+- 1000 variantes en 31 familias: ninguna supera el Sharpe deflactado (D39); se añaden 5 marcadas sin significación (D40, D41).
+- Copiloto de BTC con 7 estrategias EXPERIMENTALES (N1, N1D y 5 del universo).
+- Segundo mercado oro (GLD): datos de Yahoo, TEST desbloqueado por el usuario (D43). Las reglas del copiloto no funcionan
+  en el oro (D44): el oro queda sin copiloto.
+
 ## 2026-11-21. Vigía horario y resumen diario
 - Vigía cada hora (D33): observa el precio y anota qué haría N1 el domingo; no genera señales ni órdenes.
 - Orden `resumen` (solo lectura) y resumen diario a las 20:00 en la app de Claude.

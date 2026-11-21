@@ -498,3 +498,10 @@ de muestra para ellas.
 - Las que aprueben forman el copiloto del oro (cuenta de paper propia, 100 USD ficticios, exposición máxima 25 %).
   Si no aprueba ninguna, el oro queda sin copiloto y se dice.
 - Sharpe anualizado con 252 días en el oro.
+
+## D44. 2026-11-21. Resultado en el oro: ninguna regla del copiloto funciona fuera de BTC
+Lote `oro-v1` (18 experimentos, `docs/oro.md`). Ninguna de las 6 reglas cumple el criterio v2 en las tres épocas del
+oro ni llega a un Sharpe deflactado de 0,95 (el mayor, N1D, 0,863 con N = 6). En 2004-2010 todas ganan mucho menos que
+Buy & Hold de GLD (+108 %); en 2011-2018 casi todas pierden dinero. Solo U0193 (en TRAIN) y N1D y U0731 (en TEST)
+cumplen el criterio en alguna época. Conclusión: estas reglas no generalizan a otro mercado; su buen resultado en BTC
+puede ser propio de BTC o suerte, y el paper trading en vivo es la prueba que falta. Según D43, el oro queda sin copiloto.

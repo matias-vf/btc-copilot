@@ -27,6 +27,8 @@ Solo descarga precios públicos.
 | Segunda búsqueda: Prompt 5 (robustez y TEST) | Hecho: solo se conserva N1 L=4, EXPERIMENTAL (`docs/robustez_v2.md`) |
 | Segunda búsqueda: Prompts 6-7 (cartera y riesgo) | Hecho: N1 L=4 al 25 % de exposición (`docs/riesgo_v2.md`) |
 | Segunda búsqueda: Prompts 8-9 (vigilancia y copiloto) | Hecho: el copiloto usa N1 L=4 |
+| Tercera búsqueda (1000 estrategias) | Hecho: ninguna supera la corrección; 5 añadidas sin significación (`docs/universo_resultados.md`, `docs/universo_diversificacion.md`) |
+| Segundo mercado: oro (GLD) | Hecho: ninguna regla del copiloto funciona en el oro (`docs/oro.md`) |
 | **Paper trading en vivo** | **En marcha desde el 2026-11-21** (mínimo un mes: hasta el 2026-12-21 como pronto) |
 
 ## Estructura
