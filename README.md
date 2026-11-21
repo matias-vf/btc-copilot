@@ -24,7 +24,10 @@ Solo descarga precios públicos.
 | Segunda búsqueda: Prompt 2 (registro) | Hecho: N1-N4 registradas |
 | Segunda búsqueda: Prompt 3 (reglas en el motor) | Hecho |
 | Segunda búsqueda: Prompt 4 (ejecutar en TRAIN) | Hecho (`docs/resultados_train_v2.md`) |
-| Segunda búsqueda: Prompt 5 (robustez y TEST) | Pendiente |
+| Segunda búsqueda: Prompt 5 (robustez y TEST) | Hecho: solo se conserva N1 L=4, EXPERIMENTAL (`docs/robustez_v2.md`) |
+| Segunda búsqueda: Prompts 6-7 (cartera y riesgo) | Hecho: N1 L=4 al 25 % de exposición (`docs/riesgo_v2.md`) |
+| Segunda búsqueda: Prompts 8-9 (vigilancia y copiloto) | Hecho: el copiloto usa N1 L=4 |
+| **Paper trading en vivo** | **En marcha desde el 2026-11-21** (mínimo un mes: hasta el 2026-12-21 como pronto) |
 
 ## Estructura
 ```
@@ -81,6 +84,19 @@ tests/                      pruebas automáticas
 ## Instalación (una sola vez)
 Ya tienes instalado lo necesario: **Python 3.12** (el lenguaje en el que está hecho el programa) y **Git** (guarda el
 historial de cambios). Este paso no usa librerías extra.
+
+## El copiloto en vivo (lo único que tienes que saber)
+- Cada día a las **01:15 (hora de Madrid)** Windows ejecuta solo el copiloto (tarea programada «BTCCopilot diario»).
+  Si el ordenador estaba apagado, se ejecuta al encenderlo y recupera los días que falten.
+- Estrategia: **N1 L=4** (momentum de 4 semanas, EXPERIMENTAL). Solo decide los domingos. Como mucho el 25 % del
+  capital ficticio (100 USD) en BTC. **No se envía ninguna orden real.**
+- Para ver cómo va: abre con doble clic `registros\panel_vivo.html`.
+- Para ver la señal de hoy en la terminal: `python -m copilot hoy` (pasos abajo).
+- Parada de emergencia del paper trading: `python -m copilot parar "motivo"`; para volver: `python -m copilot reanudar "motivo"`.
+- Para quitar la tarea programada, en PowerShell:
+  ```powershell
+  Unregister-ScheduledTask -TaskName "BTCCopilot diario" -Confirm:$false
+  ```
 
 ## Cómo se ejecuta
 1. Pulsa la tecla Windows, escribe `PowerShell` y pulsa Intro.

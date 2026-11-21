@@ -6,4 +6,5 @@ echo ===== %date% %time% >> logs\diario.log
 "C:\Users\matia\AppData\Local\Programs\Python\Python312\python.exe" -m copilot hoy >> logs\diario.log 2>&1
 "C:\Users\matia\AppData\Local\Programs\Python\Python312\python.exe" -m copilot verificar >> logs\diario.log 2>&1
 git add registros >> logs\diario.log 2>&1
-git commit -q -m "paper: ciclo diario %date%" >> logs\diario.log 2>&1
+git diff --cached --quiet || git commit -q -m "paper: ciclo diario %date%" >> logs\diario.log 2>&1
+exit /b 0

@@ -1,5 +1,10 @@
 # El copiloto (Prompt 9)
 
+> **Actualización (D31):** desde la segunda búsqueda el copiloto usa solo **N1 L=4** (momentum de 4 semanas), como
+> EXPERIMENTAL. Decide los domingos al cierre (00:00 UTC del lunes) y opera en la apertura del lunes. Lo que sigue
+> sobre B1 y T1 describe la primera versión. Funcionamiento diario: tarea programada de Windows «BTCCopilot diario»
+> (`tools/diario.cmd`), que recupera los días perdidos y guarda los registros en Git.
+
 Solo analiza y simula. No hay ningún cliente de exchange en el código, ni claves, ni forma de enviar una orden real.
 
 ## Qué hace cada día (justo después del cierre de la vela diaria, 00:05 UTC)
