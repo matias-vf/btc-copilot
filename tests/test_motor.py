@@ -143,3 +143,21 @@ class TestAnticipacion(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestRobustez(unittest.TestCase):
+    def test_spearman(self):
+        from copilot.robustez import spearman
+        self.assertAlmostEqual(spearman([1, 2, 3], [10, 20, 30]), 1.0)
+        self.assertAlmostEqual(spearman([1, 2, 3], [3, 2, 1]), -1.0)
+        self.assertAlmostEqual(spearman([1, 1, 2], [1, 1, 2]), 1.0)
+
+    def test_regimenes_y_rent_en_meses(self):
+        from copilot.robustez import regimenes, rent_en_meses
+        v = velas_aleatorias(400)
+        reg = regimenes(v)
+        meses = {f.fecha.strftime("%Y-%m") for f in v}
+        self.assertEqual(set(reg["alcista"]) | set(reg["bajista"]) | set(reg["lateral"]), meses)
+        self.assertEqual(set(reg["vol. alta"]) | set(reg["vol. baja"]), meses)
+        r = backtest(v, estrategias.buy_hold, SIN_COSTES)
+        self.assertAlmostEqual(rent_en_meses(r, sorted(meses)), r.equity[-1] / 100 - 1)

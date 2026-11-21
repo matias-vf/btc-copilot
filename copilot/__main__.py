@@ -4,6 +4,7 @@
   registrar   registra las estrategias iniciales (solo la primera vez)
   descargar   descarga los datos de TRAIN (Binance) y de la otra época (Bitstamp 2011-2016)
   train       Prompt 4: ejecuta todas las variantes registradas en TRAIN (una sola vez) y las anota
+  robustez    Prompt 5: otra época (Bitstamp), regímenes, sensibilidad y veredicto (una sola vez)
   anticipacion comprueba en TRAIN que ninguna variante registrada mira el futuro (no muestra resultados)
 """
 
@@ -92,9 +93,18 @@ def train() -> int:
     return 0
 
 
+def robustez() -> int:
+    from copilot import robustez as rb
+
+    inf = rb.ejecutar()
+    print(f"{len(inf['filas'])} variantes ejecutadas en la otra época y registradas. Informe en docs/robustez.md")
+    return 0
+
+
 if __name__ == "__main__":
     ordenes = {"verificar": verificar, "registrar": registrar, "descargar": descargar,
-               "anticipacion": anticipacion, "train": train}
+               "anticipacion": anticipacion, "train": train,
+               "robustez": robustez}
     if len(sys.argv) != 2 or sys.argv[1] not in ordenes:
         print(__doc__)
         sys.exit(2)
