@@ -90,7 +90,7 @@ def backtest(velas: Sequence[Vela], estrategia: Estrategia, costes: Costes = BIN
 
 def metricas(r: Resultado) -> dict:
     eq = [r.capital] + r.equity
-    rets = [b / a - 1 for a, b in zip(eq, eq[1:])]
+    rets = [b / a - 1 if a else 0.0 for a, b in zip(eq, eq[1:])]  # capital 0 (ruina): sin rentabilidad
     media = sum(rets) / len(rets)
     var = sum((x - media) ** 2 for x in rets) / (len(rets) - 1) if len(rets) > 1 else 0.0
     sharpe = media / sqrt(var) * sqrt(365) if var > 0 else 0.0

@@ -20,7 +20,7 @@ VENTANA = 90
 
 def rents(r: Resultado) -> list[float]:
     eq = [r.capital] + r.equity
-    return [b / a - 1 for a, b in zip(eq, eq[1:])]
+    return [b / a - 1 if a else 0.0 for a, b in zip(eq, eq[1:])]
 
 
 def exposiciones(r: Resultado) -> list[float]:
