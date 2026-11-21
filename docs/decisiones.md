@@ -530,3 +530,18 @@ Son débiles: su Sharpe en TRAIN está entre -0,17 y 0,15.
 TRAIN del oro, costes 0,05 % por lado, datos diarios de Yahoo. En bolsa no se consideran fallo los fines de semana ni los
 festivos (huecos de hasta 4 días) y los datos se dan por actuales hasta 4 días después de la última vela. Se ejecuta en la
 tarea diaria, después del de BTC. El vigía horario sigue siendo solo de BTC.
+
+## D47. 2026-11-21. Tercer mercado: NASDAQ (QQQ), pedido por el usuario («repite el mismo proceso con el nasdaq en la temporalidad que quieras»). Fijado ANTES de descargar datos
+- **Instrumento:** QQQ (Invesco QQQ Trust, replica el Nasdaq-100). **Temporalidad: diaria**, por los mismos motivos que
+  en D36 (costes, evidencia publicada sobre todo diaria, datos validados). Fuente: Yahoo Finance (como el oro).
+- **Épocas:** otra época 1999-03-10 a 2010-12-31 (incluye la burbuja y la caída de 2000-2002 y la crisis de 2008);
+  TRAIN 2011-01-01 a 2018-12-31; TEST 2019-01-01 a 2026-11-20. No se pone bloqueo de TEST: el usuario eliminó esa
+  restricción en el oro (D43) y pidió el mismo proceso. Aun así, TEST solo se calcula después de fijar cada regla.
+- **Costes:** 0,05 % por lado, como el oro (D42); la comisión anual del fondo (0,20 %) ya está en su precio. 252 días/año.
+- **Paso 1 (como D43):** las 10 reglas que ya usan los copilotos (6 de BTC sin N1, que decide en domingo, y las 4 del
+  oro), tal cual, sin elegir nada con datos del Nasdaq. Aprueba si cumple el criterio v2 en las tres épocas y tiene un
+  Sharpe deflactado >= 0,95 en 2011-2026 con N = 10.
+- **Paso 2 (como D45):** el universo de 1000 en QQQ con las mismas reglas que en el oro. Selección de hasta 5; si menos de
+  5 superan el Sharpe deflactado, se completa con las que cumplan las tres épocas, marcadas «SIN significación estadística».
+- **Copiloto del Nasdaq:** las del paso 1 que aprueben más las elegidas en el paso 2, con su propia cuenta de 100 USD
+  ficticios en `registros/nasdaq/`, exposición máxima 25 %, igual que el oro.
