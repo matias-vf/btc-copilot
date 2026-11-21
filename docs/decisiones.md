@@ -119,3 +119,8 @@ cada estrategia ya están dentro de su propio resultado.
 
 **Comparación:** CAGR, Sharpe y drawdown máximo frente a Buy & Hold en TRAIN y, como información, en la otra época.
 Se registra como idea nueva C1 y cada ejecución como experimento (lote `prompt6-cartera-v1`).
+
+## D12. 2026-11-21. Resultado del Prompt 6 (provisional)
+Lote `prompt6-cartera-v1`: cartera C1 ejecutada en TRAIN y en la otra época (experimentos 61 y 62). Mejora a Buy & Hold en
+CAGR, Sharpe y drawdown en las dos épocas, pero diversifica poco (correlaciones 0,78-0,89). Sigue siendo provisional
+hasta TRAIN frente a TEST. Informe en `docs/cartera.md`.

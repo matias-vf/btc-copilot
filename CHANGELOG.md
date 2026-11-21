@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## 2026-11-21. Prompt 6: cartera combinada (provisional)
+- Reglas fijadas antes de ejecutar (D11) y cartera registrada como idea C1.
+- Orden `python -m copilot cartera`: correlaciones, pesos inversos a la volatilidad (90 días), reequilibrio mensual.
+- TRAIN: CAGR 54,9 %, Sharpe 1,16, drawdown -56,5 % frente a 28,5 %, 0,72 y -83,2 % de Buy & Hold (`docs/cartera.md`).
+- Las estrategias de cada ejecución ya no recorren las ideas de la familia "Cartera".
+
 ## 2026-11-21. Prompt 5: robustez y filtrado (parcial)
 - Reglas de robustez fijadas antes de ejecutar (D9). Orden `python -m copilot robustez`.
 - 29 variantes probadas en Bitstamp 2011-2016 (x1 y x3), regímenes de mercado y sensibilidad completa (`docs/robustez.md`).
