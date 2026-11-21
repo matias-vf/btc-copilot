@@ -40,7 +40,8 @@ def verificar() -> int:
     fallos = 0
     vivos = [registro.REGISTROS / n for n in ("paper.jsonl", "vigilancia.jsonl", "vigia.jsonl",
                                               "oro/senales.jsonl", "oro/paper.jsonl", "oro/vigilancia.jsonl",
-                                              "nasdaq_intradia/senales.jsonl", "nasdaq_intradia/paper.jsonl")]
+                                              "nasdaq_intradia/senales.jsonl", "nasdaq_intradia/paper.jsonl",
+                                              "nasdaq/senales.jsonl", "nasdaq/paper.jsonl", "nasdaq/vigilancia.jsonl")]
     for ruta in (registro.IDEAS, registro.EXPERIMENTOS, registro.SENALES, *[r for r in vivos if r.exists()]):
         try:
             n = len(registro.leer(ruta))
@@ -273,6 +274,10 @@ def resumen() -> int:
     if (oro / "paper.jsonl").exists():
         print()
         print(rs.texto({k: oro / f"{k}.jsonl" for k in ("senales", "paper", "vigilancia")}, "ORO"))
+    nas = registro.REGISTROS / "nasdaq"
+    if (nas / "paper.jsonl").exists():
+        print()
+        print(rs.texto({k: nas / f"{k}.jsonl" for k in ("senales", "paper", "vigilancia")}, "NASDAQ"))
     intra = registro.REGISTROS / "nasdaq_intradia"
     if (intra / "paper.jsonl").exists():
         print()
@@ -290,8 +295,8 @@ def test() -> int:
 
 def hoy(mercado: str = "btc") -> int:
     from copilot import copiloto as cp
-    if mercado == "oro":
-        cp.usar_oro()
+    if mercado in ("oro", "nasdaq"):
+        cp.usar_mercado(mercado)
     try:
         velas = cp.velas_en_vivo()
         senales = cp.poner_al_dia(cp.RUTAS_VIVO, velas)

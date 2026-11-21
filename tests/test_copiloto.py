@@ -228,3 +228,28 @@ class TestIntradia(unittest.TestCase):
             self.assertEqual([s["decision"] for s in I.ciclo(barras, fin, rutas)], ["VENTA"])
             ej = [e["datos"] for e in registro.leer(rutas["paper"]) if e["datos"]["tipo"] == "ejecucion"]
             self.assertEqual([e["lado"] for e in ej], ["compra", "venta"])
+
+
+class TestCopilotoNasdaq(unittest.TestCase):
+    def test_nasdaq_en_proceso_aparte(self):
+        import subprocess, sys
+        codigo = r"""
+import tempfile
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from copilot import copiloto as cp, oro
+cp.usar_mercado("nasdaq")
+assert cp.MERCADO["id"] == "QQQ" and set(cp.GRUPOS) == {"U0229", "U0750"}
+v = oro.velas(oro.FICHEROS["TRAIN"])
+i = next(k for k, x in enumerate(v) if x.fecha.isoformat() == "2018-11-30")
+d = Path(tempfile.mkdtemp())
+rutas = {k: d / f"{k}.jsonl" for k in ("senales", "paper", "vigilancia")}
+cierre = lambda t: datetime(v[t].fecha.year, v[t].fecha.month, v[t].fecha.day, 22, tzinfo=timezone.utc)
+cp.poner_al_dia(rutas, v[: i + 1], cierre(i))
+s = cp.poner_al_dia(rutas, v[: i + 6], cierre(i + 5))
+assert len(s) == 5 and all(x["activo"] == "NASDAQ" for x in s), [x.get("avisos") for x in s]
+print("NASDAQ OK")
+"""
+        r = subprocess.run([sys.executable, "-c", codigo], capture_output=True, text=True, encoding="utf-8",
+                           cwd=str(Path(__file__).resolve().parents[1]))
+        self.assertIn("NASDAQ OK", r.stdout, r.stderr[-2000:])

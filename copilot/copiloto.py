@@ -60,25 +60,37 @@ def _nombre(k) -> str:
 
 
 # Mercado activo. shortcut: un proceso = un mercado; usar_oro() cambia estas globales al empezar (D46).
-MERCADO = {"nombre": "BTC", "par": "BTCUSDT (Binance spot)", "costes": BINANCE_SPOT, "bolsa": False, "dias": 365,
+MERCADO = {"id": "BTC", "simbolo": None, "nombre": "BTC", "par": "BTCUSDT (Binance spot)", "costes": BINANCE_SPOT, "bolsa": False, "dias": 365,
            "train": lambda: cargar_velas(train.FICHERO)}
 
 
 def usar_oro() -> None:
-    """Copiloto del oro (GLD), D46: sus 4 reglas, su cuenta de paper y sus registros en registros/oro/."""
+    usar_mercado("oro")
+
+
+def usar_mercado(nombre: str) -> None:
+    """Copiloto de bolsa: "oro" (GLD, D46) o "nasdaq" (QQQ, D50), con su cuenta de paper y sus registros propios."""
     global GRUPOS, VALIDADAS, ESTADO_VALIDACION, RUTAS_VIVO
     from copilot import oro
-    GRUPOS = {"U0976": [("F28", "L=28,pct=0.5")], "U0979": [("F28", "L=90,pct=0.5")],
-              "U0980": [("F28", "L=90,pct=0.75")], "U0136": [("F02", "s=50,l=100,banda=0.01")]}
+    oro.usar(nombre)
+    if nombre == "nasdaq":
+        GRUPOS = {"U0229": [("F04", "L=182,umbral=0.1")], "U0750": [("F14", "ventana=180,x=0.15")]}
+        ESTADO_VALIDACION = ("EXPERIMENTAL y SIN significación estadística: las 2 reglas del Nasdaq cumplen el criterio v2 "
+                             "en 1999-2010, 2011-2018 y 2019-2026, pero ninguna supera la corrección por 1000 pruebas "
+                             "(D47, D50). Deben superar al menos un mes de paper trading en vivo.")
+        par, carpeta = "QQQ (Invesco QQQ Trust, Nasdaq-100)", registro.REGISTROS / "nasdaq"
+    else:
+        GRUPOS = {"U0976": [("F28", "L=28,pct=0.5")], "U0979": [("F28", "L=90,pct=0.5")],
+                  "U0980": [("F28", "L=90,pct=0.75")], "U0136": [("F02", "s=50,l=100,banda=0.01")]}
+        ESTADO_VALIDACION = ("EXPERIMENTAL y SIN significación estadística: las 4 reglas del oro cumplen el criterio v2 en "
+                             "2004-2010, 2011-2018 y 2019-2026, pero ninguna supera la corrección por 1000 pruebas y el TEST "
+                             "del oro ya se había visto (D45, D46). Deben superar al menos un mes de paper trading en vivo.")
+        par, carpeta = "GLD (SPDR Gold Shares, NYSE Arca)", registro.REGISTROS / "oro"
     VALIDADAS = {k for ks in GRUPOS.values() for k in ks}
-    ESTADO_VALIDACION = ("EXPERIMENTAL y SIN significación estadística: las 4 reglas del oro cumplen el criterio v2 en "
-                         "2004-2010, 2011-2018 y 2019-2026, pero ninguna supera la corrección por 1000 pruebas y el TEST "
-                         "del oro ya se había visto (D45, D46). Deben superar al menos un mes de paper trading en vivo.")
-    carpeta = registro.REGISTROS / "oro"
     RUTAS_VIVO = {"senales": carpeta / "senales.jsonl", "paper": carpeta / "paper.jsonl",
                   "vigilancia": carpeta / "vigilancia.jsonl"}
-    MERCADO.update(nombre="ORO", par="GLD (SPDR Gold Shares, NYSE Arca)", costes=oro.COSTES, bolsa=True, dias=oro.DIAS,
-                   train=lambda: oro.velas(oro.FICHEROS["TRAIN"]))
+    MERCADO.update(id=oro.ID, simbolo=oro.ID, nombre="NASDAQ" if nombre == "nasdaq" else "ORO", par=par,
+                   costes=oro.COSTES, bolsa=True, dias=oro.DIAS, train=lambda: oro.velas(oro.FICHEROS["TRAIN"]))
     referencia_train.cache_clear()
 
 
@@ -90,8 +102,9 @@ def referencia_train() -> dict:
     hist = {}
     for g in GRUPOS.values():
         for k in g:
-            m = next(e["metricas"] for e in exps if e.get("lote") in (train.LOTE, train2.LOTE, "busqueda3-train-v1", "universo-train-v1", "oro-universo-train-v1")
-                     and (e.get("mercado", "BTC") == "GLD") == MERCADO["bolsa"]
+            m = next(e["metricas"] for e in exps if e.get("lote") in (train.LOTE, train2.LOTE, "busqueda3-train-v1", "universo-train-v1", "oro-universo-train-v1",
+                                     "nasdaq-universo-train-v1")
+                     and e.get("mercado", "BTC") == MERCADO["id"]
                      and e["estrategia_id"] == k[0] and e["variante"] == k[1])
             ops = riesgo.operaciones(estrategias.backtest_de(k, velas, MERCADO["costes"]))
             ganadoras = sorted(x for x in ops if x > 0)
@@ -431,7 +444,7 @@ def comparar(carpeta_o_rutas, velas=None) -> dict:
 
 def ficha(s: dict) -> str:
     l = [f"=== {s['decision']} === {s['activo']} · {s['par']} · vela {s['temporalidad']} del {s['vela']} (UTC)",
-         f"Precio de referencia: {s['precio_referencia']:,.2f} {'USD' if s['activo'] == 'ORO' else 'USDT'} · válida hasta {s['valida_hasta_utc'][:16]} UTC",
+         f"Precio de referencia: {s['precio_referencia']:,.2f} {'USDT' if s['activo'] == 'BTC' else 'USD'} · válida hasta {s['valida_hasta_utc'][:16]} UTC",
          f"Hora en Nueva York: {s['sesion']['hora_nueva_york']} · sesiones activas: "
          f"{', '.join(s['sesion']['sesiones_activas']) or 'ninguna'}",
          f"Exposición a {s['activo']}: {s['exposicion_anterior']:.1%} -> {s['exposicion_objetivo']:.1%} del capital (máximo 25 %)", ""]
@@ -501,7 +514,7 @@ def velas_en_vivo() -> list[Vela]:
     historia descargada tiene huecos, duplicados u OHLC incoherente: con datos malos no se generan señales."""
     ayer = datetime.now(timezone.utc).date() - timedelta(days=1)
     if MERCADO["bolsa"]:  # oro: Yahoo, días de mercado (los cierres largos no son errores)
-        filas = datos.descargar_yahoo("GLD", ayer - timedelta(days=900), ayer)
+        filas = datos.descargar_yahoo(MERCADO["simbolo"], ayer - timedelta(days=900), ayer)
         v = datos.validar_bolsa(filas)
     else:
         filas = datos.descargar_binance(ayer - timedelta(days=900), ayer)

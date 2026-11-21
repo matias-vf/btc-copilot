@@ -95,6 +95,10 @@ historial de cambios). Este paso no usa librerías extra.
 - **Oro (GLD):** segundo copiloto con su propia cuenta de 100 USD ficticios (registros en `registros\oro\`, panel en
   `registros\oro\panel_vivo.html`). Se ejecuta en la misma tarea diaria. Sus 4 reglas son EXPERIMENTALES y SIN
   significación estadística (`docs/oro_universo.md`).
+- **Nasdaq (QQQ):** copiloto diario (2 reglas, `registros
+asdaq\`) e intradía cada 5 minutos en horario de bolsa
+  (ruptura del rango de apertura, `registros
+asdaq_intradia\`, tarea «BTCCopilot intradia»). Todo EXPERIMENTAL.
 - **Vigía cada hora** (tarea «BTCCopilot vigia»): mira el precio y anota qué haría N1 si el domingo cerrase así.
   Solo observa: **no opera**. Las operaciones salen únicamente de la regla de N1; si no se cumple, NO OPERAR.
 - **Resumen a las 20:00** en la app de Claude (tarea programada «Resumen diario del copiloto BTC»), con el vigía incluido.

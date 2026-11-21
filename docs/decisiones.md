@@ -576,3 +576,14 @@ muy corta. Entra en paper como EXPERIMENTAL (cuenta de 100 USD ficticios en `reg
 Tarea de Windows «BTCCopilot intradia»: cada 5 minutos de lunes a viernes de 14:30 a 23:30 (hora de Madrid); el programa
 solo actúa entre las 9:35 y las 16:10 de Nueva York. Las tres tareas del bot pueden despertar el ordenador si está
 suspendido (si Windows tiene permitidos los temporizadores de reactivación).
+
+## D50. 2026-11-21. Resultado del Nasdaq (QQQ) diario y copiloto del Nasdaq
+- **Paso 1** (lote `nasdaq-v1`, `docs/nasdaq.md`): ninguna de las 10 reglas de los copilotos aprueba en QQQ. Todas fallan en
+  2011-2018, cuando QQQ subió un 148 % con Sharpe 0,95 y ninguna regla le gana en Sharpe.
+- **Paso 2** (lotes `nasdaq-universo-*-v1`, `docs/nasdaq_universo.md`): 51 de 1000 cumplen el criterio v2 y los costes en
+  TRAIN, ninguna llega a un Sharpe deflactado de 0,95 (el mayor, 0,517), 4 cumplen las tres épocas y se eligen 2 por
+  correlación <= 0,9, **SIN significación estadística**: U0229 (F04, momentum de 182 días con umbral del 10 %) y U0750
+  (F14, a menos del 15 % del máximo de 180 días).
+- **Copiloto del Nasdaq:** cuenta propia de 100 USD ficticios en `registros/nasdaq/`, exposición máxima 25 %, en la tarea
+  diaria (`python -m copilot hoy nasdaq`). Primer ciclo en vivo el 2026-11-21: NO OPERAR.
+- En total, el bot hace paper trading en 4 cuentas: BTC (7 reglas), oro (4), Nasdaq diario (2) y Nasdaq intradía (1).

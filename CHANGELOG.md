@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## 2026-11-21. Nasdaq (QQQ): diario e intradía
+- Datos diarios de QQQ 1999-2026 (Yahoo) y 60 días de velas de 5 minutos.
+- Intradía: ruptura del rango de apertura de 5 minutos (Zarattini y Aziz 2023), solo compra, en paper cada 5 minutos (D48, D49).
+- Diario: ninguna regla de los otros copilotos funciona en QQQ; búsqueda propia con 2 reglas sin significación (D50).
+- Copilotos y cuentas de paper: BTC, oro, Nasdaq diario y Nasdaq intradía. Las tareas pueden despertar el ordenador.
+
 ## 2026-11-21. Copiloto del oro en marcha
 - Búsqueda propia en el oro con el universo de 1000: 4 reglas sin significación estadística (D45, D46).
 - El copiloto admite un segundo mercado (`python -m copilot hoy oro`): cuenta de paper propia, datos de Yahoo,
