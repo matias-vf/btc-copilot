@@ -320,3 +320,18 @@ que ahora aprueba (Sharpe 0,70 frente a 0,47 de Buy & Hold en su ventana). Sigue
 5. **Superficie (como D9):** por estrategia, Spearman entre el Sharpe de TRAIN y el de TEST de sus variantes y
    cuántas variantes tienen Sharpe >= Buy & Hold en cada periodo. Se informa; no cambia el veredicto de la regla 4.
 6. Regímenes de mercado (como D9) para las variantes conservadas, en las tres épocas.
+
+## D29. 2026-11-21. Resultado del Prompt 5 (segunda búsqueda)
+Lotes `busqueda2-otra-epoca-v1` y `busqueda2-test-v1` (experimentos 113 a 134). Aplicando D28.4, **solo se conserva
+N1 L=4** (momentum de 4 semanas), como EXPERIMENTAL: aprueba el criterio v2 en TRAIN (Sharpe 1,22 frente a 0,79), en la
+otra época (1,79 frente a 1,50) y en TEST (1,24 frente a 0,93; drawdown -32,5 % frente a -53,0 %). Las otras 10
+fallan en TEST (o, N2 n=5 y n=10, en costes x2). Diagnósticos sin filtración; el domingo es el mejor día de la semana,
+lo que indica algo de suerte (`docs/robustez_v2.md`).
+
+## D30. 2026-11-21. Reglas de los Prompts 6 y 7 (segunda búsqueda), fijadas ANTES de ejecutar
+- **Cartera (Prompt 6):** con una sola estrategia superviviente no hay nada que combinar: la "cartera" es N1 L=4 al
+  100 % de su peso. La matriz de correlación se calcula solo frente a Buy & Hold.
+- **Riesgo (Prompt 7):** misma regla que D13, sin apalancamiento: exposición 25 %, 50 %, 75 % o 100 % de N1 L=4.
+  Admisible si el drawdown es de como mucho el 35 % en TRAIN y en la otra época; entre las admisibles, la de mayor
+  Sharpe en TRAIN y, si difieren en menos de 0,05, la de menor exposición. TEST se muestra como información.
+  Lote `busqueda2-riesgo-v1`. Los demás límites del copiloto (3 posiciones, pérdida máxima del 35 %, parada manual) no cambian.
