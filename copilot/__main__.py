@@ -3,6 +3,7 @@
   verificar   comprueba los registros (hash) y que no se ha perdido nada respecto al último commit
   registrar   registra las estrategias iniciales (solo la primera vez)
   descargar   descarga los datos de TRAIN (Binance) y de la otra época (Bitstamp 2011-2016)
+  anticipacion comprueba en TRAIN que ninguna variante registrada mira el futuro (no muestra resultados)
 """
 
 import json
@@ -67,8 +68,24 @@ def descargar() -> int:
     return 0
 
 
+def anticipacion() -> int:
+    from copilot import anticipacion as la, estrategias, motor
+
+    velas = motor.cargar_velas()
+    ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"]["estado"] != "descartada"]
+    variantes = [("BH", "buy_hold")] + [(i["id"], v) for i in ideas for v in i["configuraciones_permitidas"]]
+    fallos = 0
+    for eid, var in variantes:
+        problemas = la.comprobar(velas, lambda _d, e=eid, v=var: estrategias.crear(e, v))
+        fallos += bool(problemas)
+        print(f"{'OK  ' if not problemas else 'FALLO'} {eid} {var} {'; '.join(problemas)}")
+    print(f"{len(variantes)} variantes comprobadas, {fallos} con anticipación")
+    return 1 if fallos else 0
+
+
 if __name__ == "__main__":
-    ordenes = {"verificar": verificar, "registrar": registrar, "descargar": descargar}
+    ordenes = {"verificar": verificar, "registrar": registrar, "descargar": descargar,
+               "anticipacion": anticipacion}
     if len(sys.argv) != 2 or sys.argv[1] not in ordenes:
         print(__doc__)
         sys.exit(2)

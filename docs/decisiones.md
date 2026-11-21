@@ -41,3 +41,24 @@ así que no se ejecuta sobre BTC: solo se toman ideas, adaptadas a BTC diario. N
 | trader-budget | Tamaño de posición según la pérdida máxima por operación. | No se adopta: cambiaría las reglas registradas. Solo podría entrar como variante nueva registrada. |
 | trader-broker | Envío de órdenes a un broker. | **No se adopta. Nunca.** El copiloto no envía órdenes reales. |
 | trader-scanner, trader-news, trader-entry, trader-alerts, trader-analyst, trader-pelosi | Acciones de EE. UU. | No aplican a BTC. |
+
+## D7. 2026-11-21. Motor de backtesting (Prompt 3)
+- **Causalidad impuesta por el motor:** la estrategia solo recibe una copia de las velas hasta t. La decisión del cierre
+  de t se ejecuta en la apertura de t+1. La última vela de TRAIN (2022-12-31) no genera ninguna orden, así que nunca se
+  necesita la vela del 2023-01-01 (resuelve lo pendiente de D2).
+- **Final del periodo:** la posición abierta se valora como si se vendiera al último cierre, restando el coste de salida.
+  Igual para Buy & Hold y para todas las estrategias.
+- **Compras:** el coste sale del efectivo; nunca hay efectivo negativo (sin apalancamiento oculto).
+- **Solo se opera cuando cambia la decisión.** Si la exposición se desvía por el movimiento del precio, no se reajusta
+  cada día (P1 reajusta solo los lunes, como está registrado).
+- **Métricas:** rentabilidad total, CAGR (365 días), Sharpe con rentabilidades diarias del capital (365, tipo libre de
+  riesgo 0, incluye los días en liquidez), drawdown máximo, operaciones (entradas desde liquidez) y ejecuciones (todas
+  las órdenes, incluidos los reajustes de P1).
+- **Datos insuficientes:** si un indicador no se puede calcular todavía (por ejemplo, SMA 200 en los primeros 199 días),
+  la regla devuelve "no operar". Esos días cuentan en el periodo.
+- **Comprobación de anticipación:** `copilot/anticipacion.py`. En cuatro cortes se alteran al azar todas las velas
+  posteriores y se reconstruye la estrategia con esos datos alterados; las señales y el capital hasta el corte deben
+  ser idénticos. Una estrategia tramposa de prueba es detectada. Ejecutada en TRAIN: 32 de 32 variantes sin anticipación.
+- **Regla permanente de resultados extraordinarios:** `motor.alertas()` marca Sharpe > 2, CAGR más de 50 puntos por
+  encima de Buy & Hold, o drawdown menor del 15 % con operaciones. Un resultado marcado se trata primero como posible
+  error: se repite la comprobación de anticipación y se revisa el código antes de enseñarlo, y se muestra con el aviso.

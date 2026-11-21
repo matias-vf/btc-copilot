@@ -13,7 +13,8 @@ Solo descarga precios públicos.
 |---|---|
 | Prompt 1: estrategias candidatas | Hecho (fuera de este repositorio) |
 | Prompt 2: registros y datos | Hecho |
-| Prompt 3: motor de backtesting | Pendiente |
+| Prompt 3: motor de backtesting | Hecho |
+| Prompt 4: ejecutar estrategias en TRAIN | Pendiente |
 
 ## Estructura
 ```
@@ -21,7 +22,11 @@ copilot/
   registro.py               registros de solo-añadir, encadenados con hash SHA-256
   datos.py                  descarga y validación de velas; bloqueo de TEST
   estrategias_iniciales.py  estrategias del Prompt 1 tal y como se registraron
-  __main__.py               órdenes: verificar, registrar, descargar
+  costes.py                 comisiones, spread y slippage de Binance spot
+  motor.py                  backtest causal y métricas
+  estrategias.py            reglas exactas de cada estrategia
+  anticipacion.py           comprobación automática de que nada mira el futuro
+  __main__.py               órdenes: verificar, registrar, descargar, anticipacion
 registros/
   ideas.jsonl               registro de estrategias (una por línea)
   experimentos.jsonl        cada variante probada, con contador acumulado
@@ -31,6 +36,7 @@ data/
   FUENTES.md                procedencia, calidad y limitaciones
   calidad.json              informe automático de huecos y duplicados
 docs/decisiones.md          decisiones tomadas y por qué
+docs/costes.md              costes de operativa y de dónde salen
 tests/                      pruebas automáticas
 ```
 
@@ -60,7 +66,12 @@ historial de cambios). Este paso no usa librerías extra.
    python -m unittest -v
    ```
    Al final debe decir `OK`.
-5. (Opcional) Para volver a descargar los datos:
+5. Para comprobar que ninguna estrategia mira el futuro (tarda menos de un minuto):
+   ```powershell
+   python -m copilot anticipacion
+   ```
+   La última línea debe decir `0 con anticipación`.
+6. (Opcional) Para volver a descargar los datos:
    ```powershell
    python -m copilot descargar
    ```

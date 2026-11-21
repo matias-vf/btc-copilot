@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## 2026-11-21. Prompt 3: motor de backtesting
+- Modelo de costes Binance spot: 0,10 % comisión + 0,01 % medio spread + 0,05 % slippage por lado; multiplicador x2/x3 (`docs/costes.md`).
+- Motor causal: decisión al cierre de t, ejecución en la apertura de t+1; sin órdenes en la última vela; valoración final de liquidación.
+- Reglas exactas de T1, T2, B1, M1 y P1 (31 variantes) y Buy & Hold.
+- Comprobación automática de anticipación; pasada en TRAIN por las 32 variantes. Alertas de resultados demasiado buenos.
+
 ## 2026-11-21. Referencia: paquete Day Trader skill
 - Revisado como referencia (decisión D6). No se ejecuta ni se copia código; ninguna regla registrada cambia.
 
