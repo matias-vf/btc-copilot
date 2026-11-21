@@ -335,3 +335,14 @@ lo que indica algo de suerte (`docs/robustez_v2.md`).
   Admisible si el drawdown es de como mucho el 35 % en TRAIN y en la otra época; entre las admisibles, la de mayor
   Sharpe en TRAIN y, si difieren en menos de 0,05, la de menor exposición. TEST se muestra como información.
   Lote `busqueda2-riesgo-v1`. Los demás límites del copiloto (3 posiciones, pérdida máxima del 35 %, parada manual) no cambian.
+
+## D31. 2026-11-21. Prompts 6 a 9 (segunda búsqueda): el copiloto pasa a usar N1 L=4, como EXPERIMENTAL
+- **Prompt 6:** con una sola superviviente no hay cartera que combinar (correlación diaria con Buy & Hold: 0,70 a 0,75).
+- **Prompt 7** (lote `busqueda2-riesgo-v1`, regla D30): exposición elegida **25 %**. Drawdown -25,8 % en TRAIN,
+  -21,4 % en la otra época y -8,8 % en TEST. Las exposiciones de 50 % a 100 % superan el límite del 35 %.
+- **Prompt 8:** la vigilancia (reglas v2, D17) ahora acepta las estrategias que se le pasen; por defecto sigue usando
+  las de la primera búsqueda, así que D16 y D18 siguen siendo reproducibles. El copiloto la usa con N1 L=4.
+- **Prompt 9:** `copilot/copiloto.py` usa `GRUPOS = {"N1": [N1 L=4]}`, exposición máxima 25 %, y marca cada señal como
+  EXPERIMENTAL. N1 solo decide los domingos; la ficha da el nivel del domingo siguiente para entrar o invalidar.
+  Corrección: el riesgo de N1 hasta la próxima decisión es una mala semana de TRAIN (percentil 5), porque no tiene un
+  precio de salida fijo entre domingos; antes la ficha podía mostrar un 0 % engañoso.

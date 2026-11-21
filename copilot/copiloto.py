@@ -10,18 +10,34 @@ from functools import lru_cache
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from copilot import cartera as ca, datos, estrategias, paper, registro, riesgo, train, vigilancia as vg
+from copilot import cartera as ca, datos, estrategias, paper, registro, riesgo, riesgo2, train, train2, vigilancia as vg
 from copilot.costes import BINANCE_SPOT
 from copilot.motor import Resultado, Vela, backtest, cargar_velas, metricas
 
-GRUPOS = {"B1": [("B1", "N=20,M=10"), ("B1", "N=55,M=20")], "T1": [("T1", "sma_n=100")]}
+def domingo_siguiente(f: date) -> date:
+    """Próximo domingo en que N1 decide (si hoy es domingo, la decisión de hoy ya está tomada: el siguiente)."""
+    return f + timedelta(days=7 if f.weekday() == 6 else 6 - f.weekday())
+
+
+def nivel_n1(h, L: int = 4):
+    """Cierre con el que N1 comparará el próximo domingo (el de 7·L días antes). None si falta esa vela."""
+    base = domingo_siguiente(h[-1].fecha) - timedelta(days=7 * L)
+    i = len(h) - 1 - (h[-1].fecha - base).days
+    return h[i].close if 0 <= i < len(h) and h[i].fecha == base else None
+
+
+# D31: estrategias del copiloto tras la segunda búsqueda. La primera búsqueda (B1, T1) no superó TEST (D22).
+GRUPOS = {"N1": [("N1", "L=4")]}
+NIVEL_SALIDA = {**riesgo.NIVEL_SALIDA, ("N1", "L=4"): nivel_n1}
 ENTRADA = {("T1", "sma_n=100"): lambda h: estrategias._sma(h, 100),
            ("B1", "N=20,M=10"): lambda h: max(v.high for v in h[-20:]) if len(h) >= 20 else None,
-           ("B1", "N=55,M=20"): lambda h: max(v.high for v in h[-55:]) if len(h) >= 55 else None}
-ESTADO_VALIDACION = ("VALIDACIÓN PARCIAL: aprobada en TRAIN (2017-2022) y en otra época (Bitstamp 2011-2016); "
-                     "pendiente la comprobación con TEST. No es una estrategia plenamente validada.")
-# D22: ninguna variante del copiloto aprobó TEST (regla D21). Sin estrategias validadas, el copiloto no opera.
-VALIDADAS: set = set()
+           ("B1", "N=55,M=20"): lambda h: max(v.high for v in h[-55:]) if len(h) >= 55 else None,
+           ("N1", "L=4"): nivel_n1}
+ESTADO_VALIDACION = ("EXPERIMENTAL: N1 L=4 aprobó el criterio v2 en TRAIN (2017-2022), en otra época (Bitstamp "
+                     "2011-2016) y en TEST (2023-2026, ya visto antes de elegirla). Debe superar al menos un mes de paper "
+                     "trading en vivo. No es una estrategia plenamente validada.")
+VALIDADAS: set = {("N1", "L=4")}
+TEST_FICHERO = datos.DATOS / "btcusdt_binance_1d_test.csv"
 MIN_CAMBIO = 0.01  # reequilibrios menores de 1 punto de exposición no se ejecutan
 NY = ZoneInfo("America/New_York")
 RUTAS_VIVO = {"senales": registro.SENALES, "paper": registro.REGISTROS / "paper.jsonl", "vigilancia": vg.REGISTRO}
@@ -39,17 +55,19 @@ def referencia_train() -> dict:
     hist = {}
     for g in GRUPOS.values():
         for k in g:
-            m = next(e["metricas"] for e in exps if e.get("lote") == train.LOTE
+            m = next(e["metricas"] for e in exps if e.get("lote") in (train.LOTE, train2.LOTE)
                      and e["estrategia_id"] == k[0] and e["variante"] == k[1])
             ops = riesgo.operaciones(backtest(velas, estrategias.crear(*k)))
             ganadoras = sorted(x for x in ops if x > 0)
-            hist[k] = {"rentabilidad": m["rentabilidad"], "sharpe": m["sharpe"], "max_drawdown": m["max_drawdown"],
+            semanas = sorted(velas[t].close / velas[t - 7].close - 1 for t in range(7, len(velas)))
+            hist[k] = {"p5_semana": semanas[len(semanas) // 20],
+                       "rentabilidad": m["rentabilidad"], "sharpe": m["sharpe"], "max_drawdown": m["max_drawdown"],
                        "operaciones": m["operaciones"], "peor_operacion": min(ops),
                        "mediana_ganadora": ganadoras[len(ganadoras) // 2] if ganadoras else 0.0,
                        "aciertos": len(ganadoras) / len(ops) if ops else 0.0}
-    c25 = next(e["metricas"] for e in exps if e.get("lote") == riesgo.LOTE and e["variante"] == "exposicion=25%"
+    c25 = next(e["metricas"] for e in exps if e.get("lote") == riesgo2.LOTE and e["variante"] == "exposicion=25%"
                and e["epoca"] == "TRAIN")
-    return {"vig": vg.referencia(velas), "hist": hist, "c25": c25}
+    return {"vig": vg.referencia(velas, GRUPOS), "hist": hist, "c25": c25}
 
 
 # --- Contexto: sesiones y mercado -------------------------------------------------
@@ -147,13 +165,20 @@ def decidir(velas, posiciones: dict, objetivo_prev: float, vig_dia: dict | None,
             nuevas[n] = ahora_pos
             peso = pesos[g] / len(ks) * paper.LIMITE_EXPOSICION
             objetivo += peso * ahora_pos
-            salida, entrada = riesgo.NIVEL_SALIDA[k](velas), ENTRADA[k](velas)
+            salida, entrada = NIVEL_SALIDA[k](velas), ENTRADA[k](velas)
             h = ref["hist"][k]
             comp = {"estrategia": n, "estado_vigilancia": estado, "posicion_anterior": antes, "posicion_nueva": ahora_pos,
                     "peso_en_capital": peso, "nivel_salida": salida, "nivel_entrada": entrada, "nota": nota,
                     "historico_train": h}
             senal["componentes"].append(comp)
-            if k[0] == "T1":
+            prox = domingo_siguiente(v.fecha)
+            if k[0] == "N1":
+                if v.fecha.weekday() == 6 and len(velas) > 28:
+                    r4 = c / velas[-29].close - 1
+                    regla = f"domingo: rentabilidad de 4 semanas {r4:+.1%} ({'> 0' if r4 > 0 else '<= 0'})"
+                else:
+                    regla = f"N1 solo decide los domingos; el próximo es el {prox}"
+            elif k[0] == "T1":
                 regla = f"cierre {c:,.2f} {'>' if c > (salida or 0) else '<='} SMA 100 {salida:,.2f}"
             else:
                 regla = (f"cierre {c:,.2f}; máximo de {k[1].split(',')[0][2:]} velas {entrada:,.2f}; "
@@ -164,14 +189,17 @@ def decidir(velas, posiciones: dict, objetivo_prev: float, vig_dia: dict | None,
                 senal["justificacion"].append(f"{n}: sale ({regla}){' - ' + nota if nota else ''}.")
             if ahora_pos > 0:
                 d = (c - salida) / c if salida else 0.0
-                riesgo_salida += peso * max(d, 0.0)
+                # N1 no tiene salida hasta el domingo: su riesgo es una mala semana de TRAIN (percentil 5)
+                riesgo_salida += peso * (abs(h["p5_semana"]) if k[0] == "N1" else max(d, 0.0))
                 riesgo_hist += peso * abs(h["peor_operacion"])
-                senal["invalidacion"].append(f"{n}: se invalida con un cierre diario por debajo de {salida:,.2f} "
+                cuando = f"el cierre del domingo {prox}" if k[0] == "N1" else "un cierre diario"
+                senal["invalidacion"].append(f"{n}: se invalida con {cuando} por debajo de {salida:,.2f} "
                                              f"({-d:+.1%} desde el precio de referencia).")
             else:
                 if entrada:
+                    cuando = f"el cierre del domingo {prox}" if k[0] == "N1" else "un cierre diario"
                     senal["condiciones_para_operar"].append(
-                        f"{n}: entraría con un cierre diario por encima de {entrada:,.2f} ({entrada / c - 1:+.1%})"
+                        f"{n}: entraría con {cuando} por encima de {entrada:,.2f} ({entrada / c - 1:+.1%})"
                         + (" (suspendida: no entrará hasta reactivarse)" if estado != "ACTIVA" else "") + ".")
     objetivo = min(objetivo, paper.LIMITE_EXPOSICION)
     abiertas = sum(1 for x in nuevas.values() if x > 0)
@@ -195,7 +223,8 @@ def decidir(velas, posiciones: dict, objetivo_prev: float, vig_dia: dict | None,
                  posiciones=nuevas, pesos=pesos,
                  riesgo_estimado={"perdida_si_saltan_todas_las_salidas": riesgo_salida,
                                   "escenario_desfavorable_historico": riesgo_hist,
-                                  "nota": "En % del capital total. Un hueco de precio puede saltarse el nivel de salida."})
+                                  "nota": "En % del capital total. Para N1: pérdida de una mala semana de TRAIN "
+                                          "(solo 1 de cada 20 fue peor). Un hueco de precio puede saltarse el nivel de salida."})
     if decision == "COMPRA":
         entra = [comp for comp in senal["componentes"] if comp["posicion_nueva"] > comp["posicion_anterior"]]
         senal["objetivo"] = "; ".join(
@@ -295,7 +324,7 @@ def repeticion(desde: date, hasta: date, carpeta: Path) -> Path:
     carpeta.mkdir(parents=True, exist_ok=True)
     rutas = {"senales": carpeta / "senales.jsonl", "paper": carpeta / "paper.jsonl",
              "vigilancia": carpeta / "vigilancia.jsonl"}
-    velas = cargar_velas(train.FICHERO)
+    velas = cargar_velas(train.FICHERO) + (cargar_velas(TEST_FICHERO) if hasta >= date(2023, 1, 1) else [])
     i0 = next(i for i, x in enumerate(velas) if x.fecha >= desde)
     i1 = max(i for i, x in enumerate(velas) if x.fecha <= hasta)
     # La vigilancia es causal (prueba automática), así que se calcula una vez para todo el periodo.
@@ -314,10 +343,10 @@ def comparar(carpeta_o_rutas, velas=None) -> dict:
         "senales": carpeta_o_rutas / "senales.jsonl", "paper": carpeta_o_rutas / "paper.jsonl"}
     cuenta, ent = paper.cargar(rutas["paper"])
     vals = cuenta.valoraciones
-    velas = velas or cargar_velas(train.FICHERO)
+    velas = velas or cargar_velas(train.FICHERO) + cargar_velas(TEST_FICHERO)
     idx = {v.fecha.isoformat(): i for i, v in enumerate(velas)}
     i0, i1 = idx[vals[0]["fecha"]], idx[vals[-1]["fecha"]]
-    bt = vg.series(velas[: i1 + 1])[vg.CARTERA]
+    bt = vg.series(velas[: i1 + 1], GRUPOS)[vg.CARTERA]
     eq_bt = [paper.CAPITAL_INICIAL * bt.equity[i] / bt.equity[i0 - 1] for i in range(i0, i1 + 1)]
 
     def res(eq):
@@ -368,7 +397,7 @@ def ficha(s: dict) -> str:
                      f" {h['operaciones']} operaciones")
     if s.get("riesgo_estimado"):
         r = s["riesgo_estimado"]
-        l.append(f"Riesgo estimado: {r['perdida_si_saltan_todas_las_salidas']:.2%} del capital si saltan las salidas; "
+        l.append(f"Riesgo estimado: {r['perdida_si_saltan_todas_las_salidas']:.2%} del capital hasta la próxima decisión; "
                  f"{r['escenario_desfavorable_historico']:.2%} en el peor caso histórico. {r['nota']}")
     for clave, titulo in (("objetivo", "Objetivo"), ("escenario_desfavorable", "Escenario desfavorable")):
         if s.get(clave):
