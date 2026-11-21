@@ -463,3 +463,24 @@ U0190 (F04 momentum 35 días) y U0731 (F14 a menos del 10 % del máximo de 60 d�
 tendencia y se parecen bastante a N1 y N1D (correlación 0,80 a 0,90): diversifican poco. Entran en el copiloto
 EXPERIMENTALES y SIN significación estadística; total 7 estrategias, exposición total máxima 25 %, pesos inversos a
 la volatilidad (mensual). El límite de posiciones simultáneas pasa de 3 a 7 (una por estrategia).
+
+## D42. 2026-11-21. Segundo mercado: ORO (GLD), pedido por el usuario («puedes escoger el mercado, que sea distinto a btc... repite todo el proceso»). Fijado ANTES de descargar nada
+- **Mercado elegido: GLD** (SPDR Gold Shares, fondo cotizado de oro físico, NYSE Arca), velas diarias de bolsa.
+  Motivos: se mueve casi sin relación con BTC (diversifica de verdad); el seguimiento de tendencia en materias primas
+  está publicado (Moskowitz, Ooi y Pedersen 2012; Faber 2007); hay datos diarios desde 2004.
+- **Fuente:** Yahoo Finance (gráfico diario, público, sin claves). Stooq se descartó: exige una comprobación
+  anti-robots que no se debe saltar.
+- **Épocas:** otra época 2004-11-18 a 2010-12-31; **TRAIN 2011-01-01 a 2018-12-31**; **TEST desde 2019-01-01,
+  bloqueado en código hasta que el usuario escriba «UNLOCK»** (misma regla que para BTC). TEST del oro no se ha visto.
+- **Costes por lado (estimados):** comisión 0 % (brókeres sin comisión en ETF de EE. UU.), medio spread 0,02 %,
+  slippage 0,03 %: **0,05 % por lado**. La comisión anual del fondo (0,40 %) ya está descontada en su precio.
+  Se supone que se pueden comprar fracciones de participación (con 100 USD ficticios). Sin apalancamiento ni cortos.
+- **Calendario de bolsa:** solo hay velas los días de mercado. Se anualiza con 252 días; las reglas semanales deciden el
+  último día de mercado de la semana (viernes); los huecos de más de 4 días se revisan a mano (festivos largos, cierres).
+- **Proceso:** el mismo universo de 31 familias y 1000 variantes (D36), con las mismas reglas: criterio v2 (menos
+  drawdown y Sharpe >= Buy & Hold de GLD en la misma ventana), costes x2 si opera más de una vez por semana, Sharpe
+  deflactado >= 0,95 con N = 1000; después la otra época y TEST. Selección de hasta 5 por Sharpe deflactado con
+  correlación <= 0,9 entre ellas. Si menos de 5 superan el Sharpe deflactado, se completa como en D40 (criterio v2 y
+  costes en las tres épocas), marcándolas «SIN significación estadística».
+- **Copiloto:** el oro tendrá su propia cuenta de paper trading de 100 USD ficticios y sus propios registros, con los
+  mismos límites (exposición máxima 25 %, parada de emergencia, vigilancia). El resumen diario sumará las dos cuentas.
