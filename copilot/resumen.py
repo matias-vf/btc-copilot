@@ -41,6 +41,7 @@ def texto(rutas: dict = cp.RUTAS_VIVO) -> str:
         o = obs[-1]
         l.append(f"Vigía (última de {len(hoy)} observaciones de hoy, {o['fecha_hora_utc']} UTC): BTC {o['precio']:,.2f}"
                  + (f"; si el domingo {o['domingo_decision']} cerrase así: {o['si_cerrase_asi']}" if o.get("si_cerrase_asi") else "")
+                 + (f"; {o['si_cerrase_asi_n1d']}" if o.get("si_cerrase_asi_n1d") else "")
                  + ". Es una observación, no una señal.")
         vistos = sorted({a for x in hoy for a in x["avisos"]})
         l += [f"Vigía hoy: {a}" for a in vistos]

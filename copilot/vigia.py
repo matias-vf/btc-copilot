@@ -24,7 +24,7 @@ def velas_recientes() -> list[Vela]:
     return [Vela(date.fromisoformat(f[0]), *map(float, f[1:6])) for f in datos.descargar_binance(ayer - timedelta(days=60), ayer)]
 
 
-def observar(velas: list[Vela], t: dict, ahora: datetime, posicion: float) -> dict:
+def observar(velas: list[Vela], t: dict, ahora: datetime, posicion: float, posicion_n1d: float = 0.0) -> dict:
     """velas: velas diarias cerradas hasta ayer. t: ticker. posicion: posición actual de N1 (0 o 1)."""
     hoy = ahora.date()
     domingo = hoy + timedelta(days=(6 - hoy.weekday()) % 7)  # el domingo cuya vela decide (puede ser hoy)
@@ -35,6 +35,15 @@ def observar(velas: list[Vela], t: dict, ahora: datetime, posicion: float) -> di
            "cambio_24h": t["cambio_24h"], "domingo_decision": domingo.isoformat(), "nivel_n1": nivel,
            "posicion_n1": posicion, "avisos": [],
            "nota": "OBSERVACIÓN del vigía: no es una señal ni una orden. Solo decide la regla de N1 con el cierre del domingo."}
+    nivel_d = next((v.close for v in velas if v.fecha == hoy - timedelta(days=28)), None)  # N1D compara con hace 28 días
+    if nivel_d is not None:
+        sube = t["precio"] > nivel_d
+        obs["nivel_n1d"], obs["distancia_n1d"] = nivel_d, t["precio"] / nivel_d - 1
+        obs["si_cerrase_asi_n1d"] = (("MANTENER" if sube else "VENTA") if posicion_n1d > 0 else
+                                     ("COMPRA" if sube else "NO OPERAR")) + " (N1D, al cierre de hoy)"
+        if abs(obs["distancia_n1d"]) < CERCA:
+            obs["avisos"].append(f"Precio a {pct(obs['distancia_n1d'])} del nivel de N1D ({nivel_d:,.2f}): "
+                                 "el cierre de hoy puede cambiar su decisión.")
     if nivel is None:
         obs["avisos"].append("No se pudo calcular el nivel de N1 (falta la vela de referencia).")
         return obs
@@ -54,8 +63,9 @@ def observar(velas: list[Vela], t: dict, ahora: datetime, posicion: float) -> di
 
 def ejecutar() -> dict:
     sen = [e["datos"] for e in registro.leer(cp.RUTAS_VIVO["senales"]) if e["datos"]["tipo"] == "senal"]
-    posicion = sen[-1]["posiciones"].get("N1 L=4", 0.0) if sen else 0.0
-    obs = observar(velas_recientes(), ticker_24h(), datetime.now(timezone.utc), posicion)
+    pos = sen[-1]["posiciones"] if sen else {}
+    obs = observar(velas_recientes(), ticker_24h(), datetime.now(timezone.utc), pos.get("N1 L=4", 0.0),
+                   pos.get("N1D L=28", 0.0))
     registro.anadir(REGISTRO, obs)
     return obs
 
@@ -65,6 +75,9 @@ def texto(o: dict) -> str:
     if o.get("nivel_n1"):
         l.append(f"Nivel de N1 para el domingo {o['domingo_decision']}: {o['nivel_n1']:,.2f} ({pct(o['distancia_al_nivel'])}). "
                  f"Si cerrase así: {o['si_cerrase_asi']}.")
+    if o.get("nivel_n1d"):
+        l.append(f"Nivel de N1D para el cierre de hoy: {o['nivel_n1d']:,.2f} ({pct(o['distancia_n1d'])}). "
+                 f"Si cerrase así: {o['si_cerrase_asi_n1d']}.")
     l += [f"Aviso: {a}" for a in o["avisos"]]
     l.append(o["nota"])
     return "\n".join(l)

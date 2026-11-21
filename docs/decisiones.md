@@ -379,3 +379,11 @@ El usuario pidió que el copiloto pueda operar fuera del domingo cuando lo vea m
   (método D11, mensual) y exposición total máxima del 25 %. Podrá operar cualquier día, siempre en paper trading.
 - **Si no aprueba:** el copiloto sigue solo con N1 L=4 (domingos) y el vigía sigue sin operar.
 - Aviso: en los diagnósticos de N1 (D29), decidir otros días de la semana dio un Sharpe algo menor que el domingo.
+
+## D35. 2026-11-21. N1D entra en el copiloto (resultado de D34)
+Lotes `busqueda3-*-v1` (`docs/n1d.md`). N1D aprueba el criterio v2 en TRAIN (Sharpe 1,08 frente a 0,79 en su ventana),
+en la otra época (1,93 frente a 1,50) y en TEST (1,15 frente a 0,93; drawdown -36,3 % frente a -53,0 %); da como mucho
+0,62 órdenes por semana, así que no necesita la prueba de costes x2. Según D34, el copiloto pasa a usar N1 L=4
+(domingos) y N1D (cualquier día), con pesos inversos a la volatilidad (mensual) y exposición total máxima del 25 %,
+ambas EXPERIMENTALES. El vigía horario muestra también qué haría N1D con el cierre del día. Nota: la cartera N1 + N1D
+al 25 % no se ha medido como tal; las cifras de "histórico de la cartera" de la ficha siguen siendo las de N1 al 25 %.

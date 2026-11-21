@@ -27,16 +27,22 @@ def nivel_n1(h, L: int = 4):
 
 
 # D31: estrategias del copiloto tras la segunda búsqueda. La primera búsqueda (B1, T1) no superó TEST (D22).
-GRUPOS = {"N1": [("N1", "L=4")]}
-NIVEL_SALIDA = {**riesgo.NIVEL_SALIDA, ("N1", "L=4"): nivel_n1}
+def nivel_n1d(h, L: int = 28):
+    """Cierre con el que N1D comparará mañana: el de hace L-1 velas (mañana será hace L)."""
+    return h[-L].close if len(h) >= L else None
+
+
+# D35: N1D (N1 con revisión diaria) aprobó todo el proceso (D34) y se suma a N1 L=4.
+GRUPOS = {"N1": [("N1", "L=4")], "N1D": [("N1D", "L=28")]}
+NIVEL_SALIDA = {**riesgo.NIVEL_SALIDA, ("N1", "L=4"): nivel_n1, ("N1D", "L=28"): nivel_n1d}
 ENTRADA = {("T1", "sma_n=100"): lambda h: estrategias._sma(h, 100),
            ("B1", "N=20,M=10"): lambda h: max(v.high for v in h[-20:]) if len(h) >= 20 else None,
            ("B1", "N=55,M=20"): lambda h: max(v.high for v in h[-55:]) if len(h) >= 55 else None,
-           ("N1", "L=4"): nivel_n1}
-ESTADO_VALIDACION = ("EXPERIMENTAL: N1 L=4 aprobó el criterio v2 en TRAIN (2017-2022), en otra época (Bitstamp "
-                     "2011-2016) y en TEST (2023-2026, ya visto antes de elegirla). Debe superar al menos un mes de paper "
-                     "trading en vivo. No es una estrategia plenamente validada.")
-VALIDADAS: set = {("N1", "L=4")}
+           ("N1", "L=4"): nivel_n1, ("N1D", "L=28"): nivel_n1d}
+ESTADO_VALIDACION = ("EXPERIMENTAL: N1 L=4 (domingos) y N1D (cualquier día) aprobaron el criterio v2 en TRAIN "
+                     "(2017-2022), en otra época (Bitstamp 2011-2016) y en TEST (2023-2026, ya visto antes de elegirlas). "
+                     "Deben superar al menos un mes de paper trading en vivo. No son estrategias plenamente validadas.")
+VALIDADAS: set = {("N1", "L=4"), ("N1D", "L=28")}
 TEST_FICHERO = datos.DATOS / "btcusdt_binance_1d_test.csv"
 MIN_CAMBIO = 0.01  # reequilibrios menores de 1 punto de exposición no se ejecutan
 NY = ZoneInfo("America/New_York")
@@ -55,7 +61,7 @@ def referencia_train() -> dict:
     hist = {}
     for g in GRUPOS.values():
         for k in g:
-            m = next(e["metricas"] for e in exps if e.get("lote") in (train.LOTE, train2.LOTE)
+            m = next(e["metricas"] for e in exps if e.get("lote") in (train.LOTE, train2.LOTE, "busqueda3-train-v1")
                      and e["estrategia_id"] == k[0] and e["variante"] == k[1])
             ops = riesgo.operaciones(backtest(velas, estrategias.crear(*k)))
             ganadoras = sorted(x for x in ops if x > 0)
@@ -178,6 +184,9 @@ def decidir(velas, posiciones: dict, objetivo_prev: float, vig_dia: dict | None,
                     regla = f"domingo: rentabilidad de 4 semanas {r4:+.1%} ({'> 0' if r4 > 0 else '<= 0'})"
                 else:
                     regla = f"N1 solo decide los domingos; el próximo es el {prox}"
+            elif k[0] == "N1D":
+                r28 = c / velas[-29].close - 1 if len(velas) > 28 else 0.0
+                regla = f"rentabilidad de 28 días {r28:+.1%} ({'> 0' if r28 > 0 else '<= 0'}), revisada cada día"
             elif k[0] == "T1":
                 regla = f"cierre {c:,.2f} {'>' if c > (salida or 0) else '<='} SMA 100 {salida:,.2f}"
             else:
