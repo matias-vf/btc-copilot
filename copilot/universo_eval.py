@@ -200,3 +200,54 @@ def _escribir(out) -> None:
               + ", ".join(f"{s['uid']} ({s['estrategia_id']} {s['variante']}, {s['corr']:.2f} con {s['parecida_a']})"
                           for s in out["saltadas"][:15]) + ("..." if len(out["saltadas"]) > 15 else "") + "."]
     SALIDA.write_text("\n".join(l) + "\n", encoding="utf-8", newline="\n")
+
+
+# --- D40: diversificar sin la corrección estadística ------------------------------------------------
+
+LOTES_V2 = {"otra época": "universo-otra-epoca-v2", "TEST": "universo-test-v2"}
+SALIDA_V2 = registro.RAIZ / "docs" / "universo_diversificacion.md"
+
+
+def ejecutar_v2() -> dict:
+    if any(train._ya_ejecutado(l) for l in LOTES_V2.values()):
+        raise SystemExit("La diversificación (D40) ya se evaluó.")
+    tr = [e["datos"] for e in registro.leer(registro.EXPERIMENTOS) if e["datos"].get("lote") == LOTES["TRAIN"]]
+    cand = [f for f in tr if all(f["criterios"].values()) and f["pasa_costes"]]
+    rb = fase_robustez(cand)
+    for ep in rb:
+        for f in rb[ep]["filas"]:
+            f["lote"] = LOTES_V2[ep]
+    o = {f["uid"]: f for f in rb["otra época"]["filas"]}
+    t = {f["uid"]: f for f in rb["TEST"]["filas"]}
+    finalistas = [f for f in cand if o[f["uid"]]["aprobada_train"] and t[f["uid"]]["aprobada_train"]]
+    elegidas, saltadas = seleccionar(finalistas)
+    registro.registrar_experimentos(rb["otra época"]["filas"] + rb["TEST"]["filas"])  # todo calculado antes
+    nombre = {f[0]: f[1] for f in U.FAMILIAS}
+    l = ["# Tercera búsqueda: estrategias añadidas para diversificar (D40)", "",
+         "Generado por `python -m copilot diversificar`. Regla elegida por el usuario y fijada antes de evaluar: D40.",
+         "**Ninguna de estas estrategias supera la corrección por 1000 pruebas (Sharpe deflactado).** Son EXPERIMENTALES y",
+         "SIN significación estadística; la prueba que decide es el paper trading en vivo.", "",
+         "## Embudo", "",
+         f"- Candidatas (criterio v2 + costes en TRAIN): {len(cand)}.",
+         f"- Aprueban también la otra época: {sum(1 for f in cand if o[f['uid']]['aprobada_train'])}.",
+         f"- Aprueban también TEST: {sum(1 for f in cand if t[f['uid']]['aprobada_train'])}.",
+         f"- Aprueban las tres: **{len(finalistas)}**.",
+         f"- Elegidas (máximo {MAX_NUEVAS}, correlación <= {MAX_CORR} con N1, N1D y entre sí): **{len(elegidas)}**.", "",
+         "## Elegidas", "",
+         "| Id | Familia | Nombre | Variante | TRAIN Sharpe (DD) | Otra época Sharpe (DD) | TEST Sharpe (DD) | TEST rent. (B&H) | Sharpe deflactado | Correlación máx. (con) |",
+         "|---|---|---|---|---|---|---|---|---|---|"]
+    for g in elegidas:
+        a, b, c = g["metricas"], o[g["uid"]]["metricas"], t[g["uid"]]
+        l.append(f"| {g['uid']} | {g['estrategia_id']} | {nombre[g['estrategia_id']]} | {g['variante']} | "
+                 f"{a['sharpe']:.2f} ({pct(a['max_drawdown'])}) | {b['sharpe']:.2f} ({pct(b['max_drawdown'])}) | "
+                 f"{c['metricas']['sharpe']:.2f} ({pct(c['metricas']['max_drawdown'])}) | {pct(c['metricas']['rentabilidad'])} "
+                 f"({pct(c['buy_hold']['rentabilidad'])}) | {g['sharpe_deflactado']:.3f} | {g['corr_max']:.2f} ({g['corr_con']}) |")
+    bh_o, bh_t = rb["otra época"]["bh"], rb["TEST"]["bh"]
+    l += ["", f"Buy & Hold: otra época Sharpe {bh_o['sharpe']:.2f}, DD {pct(bh_o['max_drawdown'])}; TEST Sharpe "
+          f"{bh_t['sharpe']:.2f}, DD {pct(bh_t['max_drawdown'])}.", "",
+          f"Finalistas saltadas por parecerse demasiado a N1, N1D o a otra elegida: {len(saltadas)}.", ""]
+    from collections import Counter
+    l += ["Familias de las finalistas: " + ", ".join(f"{k} {nombre[k]} ({v})" for k, v in
+                                                    Counter(f["estrategia_id"] for f in finalistas).most_common()) + ".", ""]
+    SALIDA_V2.write_text("\n".join(l) + "\n", encoding="utf-8", newline="\n")
+    return {"cand": cand, "finalistas": finalistas, "elegidas": elegidas, "saltadas": saltadas}
