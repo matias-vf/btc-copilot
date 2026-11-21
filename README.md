@@ -14,7 +14,8 @@ Solo descarga precios públicos.
 | Prompt 1: estrategias candidatas | Hecho (fuera de este repositorio) |
 | Prompt 2: registros y datos | Hecho |
 | Prompt 3: motor de backtesting | Hecho |
-| Prompt 4: ejecutar estrategias en TRAIN | Pendiente |
+| Prompt 4: ejecutar estrategias en TRAIN | Hecho (`docs/resultados_train.md`) |
+| Prompt 5: robustez y filtrado | Pendiente |
 
 ## Estructura
 ```
@@ -26,6 +27,7 @@ copilot/
   motor.py                  backtest causal y métricas
   estrategias.py            reglas exactas de cada estrategia
   anticipacion.py           comprobación automática de que nada mira el futuro
+  train.py                  Prompt 4: ejecuta y registra todas las variantes en TRAIN
   __main__.py               órdenes: verificar, registrar, descargar, anticipacion
 registros/
   ideas.jsonl               registro de estrategias (una por línea)
@@ -37,6 +39,7 @@ data/
   calidad.json              informe automático de huecos y duplicados
 docs/decisiones.md          decisiones tomadas y por qué
 docs/costes.md              costes de operativa y de dónde salen
+docs/resultados_train.md    tabla de resultados en TRAIN
 tests/                      pruebas automáticas
 ```
 

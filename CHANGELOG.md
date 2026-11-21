@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## 2026-11-21. Prompt 4: ejecución en TRAIN
+- Orden `python -m copilot train`: ejecuta las 31 variantes registradas y anota cada una en el registro de experimentos.
+- 10 variantes superan a Buy & Hold en rentabilidad, drawdown y Sharpe en TRAIN. Ninguna dispara las alertas de "demasiado bueno".
+- Tabla y diagnósticos de filtración en `docs/resultados_train.md`.
+
 ## 2026-11-21. Prompt 3: motor de backtesting
 - Modelo de costes Binance spot: 0,10 % comisión + 0,01 % medio spread + 0,05 % slippage por lado; multiplicador x2/x3 (`docs/costes.md`).
 - Motor causal: decisión al cierre de t, ejecución en la apertura de t+1; sin órdenes en la última vela; valoración final de liquidación.

@@ -62,3 +62,10 @@ así que no se ejecuta sobre BTC: solo se toman ideas, adaptadas a BTC diario. N
 - **Regla permanente de resultados extraordinarios:** `motor.alertas()` marca Sharpe > 2, CAGR más de 50 puntos por
   encima de Buy & Hold, o drawdown menor del 15 % con operaciones. Un resultado marcado se trata primero como posible
   error: se repite la comprobación de anticipación y se revisa el código antes de enseñarlo, y se muestra con el aviso.
+
+## D8. 2026-11-21. Ejecución en TRAIN (Prompt 4)
+Lote `prompt4-train-v1`: 31 variantes ejecutadas una sola vez y anotadas en `registros/experimentos.jsonl` (contador 1 a 31),
+con el SHA-256 de los datos y el commit del código. La orden `train` se niega a repetir el mismo lote: repetirlo sería un
+experimento nuevo con otro nombre. Aprueban los tres criterios en TRAIN 10 variantes: T1 SMA 100, T2 L=365, B1 20/10,
+B1 55/20 y 6 de P1 (todas sobre T1 SMA 100 o SMA 150). Los criterios se evalúan con costes x1, como se fijó en D3.
+Tabla y comprobaciones en `docs/resultados_train.md`.

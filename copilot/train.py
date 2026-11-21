@@ -73,11 +73,11 @@ def _escribir_tabla(filas: list[dict], bh: dict) -> None:
     l = [
         "# Resultados en TRAIN (Prompt 4)", "",
         f"Generado por `python -m copilot train` (lote `{LOTE}`). Periodo {filas[0]['periodo'][0]} a "
-        f"{filas[0]['periodo'][1]}, BTC/USDT Binance spot, velas diarias, costes {_pct(BINANCE_SPOT.por_lado())} por lado.",
+        f"{filas[0]['periodo'][1]}, BTC/USDT Binance spot, velas diarias, costes {BINANCE_SPOT.por_lado() * 100:.2f} % por lado.",
         "Cada fila está anotada en `registros/experimentos.jsonl`. Rentabilidades históricas: no predicen el futuro.", "",
-        "| Estrategia | Variantes probadas | Variante | Operaciones | Rentabilidad | Sharpe | Drawdown máx. | Supera B&H (rent. / DD / Sharpe) | Avisos |",
-        "|---|---|---|---|---|---|---|---|---|",
-        f"| **Buy & Hold** | – | – | 1 | {_pct(bh['rentabilidad'])} | {bh['sharpe']:.2f} | {_pct(bh['max_drawdown'])} | referencia | |",
+        "| Estrategia | Variantes probadas | Variante | Operaciones | Órdenes/semana | Rentabilidad | Sharpe | Drawdown máx. | Supera B&H (rent. / DD / Sharpe) | Avisos |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+        f"| **Buy & Hold** | – | – | 1 | – | {_pct(bh['rentabilidad'])} | {bh['sharpe']:.2f} | {_pct(bh['max_drawdown'])} | referencia | |",
     ]
     for f in filas:
         m, c = f["metricas"], f["criterios"]
@@ -90,7 +90,13 @@ def _escribir_tabla(filas: list[dict], bh: dict) -> None:
         for k, mk in f["costes_multiplicados"].items():
             avisos.append(f"costes {k}: {_pct(mk['rentabilidad'])}, Sharpe {mk['sharpe']:.2f}")
         l.append(f"| {f['estrategia_id']} | {variantes[f['estrategia_id']]} | {f['variante']} | {m['operaciones']} | "
-                 f"{_pct(m['rentabilidad'])} | {m['sharpe']:.2f} | {_pct(m['max_drawdown'])} | {marca} | "
+                 f"{m['ejecuciones_por_semana']:.2f} | {_pct(m['rentabilidad'])} | {m['sharpe']:.2f} | {_pct(m['max_drawdown'])} | {marca} | "
                  f"{'; '.join(avisos)} |")
     l += ["", f"Total de variantes probadas (contador acumulado): {len(filas)}."]
     SALIDA.write_text("\n".join(l) + "\n", encoding="utf-8", newline="\n")
+
+
+def regenerar_tabla() -> None:
+    """Rehace la tabla desde el registro, sin volver a ejecutar nada."""
+    filas = [e["datos"] for e in registro.leer(registro.EXPERIMENTOS) if e["datos"].get("lote") == LOTE]
+    _escribir_tabla(filas, filas[0]["buy_hold"])
