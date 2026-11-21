@@ -20,7 +20,9 @@ Solo descarga precios públicos.
 | Prompt 7: riesgo y tamaño de posición | Hecho, provisional (`docs/riesgo.md`) |
 | Prompt 8: deterioro y reglas de parada | Hecho, reglas v2 (`docs/vigilancia_v2.md`; la v1 en `docs/vigilancia.md`) |
 | Prompt 9: copiloto y paper trading | Construido; sin estrategias validadas, solo dice NO OPERAR |
-| Segunda búsqueda de estrategias | En curso (D23) |
+| Segunda búsqueda: Prompt 1 (candidatas) | Hecho (`docs/prompt1_v2_candidatas.md`) |
+| Segunda búsqueda: Prompt 2 (registro) | Hecho: N1-N4 registradas |
+| Segunda búsqueda: Prompt 3 (reglas en el motor) | Pendiente |
 
 ## Estructura
 ```

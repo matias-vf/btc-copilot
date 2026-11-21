@@ -270,3 +270,9 @@ Respuestas del usuario a las tres preguntas:
    que el de Buy & Hold y un Sharpe igual o mayor, sin exigir más rentabilidad. Las estrategias antiguas no se
    reevalúan con este criterio. Nota de transparencia: con el criterio v2, T1 SMA 100 y T1 SMA 150 habrían aprobado
    TEST (docs/test.md); por la regla aceptada no se recuperan. Si se quisiera, sería una decisión nueva y registrada.
+
+## D24. 2026-11-21. Prompt 2 (segunda búsqueda): N1-N4 registradas
+Entradas 13 a 16 de `registros/ideas.jsonl`, con regla exacta, variantes permitidas y criterio versión 2
+(`copilot/estrategias_v2.py`). 11 variantes: N1 L = 1, 2, 4 semanas; N2 n = 5, 10, 20; N3 n = 50, 150, 200;
+N4 x = 10 %, 20 % (experimental). Datos: no hace falta descargar nada; las cuatro usan las velas diarias ya validadas
+(N1 decide solo con el cierre del domingo, a partir de esas mismas velas). Experimentos acumulados hasta ahora: 90.

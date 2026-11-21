@@ -1,5 +1,9 @@
 # Historial de cambios
 
+## 2026-11-21. Segunda búsqueda, Prompt 2: registro de N1-N4
+- N1 momentum semanal, N2 media móvil corta, N3 ruptura del rango y N4 cerca del máximo de 52 semanas (experimental),
+  11 variantes, registradas con el criterio versión 2 antes de probarlas (D24).
+
 ## 2026-11-21. Segunda búsqueda de estrategias: Prompt 1 v2
 - Búsqueda en la literatura con referencias verificadas; 4 candidatas (11 variantes) y 8 ideas descartadas.
 - Decisiones del usuario (D23): N1-N4, TEST como segunda validación + paper trading, criterio v2 (drawdown + Sharpe).

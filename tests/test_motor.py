@@ -117,7 +117,7 @@ class TestEstrategias(unittest.TestCase):
 
     def test_todas_las_variantes_registradas_se_construyen(self):
         ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"]["estado"] != "descartada"
-                 and e["datos"]["familia"] not in ("Cartera", "Riesgo")]
+                 and e["datos"]["familia"] not in ("Cartera", "Riesgo") and e["datos"].get("busqueda", 1) == 1]
         total = 0
         for idea in ideas:
             for var in idea["configuraciones_permitidas"]:
@@ -130,7 +130,7 @@ class TestAnticipacion(unittest.TestCase):
     def test_todas_las_variantes_son_causales(self):
         v = velas_aleatorias(420)
         ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"]["estado"] != "descartada"
-                 and e["datos"]["familia"] not in ("Cartera", "Riesgo")]
+                 and e["datos"]["familia"] not in ("Cartera", "Riesgo") and e["datos"].get("busqueda", 1) == 1]
         variantes = [("BH", "buy_hold")] + [(i["id"], x) for i in ideas for x in i["configuraciones_permitidas"]]
         for eid, var in variantes:
             with self.subTest(eid=eid, var=var):
