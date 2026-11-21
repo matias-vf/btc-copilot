@@ -3,6 +3,7 @@
   verificar   comprueba los registros (hash) y que no se ha perdido nada respecto al último commit
   registrar   registra las estrategias iniciales (solo la primera vez)
   descargar   descarga los datos de TRAIN (Binance) y de la otra época (Bitstamp 2011-2016)
+  train       Prompt 4: ejecuta todas las variantes registradas en TRAIN (una sola vez) y las anota
   anticipacion comprueba en TRAIN que ninguna variante registrada mira el futuro (no muestra resultados)
 """
 
@@ -83,9 +84,17 @@ def anticipacion() -> int:
     return 1 if fallos else 0
 
 
+def train() -> int:
+    from copilot import train as tr
+
+    filas = tr.ejecutar()
+    print(f"{len(filas)} variantes ejecutadas y registradas. Tabla en {tr.SALIDA.relative_to(registro.RAIZ)}")
+    return 0
+
+
 if __name__ == "__main__":
     ordenes = {"verificar": verificar, "registrar": registrar, "descargar": descargar,
-               "anticipacion": anticipacion}
+               "anticipacion": anticipacion, "train": train}
     if len(sys.argv) != 2 or sys.argv[1] not in ordenes:
         print(__doc__)
         sys.exit(2)
