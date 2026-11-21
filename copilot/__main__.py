@@ -13,6 +13,7 @@
   robustez2   segunda búsqueda, Prompt 5: otra época y TEST (una sola vez)
   riesgo2     segunda búsqueda, Prompts 6 y 7: cartera y exposición (una sola vez)
   test        evaluación final en TEST (regla D21, una sola vez)
+  n1d         evalúa N1 con revisión diaria (D34, una sola vez)
   vigia       observación horaria del mercado (no opera; D33)
   resumen     resumen del paper trading en vivo (solo lee los registros)
   hoy         un ciclo en vivo con datos de hoy (bloqueado mientras TEST siga cerrado)
@@ -183,6 +184,14 @@ def riesgo2() -> int:
     return 0
 
 
+def n1d() -> int:
+    from copilot import busqueda3
+
+    out = busqueda3.ejecutar()
+    print(f"N1D evaluada y registrada. {'Aprueba' if out['aprueba'] else 'No aprueba'}. Informe en docs/n1d.md")
+    return 0
+
+
 def vigia() -> int:
     from copilot import vigia as vg
 
@@ -262,7 +271,7 @@ if __name__ == "__main__":
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
-    ordenes = {"vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
+    ordenes = {"n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}

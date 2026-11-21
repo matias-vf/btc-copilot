@@ -136,7 +136,7 @@ def calentamiento(estrategia_id: str, variante: str) -> int:
     """Índice de la primera vela con la que la variante puede dar una señal (D27). Solo segunda búsqueda."""
     p = dict(kv.split("=", 1) for kv in variante.split(","))
     return {"N1": lambda: 7 * int(p["L"]), "N2": lambda: int(p["n"]) - 1, "N3": lambda: int(p["n"]),
-            "N4": lambda: 364}[estrategia_id]()
+            "N4": lambda: 364, "N1D": lambda: int(p["L"])}[estrategia_id]()
 
 
 def crear(estrategia_id: str, variante: str) -> Estrategia:
@@ -164,6 +164,8 @@ def crear(estrategia_id: str, variante: str) -> Estrategia:
         return t1_sma(int(p["n"]))  # misma regla que T1, con medias cortas
     if estrategia_id == "N3":
         return n3_ruptura_rango(int(p["n"]))
+    if estrategia_id == "N1D":
+        return t2_tsmom(int(p["L"]))  # N1 comprobada cada día: misma regla que T2 con L = 28 (D34)
     if estrategia_id == "N4":
         return n4_maximo_52s(float(p["x"].rstrip("%")) / 100)
     raise ValueError(f"Estrategia desconocida: {estrategia_id}")
