@@ -56,7 +56,8 @@ if __name__ == "__main__":
 
 class TestDatosOro(unittest.TestCase):
     def test_bloquea_test_del_oro(self):
-        self.assertFalse(datos.TEST_ORO_DESBLOQUEADO)
+        antes, datos.TEST_ORO_DESBLOQUEADO = datos.TEST_ORO_DESBLOQUEADO, False  # la lógica se sigue probando (D43)
+        self.addCleanup(setattr, datos, "TEST_ORO_DESBLOQUEADO", antes)
         with self.assertRaises(datos.DatosTestBloqueados):
             datos.descargar_yahoo("GLD", date(2018, 12, 1), date(2019, 1, 2))  # falla antes de tocar la red
         with tempfile.TemporaryDirectory() as d:

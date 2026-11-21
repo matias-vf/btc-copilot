@@ -130,5 +130,25 @@
       "2012-10-26 -> 2012-10-31"
     ],
     "velas_en_fin_de_semana": []
+  },
+  "gld_yahoo_1d_test_2019_2026.csv": {
+    "fuente": "Yahoo Finance GLD 1d",
+    "pedido": [
+      "2019-01-01",
+      "2026-11-20"
+    ],
+    "descargado_utc": "2026-11-21T22:21:49+00:00",
+    "sha256": "2aa0f4355cc7d7d967051b82a375ef7f6a218f567bb4fb77f87841bb5fc12835",
+    "primera": "2019-01-02",
+    "ultima": "2026-11-20",
+    "velas": 1984,
+    "dias_esperados": 2880,
+    "duplicados": [],
+    "huecos": [],
+    "ohlc_incoherentes": [],
+    "dias_volumen_cero": [],
+    "ordenadas": true,
+    "huecos_largos": [],
+    "velas_en_fin_de_semana": []
   }
 }

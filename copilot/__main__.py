@@ -14,6 +14,7 @@
   riesgo2     segunda búsqueda, Prompts 6 y 7: cartera y exposición (una sola vez)
   test        evaluación final en TEST (regla D21, una sola vez)
   universo    tercera búsqueda: las 1000 en TRAIN, otra época y TEST (D36, una sola vez)
+  oro         prueba en el oro (GLD) las reglas del copiloto (D43, una sola vez)
   diversificar  añade hasta 5 estrategias sin la corrección estadística (D40, una sola vez)
   n1d         evalúa N1 con revisión diaria (D34, una sola vez)
   vigia       observación horaria del mercado (no opera; D33)
@@ -196,6 +197,14 @@ def universo() -> int:
     return 0
 
 
+def oro() -> int:
+    from copilot import oro as o
+
+    out = o.ejecutar()
+    print(f"Oro evaluado y registrado. Aprueban: {out['aprobadas'] or 'ninguna'}. Informe en docs/oro.md")
+    return 0
+
+
 def diversificar() -> int:
     from copilot import universo_eval as ue
 
@@ -291,7 +300,7 @@ if __name__ == "__main__":
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
-    ordenes = {"diversificar": diversificar, "universo": universo, "n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
+    ordenes = {"oro": oro, "diversificar": diversificar, "universo": universo, "n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}

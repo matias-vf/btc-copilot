@@ -88,12 +88,12 @@ def backtest(velas: Sequence[Vela], estrategia: Estrategia, costes: Costes = BIN
     return r
 
 
-def metricas(r: Resultado) -> dict:
+def metricas(r: Resultado, dias_ano: int = 365) -> dict:  # 252 en bolsa (D43)
     eq = [r.capital] + r.equity
     rets = [b / a - 1 if a else 0.0 for a, b in zip(eq, eq[1:])]  # capital 0 (ruina): sin rentabilidad
     media = sum(rets) / len(rets)
     var = sum((x - media) ** 2 for x in rets) / (len(rets) - 1) if len(rets) > 1 else 0.0
-    sharpe = media / sqrt(var) * sqrt(365) if var > 0 else 0.0
+    sharpe = media / sqrt(var) * sqrt(dias_ano) if var > 0 else 0.0
     pico, mdd = eq[0], 0.0
     for x in eq:
         pico = max(pico, x)
@@ -102,7 +102,7 @@ def metricas(r: Resultado) -> dict:
     entradas = sum(1 for e in r.ejecuciones if e["de"] == 0 and e["a"] > 0)
     return {
         "rentabilidad": eq[-1] / r.capital - 1,
-        "cagr": (eq[-1] / r.capital) ** (365 / dias) - 1,
+        "cagr": (eq[-1] / r.capital) ** (dias_ano / dias) - 1,
         "sharpe": sharpe,
         "max_drawdown": mdd,
         "operaciones": entradas,

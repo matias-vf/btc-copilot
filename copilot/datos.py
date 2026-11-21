@@ -145,7 +145,7 @@ def cargar(ruta: Path) -> list[list]:
 # --- Segundo mercado: oro (GLD), D42 ------------------------------------------------------------------
 
 INICIO_TEST_ORO = date(2019, 1, 1)
-TEST_ORO_DESBLOQUEADO = False  # cambiar solo tras recibir «UNLOCK» del usuario para el oro
+TEST_ORO_DESBLOQUEADO = True  # «UNLOCK. Elimina esa restricción» del usuario, 2026-11-21 (D43)
 
 
 def comprobar_no_test_oro(fin: date) -> None:

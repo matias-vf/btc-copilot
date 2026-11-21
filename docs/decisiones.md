@@ -484,3 +484,17 @@ la volatilidad (mensual). El límite de posiciones simultáneas pasa de 3 a 7 (u
   costes en las tres épocas), marcándolas «SIN significación estadística».
 - **Copiloto:** el oro tendrá su propia cuenta de paper trading de 100 USD ficticios y sus propios registros, con los
   mismos límites (exposición máxima 25 %, parada de emergencia, vigilancia). El resumen diario sumará las dos cuentas.
+
+## D43. 2026-11-21. Oro: «UNLOCK» del usuario y restricción eliminada; se prueban las reglas del copiloto sin elegir nada
+El usuario escribió «UNLOCK. Elimina esa restricción»: `TEST_ORO_DESBLOQUEADO = True`. Se cambia el plan de D42 por el
+más pequeño y más limpio: **no se elige ninguna estrategia con datos del oro**. Se prueban en GLD, tal cual, las reglas
+que ya usa el copiloto de BTC. Como ninguna se eligió mirando el oro, toda su historia (2004-2026) es una prueba fuera
+de muestra para ellas.
+- Reglas: N1D, U0940 (F25), U0082 (F02), U0193 y U0190 (F04), U0731 (F14). Los periodos se cuentan en velas (días de
+  mercado). **N1 no se puede aplicar**: decide con la vela del domingo y la bolsa no abre en domingo.
+- Aprueba una regla si cumple el criterio v2 (menos drawdown y Sharpe >= Buy & Hold de GLD en la misma ventana, desde la
+  vela 365) en las tres épocas (2004-2010, 2011-2018, 2019-2026) y tiene un Sharpe deflactado >= 0,95 en 2011-2026
+  con N = 6 pruebas. Costes 0,05 % por lado (D42); si opera más de una vez por semana, también con costes x2.
+- Las que aprueben forman el copiloto del oro (cuenta de paper propia, 100 USD ficticios, exposición máxima 25 %).
+  Si no aprueba ninguna, el oro queda sin copiloto y se dice.
+- Sharpe anualizado con 252 días en el oro.
