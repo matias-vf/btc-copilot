@@ -505,3 +505,15 @@ oro ni llega a un Sharpe deflactado de 0,95 (el mayor, N1D, 0,863 con N = 6). En
 Buy & Hold de GLD (+108 %); en 2011-2018 casi todas pierden dinero. Solo U0193 (en TRAIN) y N1D y U0731 (en TEST)
 cumplen el criterio en alguna época. Conclusión: estas reglas no generalizan a otro mercado; su buen resultado en BTC
 puede ser propio de BTC o suerte, y el paper trading en vivo es la prueba que falta. Según D43, el oro queda sin copiloto.
+
+## D45. 2026-11-21. Búsqueda de reglas propias para el oro (el usuario: «Sí, buscar en el oro»). Fijado ANTES de ejecutar
+- Se aplica D42 tal cual: el universo de 1000 variantes en GLD, TRAIN 2011-2018 desde la vela 365; criterio v2 frente a
+  Buy & Hold de GLD en la misma ventana; costes x2 si opera más de una vez por semana; Sharpe deflactado >= 0,95 con
+  N = 1000. Las candidatas (criterio v2 y costes) se prueban en la otra época (2004-2010, desde la vela 365) y en TEST
+  (2019-2026, con la historia anterior delante) con el criterio v2. Selección de hasta 5: primero las que superan el
+  Sharpe deflactado y después, si faltan, las demás que cumplan las tres épocas, marcadas «SIN significación
+  estadística»; siempre en orden de Sharpe deflactado y con correlación <= 0,9 entre ellas. Costes 0,05 % por lado;
+  Sharpe anualizado con 252 días.
+- **Aviso:** el TEST del oro ya se vio (D43, D44), así que aquí tampoco es una prueba limpia; la que decide es el paper.
+- Las reglas que dependen del domingo (F05) o de días de fin de semana (parte de F21) no operan nunca en bolsa: se dejan
+  así, porque cambiarlas sería crear reglas nuevas.

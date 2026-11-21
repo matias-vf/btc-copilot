@@ -96,3 +96,98 @@ def _escribir(res, bh, aprobadas) -> None:
     l += ["", ("Aprueban y forman el copiloto del oro: " + ", ".join(aprobadas) + "." if aprobadas
                else "**Ninguna regla aprueba en el oro.** El oro queda sin copiloto."), ""]
     SALIDA.write_text("\n".join(l) + "\n", encoding="utf-8", newline="\n")
+
+
+# --- D45: el universo de 1000 en el oro ---------------------------------------------------------------
+
+LOTES_U = {"TRAIN": "oro-universo-train-v1", "otra época": "oro-universo-otra-v1", "TEST": "oro-universo-test-v1"}
+SALIDA_U = registro.RAIZ / "docs" / "oro_universo.md"
+
+
+def _medir_sig(v, sig, i0, costes=COSTES):
+    r = recortar(U.backtest_rapido(v, sig, costes), i0)
+    return metricas(r, DIAS), ca.rents(r)
+
+
+def universo() -> dict:
+    if any(train._ya_ejecutado(l) for l in LOTES_U.values()):
+        raise SystemExit("La búsqueda en el oro ya se ejecutó.")
+    v_o, v_tr, v_te = (velas(FICHEROS[e]) for e in ("otra época", "TRAIN", "TEST"))
+    v_tt = v_tr + v_te
+    i0 = U.ARRANQUE
+    bh, _ = _medir_sig(v_tr, [1.0] * len(v_tr), i0)
+    filas, srs = [], []
+    for uid, fid, fn, ref, p in U.catalogo():
+        sig = fn(v_tr, **p)
+        m, rets = _medir_sig(v_tr, sig, i0)
+        mu, sd, a, c = momentos(rets)
+        sr = mu / sd if sd else 0.0
+        srs.append(sr)
+        x2 = None
+        if requiere_costes_x2_x3(m):
+            m2, _ = _medir_sig(v_tr, sig, i0, COSTES.x(2))
+            x2 = {**train._redondear(m2), "criterios": train2.aprueba_v2(m2, bh)}
+        filas.append({"lote": LOTES_U["TRAIN"], "mercado": "GLD", "uid": uid, "estrategia_id": fid,
+                      "variante": U.texto_variante(p), "metricas": train._redondear(m), "buy_hold": train._redondear(bh),
+                      "criterios": train2.aprueba_v2(m, bh), "costes_x2": x2, "sr": sr, "T": len(rets),
+                      "asim": a, "curt": c})
+    mu = sum(srs) / len(srs)
+    var_sr = sum((s - mu) ** 2 for s in srs) / (len(srs) - 1)
+    for f in filas:
+        f["sharpe_deflactado"] = sharpe_deflactado(f["sr"], f["T"], f["asim"], f["curt"], var_sr, 1000)
+        f["pasa_costes"] = f["costes_x2"] is None or all(f["costes_x2"]["criterios"].values())
+        f["v2_y_costes"] = all(f["criterios"].values()) and f["pasa_costes"]
+        f["aprobada_train"] = f["v2_y_costes"] and f["sharpe_deflactado"] >= 0.95
+    cand = [f for f in filas if f["v2_y_costes"]]
+    rob = {}
+    for ep, (v, j0) in {"otra época": (v_o, i0), "TEST": (v_tt, len(v_tr))}.items():
+        b, _ = _medir_sig(v, [1.0] * len(v), j0)
+        rob[ep] = {}
+        for f in cand:
+            m, _ = _medir_sig(v, U.senales(f["estrategia_id"], f["variante"], v), j0)
+            crit = train2.aprueba_v2(m, b)
+            rob[ep][f["uid"]] = {"lote": LOTES_U[ep], "mercado": "GLD", "uid": f["uid"],
+                                 "estrategia_id": f["estrategia_id"], "variante": f["variante"],
+                                 "metricas": train._redondear(m), "buy_hold": train._redondear(b),
+                                 "criterios": crit, "aprobada": all(crit.values())}
+    tres = [f for f in cand if rob["otra época"][f["uid"]]["aprobada"] and rob["TEST"][f["uid"]]["aprobada"]]
+    orden = (sorted([f for f in tres if f["aprobada_train"]], key=lambda f: -f["sharpe_deflactado"])
+             + sorted([f for f in tres if not f["aprobada_train"]], key=lambda f: -f["sharpe_deflactado"]))
+    elegidas = []
+    for f in orden:
+        r = _medir_sig(v_tr, U.senales(f["estrategia_id"], f["variante"], v_tr), i0)[1]
+        if all(ca.correlacion(r, g["_r"]) <= 0.9 for g in elegidas):
+            elegidas.append({**f, "_r": r, "significativa": f["aprobada_train"]})
+        if len(elegidas) == 5:
+            break
+    registro.registrar_experimentos(filas + list(rob["otra época"].values()) + list(rob["TEST"].values()))
+    _escribir_u(filas, bh, cand, tres, elegidas, rob)
+    return {"cand": cand, "tres": tres, "elegidas": elegidas}
+
+
+def _escribir_u(filas, bh, cand, tres, elegidas, rob) -> None:
+    nombre = {x[0]: x[1] for x in U.FAMILIAS}
+    l = ["# Oro (GLD): búsqueda propia con el universo de 1000 (D45)", "",
+         "Generado por `python -m copilot oro-universo`. Reglas fijadas antes: D42 y D45. "
+         "**El TEST del oro ya se había visto.**",
+         f"TRAIN 2011-2018 desde la vela 365 ({filas[0]['T']} días). Buy & Hold de GLD: rentabilidad "
+         f"{pct(bh['rentabilidad'])}, Sharpe {bh['sharpe']:.2f}, drawdown {pct(bh['max_drawdown'])}.", "",
+         "## Embudo", "", f"- Criterio v2 y costes en TRAIN: {len(cand)} de 1000.",
+         f"- Además, Sharpe deflactado >= 0,95: **{sum(f['aprobada_train'] for f in filas)}** "
+         f"(el mayor: {max(f['sharpe_deflactado'] for f in filas):.3f}).",
+         f"- Criterio v2 también en la otra época y en TEST: **{len(tres)}**.",
+         f"- Elegidas (máximo 5, correlación <= 0,9): **{len(elegidas)}**.", ""]
+    if elegidas:
+        l += ["| Id | Familia | Variante | TRAIN Sharpe (DD) | Otra Sharpe (DD) | TEST Sharpe (DD) | TEST rent. (B&H) "
+              "| Sharpe deflactado | Significativa |", "|---|---|---|---|---|---|---|---|---|"]
+        for g in elegidas:
+            o, t = rob["otra época"][g["uid"]], rob["TEST"][g["uid"]]
+            l.append(f"| {g['uid']} | {g['estrategia_id']} {nombre[g['estrategia_id']]} | {g['variante']} | "
+                     f"{g['metricas']['sharpe']:.2f} ({pct(g['metricas']['max_drawdown'])}) | "
+                     f"{o['metricas']['sharpe']:.2f} ({pct(o['metricas']['max_drawdown'])}) | "
+                     f"{t['metricas']['sharpe']:.2f} ({pct(t['metricas']['max_drawdown'])}) | "
+                     f"{pct(t['metricas']['rentabilidad'])} ({pct(t['buy_hold']['rentabilidad'])}) | "
+                     f"{g['sharpe_deflactado']:.3f} | {'sí' if g['significativa'] else 'NO (sin significación estadística)'} |")
+    else:
+        l.append("**Ninguna variante cumple el criterio en las tres épocas del oro.** El oro sigue sin copiloto.")
+    SALIDA_U.write_text("\n".join(l) + "\n", encoding="utf-8", newline="\n")
