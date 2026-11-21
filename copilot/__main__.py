@@ -205,6 +205,14 @@ def oro() -> int:
     return 0
 
 
+def oro_universo() -> int:
+    from copilot import oro as o
+
+    out = o.universo()
+    print(f"Oro: {len(out['tres'])} pasan las tres épocas, {len(out['elegidas'])} elegidas. Informe en docs/oro_universo.md")
+    return 0
+
+
 def diversificar() -> int:
     from copilot import universo_eval as ue
 
@@ -300,7 +308,7 @@ if __name__ == "__main__":
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
-    ordenes = {"oro": oro, "diversificar": diversificar, "universo": universo, "n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
+    ordenes = {"oro-universo": oro_universo, "oro": oro, "diversificar": diversificar, "universo": universo, "n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}
