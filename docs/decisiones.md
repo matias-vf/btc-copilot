@@ -454,3 +454,12 @@ Fijado ANTES de evaluar las candidatas en la otra época y en TEST:
   mayor de 0,9 con N1, N1D o con otra ya elegida.
 - Entran en el copiloto marcadas «EXPERIMENTAL, SIN significación estadística», junto a N1 y N1D, con pesos inversos a la
   volatilidad (mensual) y exposición total máxima del 25 %. La prueba que decide es el paper trading en vivo.
+
+## D41. 2026-11-21. Resultado de D40: cinco estrategias más en el copiloto
+Lotes `universo-otra-epoca-v2` y `universo-test-v2` (`docs/universo_diversificacion.md`). De 508 candidatas, 172 cumplen
+el criterio v2 en las tres épocas; se eligen 5 por Sharpe deflactado con correlación <= 0,9: U0940 (F25 momentum 28 días
+y precio sobre SMA 100), U0082 (F02 cruce SMA 5/100 con banda del 1 %), U0193 (F04 momentum 35 días con umbral del 10 %),
+U0190 (F04 momentum 35 días) y U0731 (F14 a menos del 10 % del máximo de 60 días). Todas son de seguimiento de
+tendencia y se parecen bastante a N1 y N1D (correlación 0,80 a 0,90): diversifican poco. Entran en el copiloto
+EXPERIMENTALES y SIN significación estadística; total 7 estrategias, exposición total máxima 25 %, pesos inversos a
+la volatilidad (mensual). El límite de posiciones simultáneas pasa de 3 a 7 (una por estrategia).

@@ -12,7 +12,7 @@ from copilot import registro
 from copilot.costes import BINANCE_SPOT, Costes
 
 LIMITE_EXPOSICION = 0.25   # D14: exposición máxima a BTC
-LIMITE_POSICIONES = 3      # D13: como mucho una posición por componente
+LIMITE_POSICIONES = 7      # D41: como mucho una posición por estrategia del copiloto (antes 3, D13)
 LIMITE_PERDIDA = 0.35      # D13: drawdown máximo tolerado de la cuenta
 CAPITAL_INICIAL = 100.0
 

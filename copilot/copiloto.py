@@ -33,7 +33,11 @@ def nivel_n1d(h, L: int = 28):
 
 
 # D35: N1D (N1 con revisión diaria) aprobó todo el proceso (D34) y se suma a N1 L=4.
-GRUPOS = {"N1": [("N1", "L=4")], "N1D": [("N1D", "L=28")]}
+GRUPOS = {"N1": [("N1", "L=4")], "N1D": [("N1D", "L=28")],
+          # D41: añadidas por la tercera búsqueda (D40), EXPERIMENTALES y SIN significación estadística
+          "U0940": [("F25", "L=28,n=100")], "U0082": [("F02", "s=5,l=100,banda=0.01")],
+          "U0193": [("F04", "L=35,umbral=0.1")], "U0190": [("F04", "L=35,umbral=0.0")],
+          "U0731": [("F14", "ventana=60,x=0.1")]}
 NIVEL_SALIDA = {**riesgo.NIVEL_SALIDA, ("N1", "L=4"): nivel_n1, ("N1D", "L=28"): nivel_n1d}
 ENTRADA = {("T1", "sma_n=100"): lambda h: estrategias._sma(h, 100),
            ("B1", "N=20,M=10"): lambda h: max(v.high for v in h[-20:]) if len(h) >= 20 else None,
@@ -41,8 +45,10 @@ ENTRADA = {("T1", "sma_n=100"): lambda h: estrategias._sma(h, 100),
            ("N1", "L=4"): nivel_n1, ("N1D", "L=28"): nivel_n1d}
 ESTADO_VALIDACION = ("EXPERIMENTAL: N1 L=4 (domingos) y N1D (cualquier día) aprobaron el criterio v2 en TRAIN "
                      "(2017-2022), en otra época (Bitstamp 2011-2016) y en TEST (2023-2026, ya visto antes de elegirlas). "
-                     "Deben superar al menos un mes de paper trading en vivo. No son estrategias plenamente validadas.")
-VALIDADAS: set = {("N1", "L=4"), ("N1D", "L=28")}
+                     "Las cinco de la tercera búsqueda (U0940, U0082, U0193, U0190, U0731) no superaron la corrección por "
+                     "1000 pruebas: SIN significación estadística. Todas deben superar al menos un mes de paper trading en "
+                     "vivo. No son estrategias plenamente validadas.")
+VALIDADAS: set = {k for ks in GRUPOS.values() for k in ks}
 TEST_FICHERO = datos.DATOS / "btcusdt_binance_1d_test.csv"
 MIN_CAMBIO = 0.01  # reequilibrios menores de 1 punto de exposición no se ejecutan
 NY = ZoneInfo("America/New_York")
@@ -61,7 +67,7 @@ def referencia_train() -> dict:
     hist = {}
     for g in GRUPOS.values():
         for k in g:
-            m = next(e["metricas"] for e in exps if e.get("lote") in (train.LOTE, train2.LOTE, "busqueda3-train-v1")
+            m = next(e["metricas"] for e in exps if e.get("lote") in (train.LOTE, train2.LOTE, "busqueda3-train-v1", "universo-train-v1")
                      and e["estrategia_id"] == k[0] and e["variante"] == k[1])
             ops = riesgo.operaciones(estrategias.backtest_de(k, velas))
             ganadoras = sorted(x for x in ops if x > 0)
@@ -171,7 +177,8 @@ def decidir(velas, posiciones: dict, objetivo_prev: float, vig_dia: dict | None,
             nuevas[n] = ahora_pos
             peso = pesos[g] / len(ks) * paper.LIMITE_EXPOSICION
             objetivo += peso * ahora_pos
-            salida, entrada = NIVEL_SALIDA[k](velas), ENTRADA[k](velas)
+            salida, entrada = NIVEL_SALIDA.get(k, lambda h: None)(velas), ENTRADA.get(k, lambda h: None)(velas)
+            universo = k[0].startswith("F")
             h = ref["hist"][k]
             comp = {"estrategia": n, "estado_vigilancia": estado, "posicion_anterior": antes, "posicion_nueva": ahora_pos,
                     "peso_en_capital": peso, "nivel_salida": salida, "nivel_entrada": entrada, "nota": nota,
@@ -187,6 +194,8 @@ def decidir(velas, posiciones: dict, objetivo_prev: float, vig_dia: dict | None,
             elif k[0] == "N1D":
                 r28 = c / velas[-29].close - 1 if len(velas) > 28 else 0.0
                 regla = f"rentabilidad de 28 días {r28:+.1%} ({'> 0' if r28 > 0 else '<= 0'}), revisada cada día"
+            elif universo:
+                regla = f"regla {k[0]} {k[1]} al cierre diario: {'comprado' if quiere else 'liquidez'}"
             elif k[0] == "T1":
                 regla = f"cierre {c:,.2f} {'>' if c > (salida or 0) else '<='} SMA 100 {salida:,.2f}"
             else:
@@ -199,11 +208,14 @@ def decidir(velas, posiciones: dict, objetivo_prev: float, vig_dia: dict | None,
             if ahora_pos > 0:
                 d = (c - salida) / c if salida else 0.0
                 # N1 no tiene salida hasta el domingo: su riesgo es una mala semana de TRAIN (percentil 5)
-                riesgo_salida += peso * (abs(h["p5_semana"]) if k[0] == "N1" else max(d, 0.0))
+                riesgo_salida += peso * (abs(h["p5_semana"]) if k[0] == "N1" or salida is None else max(d, 0.0))
                 riesgo_hist += peso * abs(h["peor_operacion"])
-                cuando = f"el cierre del domingo {prox}" if k[0] == "N1" else "un cierre diario"
-                senal["invalidacion"].append(f"{n}: se invalida con {cuando} por debajo de {salida:,.2f} "
-                                             f"({-d:+.1%} desde el precio de referencia).")
+                if salida is None:
+                    senal["invalidacion"].append(f"{n}: se invalida cuando su regla deje de cumplirse en un cierre diario.")
+                else:
+                    cuando = f"el cierre del domingo {prox}" if k[0] == "N1" else "un cierre diario"
+                    senal["invalidacion"].append(f"{n}: se invalida con {cuando} por debajo de {salida:,.2f} "
+                                                 f"({-d:+.1%} desde el precio de referencia).")
             else:
                 if entrada:
                     cuando = f"el cierre del domingo {prox}" if k[0] == "N1" else "un cierre diario"
