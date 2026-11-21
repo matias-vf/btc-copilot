@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## 2026-11-21. Vigía horario y resumen diario
+- Vigía cada hora (D33): observa el precio y anota qué haría N1 el domingo; no genera señales ni órdenes.
+- Orden `resumen` (solo lectura) y resumen diario a las 20:00 en la app de Claude.
+- `verificar` comprueba también los registros del paper trading, la vigilancia y el vigía.
+
 ## 2026-11-21. Segunda búsqueda completa y paper trading en vivo
 - Revisión de código: N1 por fecha, ventana alineada con Buy & Hold, ejecución de lotes y formato unificados (D27).
 - TRAIN alineado: 10 de 11 aprueban; Prompt 5: solo N1 L=4 sobrevive (D28, D29); exposición 25 % (D30, D31).

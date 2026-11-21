@@ -142,3 +142,23 @@ class TestCopiloto(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestVigia(unittest.TestCase):
+    def test_observar(self):
+        from copilot import vigia
+        velas = cargar_velas(train.FICHERO)
+        h = [v for v in velas if v.fecha <= date(2020, 11, 17)]                 # hasta un martes
+        ahora = datetime(2020, 11, 18, 12, 0, tzinfo=timezone.utc)            # miércoles
+        nivel = next(v.close for v in h if v.fecha == date(2020, 11, 22) - timedelta(days=28))
+        o = vigia.observar(h, {"precio": nivel * 1.10, "cambio_24h": 0.06}, ahora, 0.0)
+        self.assertEqual(o["domingo_decision"], "2020-11-22")
+        self.assertEqual(o["si_cerrase_asi"], "COMPRA (entraría)")
+        self.assertTrue(any("Movimiento fuerte" in a for a in o["avisos"]))
+        o = vigia.observar(h, {"precio": nivel * 0.99, "cambio_24h": 0.0}, ahora, 1.0)
+        self.assertEqual(o["si_cerrase_asi"], "VENTA (saldría a liquidez)")
+        self.assertTrue(any("del nivel de N1" in a for a in o["avisos"]))
+        self.assertIn("no es una señal", o["nota"])
+        domingo = vigia.observar(h + [h[-1]._replace(fecha=date(2020, 11, 18))], {"precio": nivel, "cambio_24h": 0},
+                                 datetime(2020, 11, 22, 9, 0, tzinfo=timezone.utc), 0.0)
+        self.assertEqual(domingo["domingo_decision"], "2020-11-22")              # en domingo, la decisión es hoy

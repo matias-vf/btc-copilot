@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 
 from copilot import copiloto as cp, paper, registro
 from copilot.motor import pct
@@ -35,10 +35,19 @@ def texto(rutas: dict = cp.RUTAS_VIVO) -> str:
     l += [f"Se invalida si: {x}" for x in s.get("invalidacion", [])]
     l += [f"Vigilancia: {e['tipo']} - {e['estrategia']}: {e['motivo']}" for e in eventos]
     l += [f"Aviso: {a}" for a in s.get("avisos", [])]
+    obs = [e["datos"] for e in registro.leer(registro.REGISTROS / "vigia.jsonl")]         if (registro.REGISTROS / "vigia.jsonl").exists() else []
+    hoy = [o for o in obs if o["fecha_hora_utc"][:10] == datetime.now(timezone.utc).date().isoformat()]
+    if obs:
+        o = obs[-1]
+        l.append(f"Vigía (última de {len(hoy)} observaciones de hoy, {o['fecha_hora_utc']} UTC): BTC {o['precio']:,.2f}"
+                 + (f"; si el domingo {o['domingo_decision']} cerrase así: {o['si_cerrase_asi']}" if o.get("si_cerrase_asi") else "")
+                 + ". Es una observación, no una señal.")
+        vistos = sorted({a for x in hoy for a in x["avisos"]})
+        l += [f"Vigía hoy: {a}" for a in vistos]
     if parada:
         l.append(f"PARADA ACTIVA desde {parada.get('fecha')}: {parada.get('motivo')}")
     if errores:
         l.append(f"Errores de funcionamiento registrados: {len(errores)} (último: {errores[-1].get('error')})")
-    if date.today().toordinal() - date.fromisoformat(s["vela"]).toordinal() > 2:
+    if datetime.now(timezone.utc).date().toordinal() - date.fromisoformat(s["vela"]).toordinal() > 2:
         l.append("ATENCIÓN: la última vela procesada tiene más de 2 días; puede que la tarea diaria no se esté ejecutando.")
     return "\n".join(l)

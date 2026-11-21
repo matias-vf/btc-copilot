@@ -13,6 +13,7 @@
   robustez2   segunda búsqueda, Prompt 5: otra época y TEST (una sola vez)
   riesgo2     segunda búsqueda, Prompts 6 y 7: cartera y exposición (una sola vez)
   test        evaluación final en TEST (regla D21, una sola vez)
+  vigia       observación horaria del mercado (no opera; D33)
   resumen     resumen del paper trading en vivo (solo lee los registros)
   hoy         un ciclo en vivo con datos de hoy (bloqueado mientras TEST siga cerrado)
   en-marcha   funcionamiento continuo en vivo, un ciclo al día (bloqueado mientras TEST siga cerrado)
@@ -33,7 +34,8 @@ from copilot.estrategias_iniciales import entradas
 
 def verificar() -> int:
     fallos = 0
-    for ruta in (registro.IDEAS, registro.EXPERIMENTOS, registro.SENALES):
+    vivos = [registro.REGISTROS / n for n in ("paper.jsonl", "vigilancia.jsonl", "vigia.jsonl")]
+    for ruta in (registro.IDEAS, registro.EXPERIMENTOS, registro.SENALES, *[r for r in vivos if r.exists()]):
         try:
             n = len(registro.leer(ruta))
         except registro.RegistroCorrupto as e:
@@ -181,6 +183,13 @@ def riesgo2() -> int:
     return 0
 
 
+def vigia() -> int:
+    from copilot import vigia as vg
+
+    print(vg.texto(vg.ejecutar()))
+    return 0
+
+
 def resumen() -> int:
     from copilot import resumen as rs
 
@@ -253,7 +262,7 @@ if __name__ == "__main__":
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
-    ordenes = {"resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
+    ordenes = {"vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}

@@ -90,12 +90,18 @@ historial de cambios). Este paso no usa librerías extra.
   Si el ordenador estaba apagado, se ejecuta al encenderlo y recupera los días que falten.
 - Estrategia: **N1 L=4** (momentum de 4 semanas, EXPERIMENTAL). Solo decide los domingos. Como mucho el 25 % del
   capital ficticio (100 USD) en BTC. **No se envía ninguna orden real.**
+- **Vigía cada hora** (tarea «BTCCopilot vigia»): mira el precio y anota qué haría N1 si el domingo cerrase así.
+  Solo observa: **no opera**. Las operaciones salen únicamente de la regla de N1; si no se cumple, NO OPERAR.
+- **Resumen a las 20:00** en la app de Claude (tarea programada «Resumen diario del copiloto BTC»), con el vigía incluido.
 - Para ver cómo va: abre con doble clic `registros\panel_vivo.html`.
 - Para ver la señal de hoy en la terminal: `python -m copilot hoy` (pasos abajo).
 - Parada de emergencia del paper trading: `python -m copilot parar "motivo"`; para volver: `python -m copilot reanudar "motivo"`.
 - Para quitar la tarea programada, en PowerShell:
   ```powershell
   Unregister-ScheduledTask -TaskName "BTCCopilot diario" -Confirm:$false
+  ```
+  ```powershell
+  Unregister-ScheduledTask -TaskName "BTCCopilot vigia" -Confirm:$false
   ```
 
 ## Cómo se ejecuta
