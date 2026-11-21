@@ -433,3 +433,13 @@ de una sola». Sustituye el punto 6 de D36:
   (prueba automática), con la misma ejecución (cierre de t, apertura de t+1) y los mismos costes. Las 1000 variantes
   pasan la prueba de causalidad (alterar el futuro no cambia ninguna señal pasada) con los datos de TRAIN. El registro
   puede añadir muchas entradas de una vez (`anadir_varios`) conservando la cadena de hashes.
+
+## D39. 2026-11-21. Resultado de la tercera búsqueda (1000 estrategias): ninguna supera la corrección estadística
+Lotes `universo-train-v1` (1000 experimentos; las otras dos fases no tuvieron candidatas). En TRAIN (desde la vela 365),
+512 de 1000 cumplen el criterio v2 y 508 también la regla de costes, pero **ninguna llega a un Sharpe deflactado de 0,95**:
+el mayor es 0,499 (F12 Bollinger ruptura n=50, k=1,0; Sharpe 1,52). Un valor de 0,5 es justo lo que cabe esperar del
+mejor de 1000 intentos por puro azar. N1 L=4 (0,276) y N1D (0,191) tampoco lo superan; se quedan por D37.
+Lectura: con 1000 reglas parecidas, los buenos resultados históricos no se distinguen de la suerte. Las familias de
+reversión (RSI, Bollinger, estocástico, Williams, Darvas) no cumplen ni el criterio v2 en TRAIN.
+Nota de método: N = 1000 trata las variantes como si fueran independientes, aunque muchas están muy correlacionadas;
+eso hace la corrección más dura. La regla se fijó así antes de ver resultados y se aplica tal cual (`docs/universo_resultados.md`).
