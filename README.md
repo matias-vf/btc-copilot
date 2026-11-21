@@ -100,7 +100,7 @@ historial de cambios). Este paso no usa librerías extra.
    python -m copilot senal 2022-12-31
    ```
 7. Para ver el panel de la repetición, abre en el navegador el archivo
-   `repeticion1-01-01_2022-12-31\panel.html` (doble clic desde el Explorador de archivos).
+   `repeticion\2021-01-01_2022-12-31\panel.html` (doble clic desde el Explorador de archivos).
 8. Parada de emergencia del paper trading en vivo (y para reanudar):
    ```powershell
    python -m copilot parar "motivo"
