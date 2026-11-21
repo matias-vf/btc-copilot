@@ -411,3 +411,15 @@ Petición: «repite desde el prompt 1 subiendo el número de estrategias inicial
 6. **Copiloto:** las elegidas sustituyen a N1 y N1D (que, si sobreviven, seguirán), con pesos inversos a la volatilidad,
    reequilibrio mensual y exposición total máxima del 25 %, todas EXPERIMENTALES hasta superar el paper trading en vivo.
    Si no sobrevive ninguna, el copiloto sigue con N1 y N1D, con un aviso de que no superaron la corrección estadística.
+
+## D37. 2026-11-21. Cambio pedido por el usuario antes de evaluar el universo: N1 y N1D se quedan
+Petición: «no descartes la estrategia actual. Que de esta nueva búsqueda salgan algunas estrategias más para no depender
+de una sola». Sustituye el punto 6 de D36:
+- **N1 L=4 y N1D siguen en el copiloto pase lo que pase en la tercera búsqueda.** Si no superan la corrección por
+  muchas pruebas, se dice en el informe, pero no se quitan.
+- La tercera búsqueda **añade** como mucho 5 estrategias nuevas, elegidas por mayor Sharpe deflactado en TRAIN entre
+  las que superen todo el proceso, saltando las que tengan una correlación diaria mayor de 0,9 con N1, N1D o con otra
+  ya elegida (para que diversifiquen de verdad).
+- Todas juntas en el copiloto con pesos inversos a la volatilidad, reequilibrio mensual y exposición total máxima del 25 %.
+- **Ventana común:** todas las variantes del universo (y Buy & Hold) se miden desde la vela 365 de cada época, la ventana
+  más larga del universo, así todas tienen el mismo número de días (necesario para el Sharpe deflactado).
