@@ -355,3 +355,13 @@ lo que indica algo de suerte (`docs/robustez_v2.md`).
   ordenador estaba apagado) que ejecuta `tools/diario.cmd`: ciclo, verificación de registros y commit local de
   `registros/`. Se quita con `Unregister-ScheduledTask -TaskName "BTCCopilot diario"`.
 - El proyecto no se da por terminado hasta superar al menos un mes de paper trading en vivo (no antes del 2026-12-21).
+
+## D33. 2026-11-21. Vigía horario (pedido por el usuario: «que busque oportunidades todo el día, pero que si no lo ve muy claro no es obligatorio que opere»)
+- Cada hora, el vigía lee el precio público de BTC/USDT en Binance (sin claves) y anota una **OBSERVACIÓN** en
+  `registros/vigia.jsonl` (solo añadir): precio, cambio en 24 h, nivel de N1 para el próximo domingo, distancia a ese
+  nivel y qué decidiría N1 si el domingo cerrase al precio actual.
+- **El vigía no genera señales ni órdenes.** Las operaciones siguen saliendo solo de la regla registrada de N1 L=4 con
+  el cierre diario; si no hay una regla que se cumpla, NO OPERAR. Operar por oportunidades vistas entre horas exigiría
+  una estrategia nueva, registrada antes de probarla y validada con todo el proceso.
+- Avisos del vigía: precio a menos del 3 % del nivel de N1, o movimiento de más del 5 % en 24 h.
+- Sus observaciones aparecen en el resumen diario de las 20:00.
