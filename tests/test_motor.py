@@ -311,3 +311,54 @@ class TestVigilanciaV2(unittest.TestCase):
             for s in e["historial"]:
                 if s["hasta"] is not None:
                     self.assertIn("aleatorio", s["motivo"])
+
+
+class TestEstrategiasV2(unittest.TestCase):
+    def test_n1_solo_decide_el_domingo(self):
+        v = velas_aleatorias(60)                      # empieza en domingo (2019-01-06)
+        f = estrategias.n1_momentum_semanal(1)
+        domingo = next(i for i in range(8, 60) if v[i].fecha.weekday() == 6)
+        h = v[: domingo + 1]
+        esperado = 1.0 if h[-1].close / h[-8].close - 1 > 0 else 0.0
+        self.assertEqual(f(h, 0.0), esperado)
+        lunes = v[: domingo + 2]
+        self.assertEqual(f(lunes, 1.0), 1.0)          # entre semana mantiene
+        self.assertEqual(f(lunes, 0.0), 0.0)
+        self.assertEqual(f(v[:1], 0.0), 0.0)          # primer domingo sin historia: liquidez
+        r = backtest(v, f, SIN_COSTES)
+        for e in r.ejecuciones:                       # solo se opera los lunes
+            self.assertEqual(e["fecha"].weekday(), 0)
+
+    def test_n3_ruptura_con_cierres(self):
+        f = estrategias.n3_ruptura_rango(2)
+        self.assertEqual(f(velas_fijas([10, 11, 12]), 0), 1.0)    # 12 > máx(10, 11)
+        self.assertEqual(f(velas_fijas([10, 13, 12]), 0), 0.0)
+        self.assertEqual(f(velas_fijas([10, 11, 9]), 1), 0.0)     # 9 < mín(10, 11)
+        self.assertEqual(f(velas_fijas([10, 11, 10.5]), 1), 1.0)
+        self.assertEqual(f(velas_fijas([10, 11]), 0), 0.0)        # pocos datos
+
+    def test_n4_maximo_52_semanas(self):
+        f = estrategias.n4_maximo_52s(0.10)
+        precios = [100.0] * 364 + [91.0]
+        v = velas_fijas(precios)
+        self.assertEqual(f(v[:-1], 0), 0.0)                       # 364 velas: sin datos suficientes
+        self.assertEqual(f(v, 0), 1.0)                            # 91 >= 0,9 x 100
+        v2 = velas_fijas([100.0] * 364 + [89.0])
+        self.assertEqual(f(v2, 0), 0.0)
+
+    def _variantes_v2(self):
+        ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"].get("busqueda") == 2]
+        return [(i["id"], x) for i in ideas for x in i["configuraciones_permitidas"]]
+
+    def test_once_variantes_se_construyen(self):
+        vs = self._variantes_v2()
+        self.assertEqual(len(vs), 11)
+        for eid, var in vs:
+            estrategias.crear(eid, var)
+
+    def test_n1_a_n4_son_causales(self):
+        v = velas_aleatorias(500)
+        for eid, var in self._variantes_v2():
+            with self.subTest(eid=eid, var=var):
+                self.assertEqual(anticipacion.comprobar(v, lambda _d, e=eid, x=var: estrategias.crear(e, x),
+                                                        cortes=[380, 470]), [])

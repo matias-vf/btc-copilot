@@ -276,3 +276,12 @@ Entradas 13 a 16 de `registros/ideas.jsonl`, con regla exacta, variantes permiti
 (`copilot/estrategias_v2.py`). 11 variantes: N1 L = 1, 2, 4 semanas; N2 n = 5, 10, 20; N3 n = 50, 150, 200;
 N4 x = 10 %, 20 % (experimental). Datos: no hace falta descargar nada; las cuatro usan las velas diarias ya validadas
 (N1 decide solo con el cierre del domingo, a partir de esas mismas velas). Experimentos acumulados hasta ahora: 90.
+
+## D25. 2026-11-21. Prompt 3 (segunda búsqueda): reglas de N1-N4 en el motor
+- El motor, los costes (0,16 % por lado) y la ejecución (cierre de t, apertura de t+1) no cambian (D7).
+- `copilot/estrategias.py`: N1 decide solo con el cierre del domingo y mantiene la posición entre semana (el domingo de
+  hace L semanas es la vela 7·L días antes); N2 usa la misma regla que T1 con medias de 5, 10 y 20 días; N3 compara con
+  los cierres de las n velas previas; N4 compara con el máximo de 365 velas y no opera con menos historia.
+- Pruebas: cada regla con casos a mano, N1 solo opera los lunes, y las 11 variantes pasan la comprobación de
+  anticipación con datos sintéticos. Con los datos reales de TRAIN: 43 de 43 variantes registradas sin anticipación.
+- Ninguna rentabilidad calculada todavía (eso es el Prompt 4).

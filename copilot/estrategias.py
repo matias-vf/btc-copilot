@@ -98,6 +98,37 @@ def p1_vol_objetivo(base: Estrategia, sigma_obj: float, w: int) -> Estrategia:
     return f
 
 
+# --- Segunda búsqueda (D24) ---------------------------------------------------
+
+def n1_momentum_semanal(L: int) -> Estrategia:
+    """Solo decide con el cierre del domingo; entre semana mantiene la posición."""
+    def f(h, pos):
+        if h[-1].fecha.weekday() != 6:
+            return 1.0 if pos > 0 else 0.0
+        i = len(h) - 1 - 7 * L  # el domingo de hace L semanas (velas diarias consecutivas)
+        return 1.0 if i >= 0 and h[-1].close / h[i].close - 1 > 0 else 0.0
+    return f
+
+
+def n3_ruptura_rango(n: int) -> Estrategia:
+    def f(h, pos):
+        if len(h) <= n:
+            return 0.0
+        previos = [v.close for v in h[-n - 1:-1]]
+        if pos == 0:
+            return 1.0 if h[-1].close > max(previos) else 0.0
+        return 0.0 if h[-1].close < min(previos) else 1.0
+    return f
+
+
+def n4_maximo_52s(x: float) -> Estrategia:
+    def f(h, pos):
+        if len(h) < 365:
+            return 0.0
+        return 1.0 if h[-1].close >= (1 - x) * max(v.high for v in h[-365:]) else 0.0
+    return f
+
+
 def crear(estrategia_id: str, variante: str) -> Estrategia:
     """Traduce una variante registrada (texto) en su función."""
     if estrategia_id == "BH":
@@ -117,4 +148,12 @@ def crear(estrategia_id: str, variante: str) -> Estrategia:
     if estrategia_id == "P1":
         base = buy_hold if p["base"] == "buy_hold" else crear("T1", p["base"].split(":", 1)[1])
         return p1_vol_objetivo(base, float(p["sigma_obj"].rstrip("%")) / 100, int(p["ventana"]))
+    if estrategia_id == "N1":
+        return n1_momentum_semanal(int(p["L"]))
+    if estrategia_id == "N2":
+        return t1_sma(int(p["n"]))  # misma regla que T1, con medias cortas
+    if estrategia_id == "N3":
+        return n3_ruptura_rango(int(p["n"]))
+    if estrategia_id == "N4":
+        return n4_maximo_52s(float(p["x"].rstrip("%")) / 100)
     raise ValueError(f"Estrategia desconocida: {estrategia_id}")
