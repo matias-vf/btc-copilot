@@ -257,3 +257,16 @@ Consistencia D9: Spearman de T1 = 0,60 (superficie estable); el orden de B1 se m
 Aplicando D21: **el copiloto se queda sin estrategias validadas y solo dice NO OPERAR** (y, si hubiera posición, VENTA
 para cerrarla). Las estrategias no se borran. Las repeticiones técnicas siguen pudiendo usar las del Prompt 9.
 El usuario pide entonces repetir el proceso con una búsqueda intensiva desde el Prompt 1 (ver D23).
+
+## D23. 2026-11-21. Segunda búsqueda: decisiones del usuario antes de ver ningún resultado
+Respuestas del usuario a las tres preguntas:
+1. **Candidatas:** «N1, N2, N3 y N4». N1 momentum semanal (L = 1, 2, 4 semanas), N2 medias cortas (n = 5, 10, 20 días),
+   N3 ruptura del rango simétrica (n = 50, 150, 200), N4 cerca del máximo de 52 semanas (x = 10 %, 20 %, EXPERIMENTAL).
+   11 variantes. N5 (momentum dual con rentabilidad del efectivo) no se registra. Detalle en `docs/prompt1_v2_candidatas.md`.
+2. **Protocolo:** «TEST como 2ª validación + paper». Selección en TRAIN (2017-2022), robustez en Bitstamp 2011-2016 y
+   TEST 2023-2026 como segunda validación, con el aviso de que ya está visto. Las que pasen entran en el copiloto solo
+   como EXPERIMENTALES hasta superar al menos un mes de paper trading en vivo.
+3. **Criterio versión 2:** «Riesgo: drawdown + Sharpe». Para las estrategias nuevas basta con un drawdown máximo menor
+   que el de Buy & Hold y un Sharpe igual o mayor, sin exigir más rentabilidad. Las estrategias antiguas no se
+   reevalúan con este criterio. Nota de transparencia: con el criterio v2, T1 SMA 100 y T1 SMA 150 habrían aprobado
+   TEST (docs/test.md); por la regla aceptada no se recuperan. Si se quisiera, sería una decisión nueva y registrada.

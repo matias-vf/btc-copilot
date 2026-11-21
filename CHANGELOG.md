@@ -1,5 +1,9 @@
 # Historial de cambios
 
+## 2026-11-21. Segunda búsqueda de estrategias: Prompt 1 v2
+- Búsqueda en la literatura con referencias verificadas; 4 candidatas (11 variantes) y 8 ideas descartadas.
+- Decisiones del usuario (D23): N1-N4, TEST como segunda validación + paper trading, criterio v2 (drawdown + Sharpe).
+
 ## 2026-11-21. TEST desbloqueado y evaluado
 - «UNLOCK» del usuario (D20). Datos de TEST 2023-01-01 a 2026-11-20 descargados y validados.
 - Regla de TEST elegida por el usuario antes de ver resultados (D21). Orden `python -m copilot test`.
