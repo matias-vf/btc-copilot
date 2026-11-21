@@ -9,6 +9,7 @@
   riesgo      Prompt 7: simulaciones de exposición, riesgo por operación y volatilidad (una sola vez)
   vigilancia  Prompt 8: simula la vigilancia diaria del deterioro en la otra época
   senal AAAA-MM-DD   ficha del copiloto para una fecha de TRAIN (no escribe en ningún registro)
+  test        evaluación final en TEST (regla D21, una sola vez)
   hoy         un ciclo en vivo con datos de hoy (bloqueado mientras TEST siga cerrado)
   en-marcha   funcionamiento continuo en vivo, un ciclo al día (bloqueado mientras TEST siga cerrado)
   repeticion AAAA-MM-DD AAAA-MM-DD   paper trading día a día sobre fechas de TRAIN, con registros propios
@@ -152,6 +153,14 @@ def motor_velas():
     return motor.cargar_velas()
 
 
+def test() -> int:
+    from copilot import evaluacion_test as et
+
+    et.ejecutar()
+    print("Evaluación en TEST hecha y registrada. Informe en docs/test.md")
+    return 0
+
+
 def hoy() -> int:
     from copilot import copiloto as cp
     try:
@@ -199,7 +208,7 @@ if __name__ == "__main__":
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
-    ordenes = {"hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
+    ordenes = {"test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}
