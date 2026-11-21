@@ -387,3 +387,27 @@ en la otra época (1,93 frente a 1,50) y en TEST (1,15 frente a 0,93; drawdown -
 (domingos) y N1D (cualquier día), con pesos inversos a la volatilidad (mensual) y exposición total máxima del 25 %,
 ambas EXPERIMENTALES. El vigía horario muestra también qué haría N1D con el cierre del día. Nota: la cartera N1 + N1D
 al 25 % no se ha medido como tal; las cifras de "histórico de la cartera" de la ficha siguen siendo las de N1 al 25 %.
+
+## D36. 2026-11-21. Tercera búsqueda: 1000 estrategias (pedida por el usuario), método fijado ANTES de generar nada
+Petición: «repite desde el prompt 1 subiendo el número de estrategias iniciales a 1000. Puedes escoger la temporalidad».
+1. **Temporalidad elegida: velas diarias (1d)**, con reglas que deciden cada día o cada semana. Motivos: con costes de
+   0,16 % por lado, las reglas intradía publicadas pierden su ventaja (por ejemplo, el efecto de 15 minutos de Shanaev
+   y otros, 2023, son 0,58 pb por minuto); la evidencia publicada en BTC es sobre todo diaria y semanal; y los datos
+   diarios están validados en tres épocas. Las velas horarias quedan fuera de esta búsqueda.
+2. **Universo:** exactamente 1000 variantes de unas 30 familias de reglas antiguas y publicadas (medias móviles, cruces,
+   momentum, filtros de Alexander, rupturas, RSI, Bollinger, reversión a corto plazo, máximos de N días, MACD, OBV,
+   estocástico, ADX, Keltner, volatilidad objetivo, estacionalidad, SAR parabólico, Ichimoku, Williams %R, Darvas...).
+   Parámetros en rejillas convencionales, generados por código (`copilot/universo.py`), no ajustados a los datos.
+   Siguen la idea de los universos de reglas de Sullivan, Timmermann y White (1999) y Hudson y Urquhart (2021).
+   N1 y N1D están dentro del universo y se vuelven a evaluar como cualquier otra.
+3. **Corrección por probar muchas reglas:** en TRAIN, además del criterio v2 (menos drawdown y Sharpe >= Buy & Hold en
+   la misma ventana) y la regla de costes x2, se exige un **Sharpe deflactado (Bailey y López de Prado, 2014) >= 0,95**
+   con N = 1000 pruebas. Es la probabilidad de que el Sharpe verdadero sea positivo teniendo en cuenta cuántas reglas se
+   han probado, la asimetría y las colas gruesas de las rentabilidades.
+4. **Robustez:** las que pasen TRAIN se prueban en la otra época (Bitstamp) y en TEST (segunda validación, ya visto),
+   con el criterio v2.
+5. **Selección final:** como mucho 5 estrategias, elegidas por mayor Sharpe deflactado en TRAIN, saltando cualquiera
+   cuya correlación diaria con una ya elegida sea mayor de 0,9.
+6. **Copiloto:** las elegidas sustituyen a N1 y N1D (que, si sobreviven, seguirán), con pesos inversos a la volatilidad,
+   reequilibrio mensual y exposición total máxima del 25 %, todas EXPERIMENTALES hasta superar el paper trading en vivo.
+   Si no sobrevive ninguna, el copiloto sigue con N1 y N1D, con un aviso de que no superaron la corrección estadística.
