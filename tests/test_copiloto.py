@@ -192,3 +192,39 @@ print("ORO OK")
         r = subprocess.run([sys.executable, "-c", codigo], capture_output=True, text=True, encoding="utf-8",
                            cwd=str(Path(__file__).resolve().parents[1]))
         self.assertIn("ORO OK", r.stdout, r.stderr[-2000:])
+
+
+class TestIntradia(unittest.TestCase):
+    def _dia(self, precios):
+        from copilot.intradia import NY, Barra
+        h0 = datetime(2026, 11, 2, 9, 30, tzinfo=NY)
+        return [Barra(h0 + timedelta(minutes=5 * i), o, hi, lo, c, 1.0) for i, (o, hi, lo, c) in enumerate(precios)]
+
+    def test_reglas_orb(self):
+        from copilot.intradia import eventos_del_dia
+        bajista = self._dia([(100, 101, 99, 99.5), (99.5, 100, 99, 99.8)])
+        self.assertEqual(eventos_del_dia(bajista), [])
+        stop = self._dia([(100, 101, 99, 100.5), (100.6, 101, 100, 100.8), (100.8, 101, 98.5, 99)])
+        ev = eventos_del_dia(stop)
+        self.assertEqual((ev[0]["precio"], ev[1]["motivo"], ev[1]["precio"]), (100.6, "stop", 99))
+        self.assertAlmostEqual(ev[0]["exposicion"], min(0.25, 0.01 / (1.6 / 100.6)))
+        hueco = self._dia([(100, 101, 99, 100.5), (100.6, 101, 100, 100.8), (98, 98.5, 97, 98)])
+        self.assertEqual(eventos_del_dia(hueco)[1]["precio"], 98)                    # abre por debajo del stop
+        objetivo = self._dia([(100, 101, 99.9, 100.5), (100.6, 101, 100.5, 100.8), (100.8, 108, 100.7, 107)])
+        self.assertEqual(eventos_del_dia(objetivo)[1]["motivo"], "objetivo")          # 100.6 + 10 x 0.7 = 107.6
+        abierta = self._dia([(100, 101, 99, 100.5), (100.6, 101, 100, 100.8)])
+        self.assertEqual(len(eventos_del_dia(abierta)), 1)                           # sesión sin terminar: sigue dentro
+
+    def test_ciclo_paper_no_repite(self):
+        import tempfile
+        from copilot import intradia as I
+        with tempfile.TemporaryDirectory() as d:
+            rutas = {"senales": Path(d) / "s.jsonl", "paper": Path(d) / "p.jsonl"}
+            barras = self._dia([(100, 101, 99, 100.5), (100.6, 101, 100, 100.8), (100.8, 101, 98.5, 99)])
+            ahora = barras[1].hora + timedelta(minutes=5)                            # solo 2 velas cerradas
+            self.assertEqual([s["decision"] for s in I.ciclo(barras, ahora, rutas)], ["COMPRA"])
+            self.assertEqual(I.ciclo(barras, ahora, rutas), [])                      # no repite
+            fin = barras[2].hora + timedelta(minutes=5)
+            self.assertEqual([s["decision"] for s in I.ciclo(barras, fin, rutas)], ["VENTA"])
+            ej = [e["datos"] for e in registro.leer(rutas["paper"]) if e["datos"]["tipo"] == "ejecucion"]
+            self.assertEqual([e["lado"] for e in ej], ["compra", "venta"])

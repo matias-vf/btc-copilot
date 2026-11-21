@@ -39,7 +39,8 @@ from copilot.estrategias_iniciales import entradas
 def verificar() -> int:
     fallos = 0
     vivos = [registro.REGISTROS / n for n in ("paper.jsonl", "vigilancia.jsonl", "vigia.jsonl",
-                                              "oro/senales.jsonl", "oro/paper.jsonl", "oro/vigilancia.jsonl")]
+                                              "oro/senales.jsonl", "oro/paper.jsonl", "oro/vigilancia.jsonl",
+                                              "nasdaq_intradia/senales.jsonl", "nasdaq_intradia/paper.jsonl")]
     for ruta in (registro.IDEAS, registro.EXPERIMENTOS, registro.SENALES, *[r for r in vivos if r.exists()]):
         try:
             n = len(registro.leer(ruta))
@@ -206,6 +207,17 @@ def oro() -> int:
     return 0
 
 
+def intradia() -> int:
+    from copilot import intradia as I
+    ahora = datetime.now(timezone.utc)
+    if not I.en_horario(ahora):
+        print(f"Fuera del horario de bolsa de Nueva York ({ahora.astimezone(I.NY):%a %H:%M}): nada que hacer.")
+        return 0
+    for s in I.ciclo(I.descargar("1d"), ahora):
+        print(f"[{s['hora']}] {s['decision']} QQQ a {s['precio_referencia']:,.2f}: {' '.join(s['justificacion'])}")
+    return 0
+
+
 def oro_universo() -> int:
     from copilot import oro as o
 
@@ -245,6 +257,10 @@ def resumen() -> int:
     if (oro / "paper.jsonl").exists():
         print()
         print(rs.texto({k: oro / f"{k}.jsonl" for k in ("senales", "paper", "vigilancia")}, "ORO"))
+    intra = registro.REGISTROS / "nasdaq_intradia"
+    if (intra / "paper.jsonl").exists():
+        print()
+        print(rs.texto({k: intra / f"{k}.jsonl" for k in ("senales", "paper", "vigilancia")}, "NASDAQ intradía"))
     return 0
 
 
@@ -315,7 +331,7 @@ if __name__ == "__main__":
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
-    ordenes = {"oro-universo": oro_universo, "oro": oro, "diversificar": diversificar, "universo": universo, "n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
+    ordenes = {"intradia": intradia, "oro-universo": oro_universo, "oro": oro, "diversificar": diversificar, "universo": universo, "n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}

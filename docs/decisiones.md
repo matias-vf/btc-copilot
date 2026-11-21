@@ -566,3 +566,13 @@ se puede medir ni validar, así que no se hace. Se registra una regla intradía 
 - **Vigilancia:** una tarea de Windows cada 5 minutos en días laborables; el programa solo actúa dentro del horario de
   bolsa de Nueva York (lo calcula él, con los cambios de horario). De la Day Trader skill se usa la idea de entrada,
   salida y tamaño; **nunca** la pieza que envía órdenes a un bróker.
+
+## D49. 2026-11-21. Resultado de I01 y vigilancia intradía en marcha
+Lote `intradia-v1` (`data/qqq_yahoo_5m_60d_hasta_2026-11-20.csv`, 60 sesiones del 2026-08-28 al 2026-11-20; la del
+2026-11-05 llega incompleta de Yahoo). I01: 30 operaciones (10 ganadoras; 19 stops, 2 objetivos, 9 cierres),
+rentabilidad +0,08 %, Sharpe 0,24 y drawdown -0,46 %, frente a Buy & Hold de QQQ -14,9 %, Sharpe -2,43 y drawdown
+-19,7 %. Cumple el criterio de D48, pero sobre todo porque QQQ cayó: su ganancia es prácticamente cero y la muestra es
+muy corta. Entra en paper como EXPERIMENTAL (cuenta de 100 USD ficticios en `registros/nasdaq_intradia/`).
+Tarea de Windows «BTCCopilot intradia»: cada 5 minutos de lunes a viernes de 14:30 a 23:30 (hora de Madrid); el programa
+solo actúa entre las 9:35 y las 16:10 de Nueva York. Las tres tareas del bot pueden despertar el ordenador si está
+suspendido (si Windows tiene permitidos los temporizadores de reactivación).
