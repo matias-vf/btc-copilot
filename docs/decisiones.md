@@ -100,3 +100,22 @@ Lote `prompt5-otra-epoca-v1`: 29 variantes de T1, T2, B1 y P1 en Bitstamp 2011-2
 Aplicando D9 sin cambios: CONSERVAR (provisional) B1 y T1; DESCARTAR P1, T2 y M1. Seis alertas de "demasiado bueno"
 revisadas sin indicios de filtración (`docs/robustez.md`, sección 5). La consistencia TRAIN frente a TEST queda pendiente
 de «UNLOCK»; el veredicto de B1 y T1 no es definitivo hasta entonces.
+
+## D11. 2026-11-21. Reglas del Prompt 6 (cartera), fijadas ANTES de ejecutar
+El usuario decidió pasar al Prompt 6 sin abrir TEST. La cartera usa las estrategias conservadas provisionalmente
+(B1 y T1), así que también es **provisional**.
+
+**Componentes:** las variantes que aprobaron en TRAIN y en la otra época, sin elegir "la mejor":
+- B1: Donchian 20/10 y Donchian 55/20, a partes iguales dentro del peso de B1.
+- T1: SMA 100.
+
+**Pesos:** inversos a la volatilidad, por estrategia (B1 y T1). Volatilidad = desviación típica de las rentabilidades
+diarias de los últimos 90 días de cada estrategia (B1 = media diaria de sus dos variantes), calculada con el cierre del
+último día del mes. Peso_i = (1/vol_i) / suma(1/vol). Con menos de 90 días de historia: pesos iguales.
+Si una estrategia ha estado en liquidez los 90 días (vol = 0), su peso se reparte entre las demás; si todas, pesos iguales.
+**Reequilibrio mensual** al cierre del último día del mes; sin ajustes por predicciones ni opiniones.
+**Costes del reequilibrio:** solo la parte que cambia la exposición neta a BTC, al mismo 0,16 % por lado. Los costes de
+cada estrategia ya están dentro de su propio resultado.
+
+**Comparación:** CAGR, Sharpe y drawdown máximo frente a Buy & Hold en TRAIN y, como información, en la otra época.
+Se registra como idea nueva C1 y cada ejecución como experimento (lote `prompt6-cartera-v1`).
