@@ -25,7 +25,9 @@ EXPOSICION = 0.25
 
 # --- Datos ------------------------------------------------------------------
 
-def problemas_datos(velas: Sequence[Vela], ahora: datetime | None = None, version: str = "v2") -> list[str]:
+def problemas_datos(velas: Sequence[Vela], ahora: datetime | None = None, version: str = "v2",
+                    bolsa: bool = False) -> list[str]:
+    """bolsa=True (oro, D46): fines de semana y festivos no son huecos (hasta 4 días) y los datos valen 4 días."""
     """Problemas que impiden generar señales hoy (D15, regla 3). Mira las dos últimas velas y la historia."""
     p = []
     if len(velas) < MIN_VELAS:
@@ -35,7 +37,7 @@ def problemas_datos(velas: Sequence[Vela], ahora: datetime | None = None, versio
     a, b = velas[-2], velas[-1]
     if b.fecha == a.fecha:
         p.append(f"vela duplicada {b.fecha}")
-    elif b.fecha != a.fecha + timedelta(days=1):
+    elif (b.fecha - a.fecha).days > (4 if bolsa else 1):
         p.append(f"falta al menos una vela entre {a.fecha} y {b.fecha}")
     if not (b.low <= min(b.open, b.close) and b.high >= max(b.open, b.close) and b.low > 0):
         p.append(f"OHLC incoherente el {b.fecha}")
@@ -47,7 +49,7 @@ def problemas_datos(velas: Sequence[Vela], ahora: datetime | None = None, versio
         p.append(f"la apertura se separa {b.open / a.close - 1:+.1%} del cierre anterior")
     if ahora is not None:
         cierre = datetime(b.fecha.year, b.fecha.month, b.fecha.day, tzinfo=timezone.utc) + timedelta(days=1)
-        if ahora - cierre > timedelta(hours=26):
+        if ahora - cierre > timedelta(hours=98 if bolsa else 26):
             p.append(f"datos desfasados: última vela cerrada hace {(ahora - cierre).total_seconds() / 3600:.0f} h")
     return p
 
@@ -101,10 +103,10 @@ def _vol30(velas, t) -> float:
     return sqrt(sum((v - m) ** 2 for v in lr) / (len(lr) - 1)) * sqrt(365)
 
 
-def series(velas, grupos: dict | None = None) -> dict[str, Resultado]:
+def series(velas, grupos: dict | None = None, costes=None) -> dict[str, Resultado]:
     """Resultados causales de cada componente y de la cartera al 25 %."""
     grupos = grupos or GRUPOS_C1
-    base = {f"{e} {v}": estrategias.backtest_de((e, v), velas) for ks in grupos.values() for e, v in ks}
+    base = {f"{e} {v}": estrategias.backtest_de((e, v), velas, costes) for ks in grupos.values() for e, v in ks}
     mangas = {g: [(ca.rents(base[f"{e} {v}"]), ca.exposiciones(base[f"{e} {v}"])) for e, v in ks]
               for g, ks in grupos.items()}
     c, _ = ca.cartera([v.fecha for v in velas], mangas)
@@ -112,9 +114,9 @@ def series(velas, grupos: dict | None = None) -> dict[str, Resultado]:
     return base
 
 
-def referencia(velas_train, grupos: dict | None = None) -> dict:
-    s = series(velas_train, grupos)
-    ref = {"peor_dd": {}, "p5_180": {}, "grupos": grupos or GRUPOS_C1}
+def referencia(velas_train, grupos: dict | None = None, costes=None, bolsa: bool = False) -> dict:
+    s = series(velas_train, grupos, costes)
+    ref = {"peor_dd": {}, "p5_180": {}, "grupos": grupos or GRUPOS_C1, "costes": costes or BINANCE_SPOT, "bolsa": bolsa}
     for k, r in s.items():
         eq = [r.capital] + r.equity
         ref["peor_dd"][k] = _dd(eq)
@@ -131,12 +133,12 @@ def vigilar(velas, ref: dict, desde: int, hasta: int | None = None, ahora=None, 
     version "v1" = reglas D15; "v2" = reglas D17."""
     v2 = version != "v1"
     hasta = len(velas) - 1 if hasta is None else hasta
-    s = series(velas, ref.get("grupos"))
+    s = series(velas, ref.get("grupos"), ref.get("costes"))
     log_acum = [0.0]
     for a, b in zip(velas, velas[1:]):
         log_acum.append(log_acum[-1] + log(b.close / a.close))
     log_acum.append(log_acum[-1])  # relleno para el índice t+1
-    tasa = BINANCE_SPOT.por_lado()
+    tasa = ref.get("costes", BINANCE_SPOT).por_lado()
     expo = {k: ca.exposiciones(r) for k, r in s.items() if k != CARTERA}
     est = {k: {"estado": "ACTIVA", "pico": None, "alerta_dd": False, "alerta_180": False, "suspension": None,
                "motivo": None, "bajo": 0, "sobre": 0, "historial": []} for k in s}
@@ -156,7 +158,7 @@ def vigilar(velas, ref: dict, desde: int, hasta: int | None = None, ahora=None, 
     for t in range(desde, hasta + 1):
         f = velas[t].fecha
         hoy = []
-        prob = problemas_datos(velas[: t + 1], ahora if t == hasta else None, version)
+        prob = problemas_datos(velas[: t + 1], ahora if t == hasta else None, version, ref.get("bolsa", False))
         if prob:
             hoy.append({"tipo": "datos", "estrategia": "todas", "motivo": "; ".join(prob)})
         v30 = _vol30(velas, t)

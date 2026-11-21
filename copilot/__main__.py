@@ -38,7 +38,8 @@ from copilot.estrategias_iniciales import entradas
 
 def verificar() -> int:
     fallos = 0
-    vivos = [registro.REGISTROS / n for n in ("paper.jsonl", "vigilancia.jsonl", "vigia.jsonl")]
+    vivos = [registro.REGISTROS / n for n in ("paper.jsonl", "vigilancia.jsonl", "vigia.jsonl",
+                                              "oro/senales.jsonl", "oro/paper.jsonl", "oro/vigilancia.jsonl")]
     for ruta in (registro.IDEAS, registro.EXPERIMENTOS, registro.SENALES, *[r for r in vivos if r.exists()]):
         try:
             n = len(registro.leer(ruta))
@@ -251,20 +252,22 @@ def test() -> int:
     return 0
 
 
-def hoy() -> int:
+def hoy(mercado: str = "btc") -> int:
     from copilot import copiloto as cp
+    if mercado == "oro":
+        cp.usar_oro()
     try:
         velas = cp.velas_en_vivo()
-        senales = cp.poner_al_dia(velas=velas)
+        senales = cp.poner_al_dia(cp.RUTAS_VIVO, velas)
         if not senales:
             print("Nada nuevo: la última vela cerrada ya tiene su señal.")
         for s in senales:
             print(cp.ficha(s))
         if senales:
             from copilot import panel
-            panel.generar(cp.comparar(cp.RUTAS_VIVO, velas), registro.REGISTROS / "panel_vivo.html",
-                          "Copiloto BTC: paper trading en vivo")
-            print("Panel actualizado: registros/panel_vivo.html")
+            destino = cp.RUTAS_VIVO["paper"].parent / "panel_vivo.html"
+            panel.generar(cp.comparar(cp.RUTAS_VIVO, velas), destino, f"Copiloto {cp.MERCADO['nombre']}: paper trading en vivo")
+            print(f"Panel actualizado: {destino.relative_to(registro.RAIZ)}")
     except datos.DatosTestBloqueados as e:
         print(f"BLOQUEADO: {e}\nLos precios de hoy son posteriores al 01/01/2023 (TEST). "
               "El modo en vivo necesita tu decisión sobre esos datos (docs/decisiones.md).")
@@ -304,7 +307,7 @@ def _parada(tipo: str, motivo: str) -> int:
 
 
 if __name__ == "__main__":
-    con_args = {"senal": senal, "repeticion": repeticion,
+    con_args = {"hoy": hoy, "senal": senal, "repeticion": repeticion,
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))

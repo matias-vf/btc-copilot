@@ -162,3 +162,33 @@ class TestVigia(unittest.TestCase):
         domingo = vigia.observar(h + [h[-1]._replace(fecha=date(2020, 11, 18))], {"precio": nivel, "cambio_24h": 0},
                                  datetime(2020, 11, 22, 9, 0, tzinfo=timezone.utc), 0.0)
         self.assertEqual(domingo["domingo_decision"], "2020-11-22")              # en domingo, la decisión es hoy
+
+
+class TestCopilotoOro(unittest.TestCase):
+    def test_oro_en_proceso_aparte(self):
+        import subprocess, sys
+        codigo = r'''
+import tempfile
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from copilot import copiloto as cp, oro, registro
+cp.usar_oro()
+v = oro.velas(oro.FICHEROS["TRAIN"])
+i = next(k for k, x in enumerate(v) if x.fecha.isoformat() == "2018-11-30")   # viernes
+d = Path(tempfile.mkdtemp())
+rutas = {k: d / f"{k}.jsonl" for k in ("senales", "paper", "vigilancia")}
+cierre = lambda t: datetime(v[t].fecha.year, v[t].fecha.month, v[t].fecha.day, 21, tzinfo=timezone.utc) + timedelta(hours=1)
+cp.poner_al_dia(rutas, v[: i + 1], cierre(i))
+s = cp.poner_al_dia(rutas, v[: i + 15], cierre(i + 14))
+assert len(s) == 14, len(s)
+assert all("Datos insuficientes" not in " ".join(x["justificacion"]) for x in s), [x["avisos"] for x in s]
+assert all(x["activo"] == "ORO" and "GLD" in x["par"] for x in s)
+assert max(x["exposicion_objetivo"] for x in s) <= 0.25
+for e in [e["datos"] for e in registro.leer(rutas["paper"]) if e["datos"]["tipo"] == "ejecucion"]:
+    r = e["precio_simulado"] / e["precio_teorico"]
+    assert abs(r - (1.0005 if e["lado"] == "compra" else 0.9995)) < 1e-12, r
+print("ORO OK")
+'''
+        r = subprocess.run([sys.executable, "-c", codigo], capture_output=True, text=True, encoding="utf-8",
+                           cwd=str(Path(__file__).resolve().parents[1]))
+        self.assertIn("ORO OK", r.stdout, r.stderr[-2000:])

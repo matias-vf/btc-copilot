@@ -59,17 +59,41 @@ def _nombre(k) -> str:
     return f"{k[0]} {k[1]}"
 
 
+# Mercado activo. shortcut: un proceso = un mercado; usar_oro() cambia estas globales al empezar (D46).
+MERCADO = {"nombre": "BTC", "par": "BTCUSDT (Binance spot)", "costes": BINANCE_SPOT, "bolsa": False, "dias": 365,
+           "train": lambda: cargar_velas(train.FICHERO)}
+
+
+def usar_oro() -> None:
+    """Copiloto del oro (GLD), D46: sus 4 reglas, su cuenta de paper y sus registros en registros/oro/."""
+    global GRUPOS, VALIDADAS, ESTADO_VALIDACION, RUTAS_VIVO
+    from copilot import oro
+    GRUPOS = {"U0976": [("F28", "L=28,pct=0.5")], "U0979": [("F28", "L=90,pct=0.5")],
+              "U0980": [("F28", "L=90,pct=0.75")], "U0136": [("F02", "s=50,l=100,banda=0.01")]}
+    VALIDADAS = {k for ks in GRUPOS.values() for k in ks}
+    ESTADO_VALIDACION = ("EXPERIMENTAL y SIN significación estadística: las 4 reglas del oro cumplen el criterio v2 en "
+                         "2004-2010, 2011-2018 y 2019-2026, pero ninguna supera la corrección por 1000 pruebas y el TEST "
+                         "del oro ya se había visto (D45, D46). Deben superar al menos un mes de paper trading en vivo.")
+    carpeta = registro.REGISTROS / "oro"
+    RUTAS_VIVO = {"senales": carpeta / "senales.jsonl", "paper": carpeta / "paper.jsonl",
+                  "vigilancia": carpeta / "vigilancia.jsonl"}
+    MERCADO.update(nombre="ORO", par="GLD (SPDR Gold Shares, NYSE Arca)", costes=oro.COSTES, bolsa=True, dias=oro.DIAS,
+                   train=lambda: oro.velas(oro.FICHEROS["TRAIN"]))
+    referencia_train.cache_clear()
+
+
 @lru_cache(maxsize=1)
 def referencia_train() -> dict:
     """Todo lo que el copiloto sabe del pasado sale de TRAIN y del registro de experimentos."""
-    velas = cargar_velas(train.FICHERO)
+    velas = MERCADO["train"]()
     exps = [e["datos"] for e in registro.leer(registro.EXPERIMENTOS)]
     hist = {}
     for g in GRUPOS.values():
         for k in g:
-            m = next(e["metricas"] for e in exps if e.get("lote") in (train.LOTE, train2.LOTE, "busqueda3-train-v1", "universo-train-v1")
+            m = next(e["metricas"] for e in exps if e.get("lote") in (train.LOTE, train2.LOTE, "busqueda3-train-v1", "universo-train-v1", "oro-universo-train-v1")
+                     and (e.get("mercado", "BTC") == "GLD") == MERCADO["bolsa"]
                      and e["estrategia_id"] == k[0] and e["variante"] == k[1])
-            ops = riesgo.operaciones(estrategias.backtest_de(k, velas))
+            ops = riesgo.operaciones(estrategias.backtest_de(k, velas, MERCADO["costes"]))
             ganadoras = sorted(x for x in ops if x > 0)
             semanas = sorted(velas[t].close / velas[t - 7].close - 1 for t in range(7, len(velas)))
             hist[k] = {"p5_semana": semanas[len(semanas) // 20],
@@ -77,9 +101,9 @@ def referencia_train() -> dict:
                        "operaciones": m["operaciones"], "peor_operacion": min(ops),
                        "mediana_ganadora": ganadoras[len(ganadoras) // 2] if ganadoras else 0.0,
                        "aciertos": len(ganadoras) / len(ops) if ops else 0.0}
-    c25 = next(e["metricas"] for e in exps if e.get("lote") == riesgo2.LOTE and e["variante"] == "exposicion=25%"
-               and e["epoca"] == "TRAIN")
-    return {"vig": vg.referencia(velas, GRUPOS), "hist": hist, "c25": c25}
+    c25 = None if MERCADO["bolsa"] else next(e["metricas"] for e in exps if e.get("lote") == riesgo2.LOTE
+                                              and e["variante"] == "exposicion=25%" and e["epoca"] == "TRAIN")
+    return {"vig": vg.referencia(velas, GRUPOS, MERCADO["costes"], MERCADO["bolsa"]), "hist": hist, "c25": c25}
 
 
 # --- Contexto: sesiones y mercado -------------------------------------------------
@@ -135,7 +159,7 @@ def decidir(velas, posiciones: dict, objetivo_prev: float, vig_dia: dict | None,
     v = velas[-1]
     c = v.close
     senal = {"tipo": "senal", "fecha_hora_utc": ahora.isoformat(timespec="seconds"), "vela": v.fecha.isoformat(),
-             "activo": "BTC", "par": "BTCUSDT (Binance spot)", "temporalidad": "1d", "precio_referencia": c,
+             "activo": MERCADO["nombre"], "par": MERCADO["par"], "temporalidad": "1d", "precio_referencia": c,
              "valida_hasta_utc": (datetime(v.fecha.year, v.fecha.month, v.fecha.day, tzinfo=timezone.utc)
                                   + timedelta(days=2)).isoformat(),
              "estado_validacion": ESTADO_VALIDACION,
@@ -256,7 +280,8 @@ def decidir(velas, posiciones: dict, objetivo_prev: float, vig_dia: dict | None,
             f"{comp['estrategia']}: peor operación en TRAIN {comp['historico_train']['peor_operacion']:+.1%} "
             f"de la posición ({comp['historico_train']['peor_operacion'] * comp['peso_en_capital']:+.2%} del capital)"
             for comp in entra) or "reequilibrio"
-    senal["historico_cartera_25"] = {k: ref["c25"][k] for k in ("rentabilidad", "cagr", "sharpe", "max_drawdown")}
+    if ref["c25"]:
+        senal["historico_cartera_25"] = {k: ref["c25"][k] for k in ("rentabilidad", "cagr", "sharpe", "max_drawdown")}
     return senal
 
 
@@ -277,13 +302,14 @@ def ciclo(velas, rutas: dict, ahora: datetime | None = None, vig: tuple[dict, li
         cuenta, ent_paper = paper.cargar(rutas["paper"])
     senales = [e["datos"] for e in registro.leer(rutas["senales"])]
     previa = _ultima(senales, "senal")
-    problemas = vg.problemas_datos(velas, ahora)
+    problemas = vg.problemas_datos(velas, ahora, bolsa=MERCADO["bolsa"])
     # 1) Orden pendiente de ayer: se ejecuta en la apertura de hoy
     if previa and previa.get("orden") and previa["vela"] == velas[-2].fecha.isoformat():
         if problemas:
             registro.anadir(rutas["paper"], {"tipo": "orden_cancelada", "fecha": v.fecha.isoformat(), "motivo": problemas})
         else:
-            e = paper.simular_ejecucion(cuenta, previa["orden"]["exposicion_objetivo"], v.open, v.fecha.isoformat())
+            e = paper.simular_ejecucion(cuenta, previa["orden"]["exposicion_objetivo"], v.open, v.fecha.isoformat(),
+                                        MERCADO["costes"])
             if e:
                 e["tipo"], e["precio_senal"] = "ejecucion", previa["precio_referencia"]
                 registro.anadir(rutas["paper"], e)
@@ -371,13 +397,13 @@ def comparar(carpeta_o_rutas, velas=None) -> dict:
     velas = velas or cargar_velas(train.FICHERO) + cargar_velas(TEST_FICHERO)
     idx = {v.fecha.isoformat(): i for i, v in enumerate(velas)}
     i0, i1 = idx[vals[0]["fecha"]], idx[vals[-1]["fecha"]]
-    bt = vg.series(velas[: i1 + 1], GRUPOS)[vg.CARTERA]
+    bt = vg.series(velas[: i1 + 1], GRUPOS, MERCADO["costes"])[vg.CARTERA]
     eq_bt = [paper.CAPITAL_INICIAL * bt.equity[i] / bt.equity[i0 - 1] for i in range(i0, i1 + 1)]
 
     def res(eq):
         r = Resultado(capital=paper.CAPITAL_INICIAL)
         r.fechas, r.equity = [velas[i].fecha for i in range(i0, i1 + 1)], eq
-        return metricas(r)
+        return metricas(r, MERCADO["dias"])
 
     mp, mb = res([v["valor"] for v in vals]), res(eq_bt)
     ej = cuenta.ejecuciones
@@ -474,17 +500,22 @@ def velas_en_vivo() -> list[Vela]:
     """Últimas velas diarias cerradas de Binance (datos públicos de mercado, sin claves). Lanza RuntimeError si la
     historia descargada tiene huecos, duplicados u OHLC incoherente: con datos malos no se generan señales."""
     ayer = datetime.now(timezone.utc).date() - timedelta(days=1)
-    filas = datos.descargar_binance(ayer - timedelta(days=900), ayer)
-    v = datos.validar(filas)
+    if MERCADO["bolsa"]:  # oro: Yahoo, días de mercado (los cierres largos no son errores)
+        filas = datos.descargar_yahoo("GLD", ayer - timedelta(days=900), ayer)
+        v = datos.validar_bolsa(filas)
+    else:
+        filas = datos.descargar_binance(ayer - timedelta(days=900), ayer)
+        v = datos.validar(filas)
     malos = {k: v[k] for k in ("duplicados", "huecos", "ohlc_incoherentes") if v[k]}
     if malos or not v["ordenadas"]:
-        raise RuntimeError(f"datos de Binance con problemas: {malos}")
+        raise RuntimeError(f"datos de {MERCADO['nombre']} con problemas: {malos}")
     return [Vela(date.fromisoformat(f[0]), *map(float, f[1:6])) for f in filas]
 
 
-def poner_al_dia(rutas: dict = RUTAS_VIVO, velas: list[Vela] | None = None, ahora: datetime | None = None) -> list[dict]:
+def poner_al_dia(rutas: dict | None = None, velas: list[Vela] | None = None, ahora: datetime | None = None) -> list[dict]:
     """Procesa todas las velas cerradas que aún no tienen señal, en orden. La primera vez solo la última.
     Los días que se procesan tarde (ordenador apagado) se marcan como "recuperada_tarde"."""
+    rutas = rutas or RUTAS_VIVO
     velas = velas if velas is not None else velas_en_vivo()
     ahora = ahora or datetime.now(timezone.utc)
     hechas = {e["datos"]["vela"] for e in registro.leer(rutas["senales"]) if e["datos"]["tipo"] == "senal"}
