@@ -285,3 +285,9 @@ N4 x = 10 %, 20 % (experimental). Datos: no hace falta descargar nada; las cuatr
 - Pruebas: cada regla con casos a mano, N1 solo opera los lunes, y las 11 variantes pasan la comprobación de
   anticipación con datos sintéticos. Con los datos reales de TRAIN: 43 de 43 variantes registradas sin anticipación.
 - Ninguna rentabilidad calculada todavía (eso es el Prompt 4).
+
+## D26. 2026-11-21. Prompt 4 (segunda búsqueda): N1-N4 en TRAIN
+Lote `busqueda2-train-v1` (experimentos 91 a 101). Con el criterio v2 aprueban 9 de 11: N1 L=2 y L=4; N2 n=5, 10 y 20;
+N3 n=50; N4 x=10 % y x=20 % (experimentales). No aprueban N1 L=1 ni N3 n=150 y n=200. Ninguna alerta de "demasiado
+bueno"; el diagnóstico de un día más de retraso no muestra filtración. N2 n=5 y n=10 operan más de una vez por semana
+y no aprueban con costes x2 ni x3. Tabla y lectura en `docs/resultados_train_v2.md`.

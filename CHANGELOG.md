@@ -1,5 +1,9 @@
 # Historial de cambios
 
+## 2026-11-21. Segunda búsqueda, Prompt 4: N1-N4 en TRAIN
+- Orden `python -m copilot train2`: 11 variantes ejecutadas y registradas con el criterio v2.
+- Aprueban 9 de 11 en TRAIN; N2 n=5 y n=10 son frágiles a los costes (D26, `docs/resultados_train_v2.md`).
+
 ## 2026-11-21. Segunda búsqueda, Prompt 3: reglas de N1-N4
 - Reglas exactas de N1-N4 en `copilot/estrategias.py`, con pruebas propias. Motor y costes sin cambios.
 - Comprobación de anticipación: 43 de 43 variantes registradas sin anticipación en TRAIN (D25).

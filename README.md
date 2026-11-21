@@ -23,7 +23,8 @@ Solo descarga precios públicos.
 | Segunda búsqueda: Prompt 1 (candidatas) | Hecho (`docs/prompt1_v2_candidatas.md`) |
 | Segunda búsqueda: Prompt 2 (registro) | Hecho: N1-N4 registradas |
 | Segunda búsqueda: Prompt 3 (reglas en el motor) | Hecho |
-| Segunda búsqueda: Prompt 4 (ejecutar en TRAIN) | Pendiente |
+| Segunda búsqueda: Prompt 4 (ejecutar en TRAIN) | Hecho (`docs/resultados_train_v2.md`) |
+| Segunda búsqueda: Prompt 5 (robustez y TEST) | Pendiente |
 
 ## Estructura
 ```
@@ -65,6 +66,8 @@ docs/copiloto.md            Prompt 9: cómo funciona el copiloto y sus límites
 docs/pantalla_compartida.md Prompt 9: cómo analizar un gráfico con Claude
 docs/paper_repeticion.md    Prompt 9: repetición 2021-2022, paper frente a backtest
 docs/test.md                evaluación final en TEST (2023-2026)
+docs/prompt1_v2_candidatas.md  segunda búsqueda: estrategias candidatas
+docs/resultados_train_v2.md segunda búsqueda: resultados en TRAIN
 repeticion/                 registros y panel de cada repetición
 tests/                      pruebas automáticas
 ```
