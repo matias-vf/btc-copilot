@@ -11,6 +11,7 @@
   senal AAAA-MM-DD   ficha del copiloto para una fecha de TRAIN (no escribe en ningún registro)
   train2      segunda búsqueda, Prompt 4: N1-N4 en TRAIN (una sola vez)
   robustez2   segunda búsqueda, Prompt 5: otra época y TEST (una sola vez)
+  riesgo2     segunda búsqueda, Prompts 6 y 7: cartera y exposición (una sola vez)
   test        evaluación final en TEST (regla D21, una sola vez)
   hoy         un ciclo en vivo con datos de hoy (bloqueado mientras TEST siga cerrado)
   en-marcha   funcionamiento continuo en vivo, un ciclo al día (bloqueado mientras TEST siga cerrado)
@@ -171,6 +172,14 @@ def robustez2() -> int:
     return 0
 
 
+def riesgo2() -> int:
+    from copilot import riesgo2 as rg
+
+    out = rg.ejecutar()
+    print(f"Riesgo de la segunda búsqueda registrado. Exposición elegida: {out['elegida']} %. Informe en docs/riesgo_v2.md")
+    return 0
+
+
 def test() -> int:
     from copilot import evaluacion_test as et
 
@@ -226,7 +235,7 @@ if __name__ == "__main__":
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
-    ordenes = {"train2": train2, "robustez2": robustez2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
+    ordenes = {"train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}
