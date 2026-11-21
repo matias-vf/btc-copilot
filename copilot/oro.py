@@ -19,6 +19,24 @@ FICHEROS = {"otra época": "gld_yahoo_1d_otra_epoca_2004_2010.csv", "TRAIN": "gl
             "TEST": "gld_yahoo_1d_test_2019_2026.csv"}
 
 
+ID, TITULO = "GLD", "Oro (GLD)"
+
+
+def usar(mercado: str) -> None:
+    """shortcut: cambia las globales del módulo (un proceso = un mercado). "nasdaq" = QQQ (D47)."""
+    global ID, TITULO, LOTE, SALIDA, REGLAS, FICHEROS, LOTES_U, SALIDA_U
+    if mercado != "nasdaq":
+        return
+    ID, TITULO, LOTE, SALIDA = "QQQ", "Nasdaq (QQQ)", "nasdaq-v1", registro.RAIZ / "docs" / "nasdaq.md"
+    REGLAS = {**REGLAS, "U0976": ("F28", "L=28,pct=0.5"), "U0979": ("F28", "L=90,pct=0.5"),
+              "U0980": ("F28", "L=90,pct=0.75"), "U0136": ("F02", "s=50,l=100,banda=0.01")}
+    FICHEROS = {"otra época": "qqq_yahoo_1d_otra_epoca_1999_2010.csv", "TRAIN": "qqq_yahoo_1d_train_2011_2018.csv",
+                "TEST": "qqq_yahoo_1d_test_2019_2026.csv"}
+    LOTES_U = {"TRAIN": "nasdaq-universo-train-v1", "otra época": "nasdaq-universo-otra-v1",
+               "TEST": "nasdaq-universo-test-v1"}
+    SALIDA_U = registro.RAIZ / "docs" / "nasdaq_universo.md"
+
+
 def velas(nombre: str) -> list[Vela]:
     return [Vela(date.fromisoformat(f[0]), *map(float, f[1:6])) for f in datos.cargar_oro(datos.DATOS / nombre)]
 
@@ -46,7 +64,7 @@ def ejecutar() -> dict:
                 m2, _ = _medir(k, v, i0, COSTES.x(2))
                 x2 = {**train._redondear(m2), "criterios": train2.aprueba_v2(m2, bh[e])}
             res[nombre][e] = {"m": m, "crit": crit, "x2": x2}
-            filas.append({"lote": LOTE, "mercado": "GLD", "estrategia_id": k[0], "variante": k[1], "regla": nombre,
+            filas.append({"lote": LOTE, "mercado": ID, "estrategia_id": k[0], "variante": k[1], "regla": nombre,
                           "epoca": e, "periodo": [v[i0].fecha.isoformat(), v[-1].fecha.isoformat()],
                           "metricas": train._redondear(m), "buy_hold": train._redondear(bh[e]), "criterios": crit,
                           "costes_x2": x2})
@@ -76,8 +94,8 @@ def ejecutar() -> dict:
 
 
 def _escribir(res, bh, aprobadas) -> None:
-    l = ["# Oro (GLD): las reglas del copiloto, sin elegir nada (D43)", "",
-         "Generado por `python -m copilot oro`. Ninguna regla se eligió mirando el oro: toda su historia es fuera de muestra.",
+    l = [f"# {TITULO}: las reglas de los copilotos, sin elegir nada (D43, D47)", "",
+         f"Ninguna regla se eligió mirando {ID}: toda su historia es fuera de muestra para ellas.",
          f"Costes {COSTES.por_lado() * 100:.2f} % por lado. Sharpe anualizado con {DIAS} días. Ventanas desde la vela 365 "
          "(TEST, desde 2019 con la historia anterior delante). N1 no se aplica (decide en domingo).", "",
          "| Regla | Época | Rentabilidad (B&H) | Sharpe (B&H) | Drawdown (B&H) | Órdenes/semana | Criterio v2 |",
@@ -88,13 +106,13 @@ def _escribir(res, bh, aprobadas) -> None:
             l.append(f"| {nombre} | {e} | {pct(m['rentabilidad'])} ({pct(b['rentabilidad'])}) | {m['sharpe']:.2f} "
                      f"({b['sharpe']:.2f}) | {pct(m['max_drawdown'])} ({pct(b['max_drawdown'])}) | "
                      f"{m['ejecuciones_por_semana']:.2f} | {'sí' if all(c.values()) else 'no'} |")
-    l += ["", "| Regla | Sharpe deflactado 2011-2026 (N = 6) | Costes x2 en TRAIN | Aprueba |", "|---|---|---|---|"]
+    l += ["", f"| Regla | Sharpe deflactado 2011-2026 (N = {len(REGLAS)}) | Costes x2 en TRAIN | Aprueba |", "|---|---|---|---|"]
     for nombre, d in res.items():
         x2 = d["TRAIN"]["x2"]
         l.append(f"| {nombre} | {d['dsr']:.3f} | {'no hace falta' if x2 is None else ('ok' if all(x2['criterios'].values()) else 'falla')} | "
                  f"{'**sí**' if d['aprueba'] else 'no'} |")
-    l += ["", ("Aprueban y forman el copiloto del oro: " + ", ".join(aprobadas) + "." if aprobadas
-               else "**Ninguna regla aprueba en el oro.** El oro queda sin copiloto."), ""]
+    l += ["", (f"Aprueban en {ID}: " + ", ".join(aprobadas) + "." if aprobadas
+               else f"**Ninguna regla aprueba en {ID}.**"), ""]
     SALIDA.write_text("\n".join(l) + "\n", encoding="utf-8", newline="\n")
 
 
@@ -127,7 +145,7 @@ def universo() -> dict:
         if requiere_costes_x2_x3(m):
             m2, _ = _medir_sig(v_tr, sig, i0, COSTES.x(2))
             x2 = {**train._redondear(m2), "criterios": train2.aprueba_v2(m2, bh)}
-        filas.append({"lote": LOTES_U["TRAIN"], "mercado": "GLD", "uid": uid, "estrategia_id": fid,
+        filas.append({"lote": LOTES_U["TRAIN"], "mercado": ID, "uid": uid, "estrategia_id": fid,
                       "variante": U.texto_variante(p), "metricas": train._redondear(m), "buy_hold": train._redondear(bh),
                       "criterios": train2.aprueba_v2(m, bh), "costes_x2": x2, "sr": sr, "T": len(rets),
                       "asim": a, "curt": c})
@@ -146,7 +164,7 @@ def universo() -> dict:
         for f in cand:
             m, _ = _medir_sig(v, U.senales(f["estrategia_id"], f["variante"], v), j0)
             crit = train2.aprueba_v2(m, b)
-            rob[ep][f["uid"]] = {"lote": LOTES_U[ep], "mercado": "GLD", "uid": f["uid"],
+            rob[ep][f["uid"]] = {"lote": LOTES_U[ep], "mercado": ID, "uid": f["uid"],
                                  "estrategia_id": f["estrategia_id"], "variante": f["variante"],
                                  "metricas": train._redondear(m), "buy_hold": train._redondear(b),
                                  "criterios": crit, "aprobada": all(crit.values())}
@@ -167,10 +185,9 @@ def universo() -> dict:
 
 def _escribir_u(filas, bh, cand, tres, elegidas, rob) -> None:
     nombre = {x[0]: x[1] for x in U.FAMILIAS}
-    l = ["# Oro (GLD): búsqueda propia con el universo de 1000 (D45)", "",
-         "Generado por `python -m copilot oro-universo`. Reglas fijadas antes: D42 y D45. "
-         "**El TEST del oro ya se había visto.**",
-         f"TRAIN 2011-2018 desde la vela 365 ({filas[0]['T']} días). Buy & Hold de GLD: rentabilidad "
+    l = [f"# {TITULO}: búsqueda propia con el universo de 1000 (D45, D47)", "",
+         "Reglas fijadas antes de ejecutar: D42, D45 y D47. TEST no estaba bloqueado.",
+         f"TRAIN 2011-2018 desde la vela 365 ({filas[0]['T']} días). Buy & Hold de {ID}: rentabilidad "
          f"{pct(bh['rentabilidad'])}, Sharpe {bh['sharpe']:.2f}, drawdown {pct(bh['max_drawdown'])}.", "",
          "## Embudo", "", f"- Criterio v2 y costes en TRAIN: {len(cand)} de 1000.",
          f"- Además, Sharpe deflactado >= 0,95: **{sum(f['aprobada_train'] for f in filas)}** "
@@ -189,5 +206,5 @@ def _escribir_u(filas, bh, cand, tres, elegidas, rob) -> None:
                      f"{pct(t['metricas']['rentabilidad'])} ({pct(t['buy_hold']['rentabilidad'])}) | "
                      f"{g['sharpe_deflactado']:.3f} | {'sí' if g['significativa'] else 'NO (sin significación estadística)'} |")
     else:
-        l.append("**Ninguna variante cumple el criterio en las tres épocas del oro.** El oro sigue sin copiloto.")
+        l.append(f"**Ninguna variante cumple el criterio en las tres épocas de {ID}.**")
     SALIDA_U.write_text("\n".join(l) + "\n", encoding="utf-8", newline="\n")
