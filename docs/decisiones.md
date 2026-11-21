@@ -303,3 +303,20 @@ y no aprueban con costes x2 ni x3. Tabla y lectura en `docs/resultados_train_v2.
 2. **N1 comprueba la fecha:** el domingo de hace L semanas se busca por fecha, no solo contando velas. Si falta una
    vela y la fecha no coincide, N1 no opera. En TRAIN y TEST no hay huecos, así que sus resultados no cambian.
 3. **Menos código repetido:** las ejecuciones de lotes y el formato de porcentajes pasan a una sola función cada uno.
+
+## D28. 2026-11-21. Segunda búsqueda: TRAIN con ventana alineada y reglas del Prompt 5, fijadas ANTES de ejecutarlo
+**TRAIN con ventana alineada** (lote `busqueda2-train-v2`, experimentos 102 a 112): aprueban 10 de 11. Cambia N3 n=200,
+que ahora aprueba (Sharpe 0,70 frente a 0,47 de Buy & Hold en su ventana). Siguen sin aprobar N1 L=1 y N3 n=150.
+
+**Reglas del Prompt 5 (segunda búsqueda):**
+1. **Costes:** una variante que da más de una orden por semana también tiene que aprobar en TRAIN con costes x2. Así
+   quedan fuera N2 n=5 y N2 n=10 (con x2: Sharpe 0,44 y 0,55, por debajo de 0,73 y 0,72).
+2. **Otra época:** las 11 variantes en Bitstamp 2011-2016, con ventana alineada, costes x1 (y x3 como información),
+   criterio v2 contra Buy & Hold de Bitstamp en la misma ventana. Lote `busqueda2-otra-epoca-v1`.
+3. **TEST (segunda validación, ya visto):** las 11 variantes, motor sobre TRAIN + TEST seguidos, medido solo en TEST
+   (2023-01-01 a 2026-11-20), criterio v2. Lote `busqueda2-test-v1`.
+4. **Una variante SE CONSERVA (como EXPERIMENTAL)** si aprueba el criterio v2 en TRAIN (ventana alineada), en la otra
+   época y en TEST, y cumple la regla de costes.
+5. **Superficie (como D9):** por estrategia, Spearman entre el Sharpe de TRAIN y el de TEST de sus variantes y
+   cuántas variantes tienen Sharpe >= Buy & Hold en cada periodo. Se informa; no cambia el veredicto de la regla 4.
+6. Regímenes de mercado (como D9) para las variantes conservadas, en las tres épocas.

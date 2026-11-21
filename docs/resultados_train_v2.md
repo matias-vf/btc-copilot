@@ -1,3 +1,5 @@
+> Este fue el primer lote (`busqueda2-train-v1`), sin ventana alineada. Lo sustituye `docs/resultados_train_v2_alineada.md` (D27); este se conserva como registro.
+
 # Resultados en TRAIN, segunda búsqueda (Prompt 4)
 
 Generado por `python -m copilot train2` (lote `busqueda2-train-v1`). TRAIN 2017-08-17 a 2022-12-31, BTC/USDT Binance spot, costes 0.16 % por lado.

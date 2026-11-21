@@ -158,7 +158,7 @@ def train2() -> int:
     from copilot import train2 as t2
 
     filas = t2.ejecutar()
-    print(f"{len(filas)} variantes de la segunda búsqueda ejecutadas y registradas. Tabla en docs/resultados_train_v2.md")
+    print(f"{len(filas)} variantes de la segunda búsqueda ejecutadas y registradas. Tabla en {t2.SALIDA.relative_to(registro.RAIZ)}")
     return 0
 
 
