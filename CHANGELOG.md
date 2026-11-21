@@ -1,5 +1,8 @@
 # Historial de cambios
 
+## 2026-11-21. Referencia: paquete Day Trader skill
+- Revisado como referencia (decisión D6). No se ejecuta ni se copia código; ninguna regla registrada cambia.
+
 ## 2026-11-21. Prompt 2: registros y datos
 - Registros de solo-añadir encadenados con SHA-256: ideas, experimentos (contador acumulado) y señales.
 - Registradas 5 estrategias (T1, T2, B1, P1; M1 experimental) con 31 variantes y 5 descartadas (B2, M2, M3, S1, S2).
