@@ -63,11 +63,12 @@ def cartera(fechas, mangas: dict[str, list[tuple[list[float], list[float]]]], co
                 nuevo = [x * (V - coste) / V for x in nuevo]
             h = nuevo
             historial.append({"fecha": f.isoformat(), "pesos": {k: round(v, 4) for k, v in w.items()}})
+        expo = sum(x * xx[t] for x, (_, _, xx, _) in zip(h, sub)) / sum(h)  # exposición neta a BTC del día
         h = [x * (1 + rr[t]) for x, (_, rr, _, _) in zip(h, sub)]
         V = sum(h)
         res.fechas.append(f)
         res.equity.append(V)
-        res.senales.append(0.0)
+        res.senales.append(expo)
     return res, historial
 
 

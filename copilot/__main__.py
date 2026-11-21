@@ -6,6 +6,7 @@
   train       Prompt 4: ejecuta todas las variantes registradas en TRAIN (una sola vez) y las anota
   robustez    Prompt 5: otra época (Bitstamp), regímenes, sensibilidad y veredicto (una sola vez)
   cartera     Prompt 6: correlaciones y cartera inversa a la volatilidad (una sola vez)
+  riesgo      Prompt 7: simulaciones de exposición, riesgo por operación y volatilidad (una sola vez)
   anticipacion comprueba en TRAIN que ninguna variante registrada mira el futuro (no muestra resultados)
 """
 
@@ -76,7 +77,7 @@ def anticipacion() -> int:
 
     velas = motor.cargar_velas()
     ideas = [e["datos"] for e in registro.leer(registro.IDEAS)
-             if e["datos"]["estado"] != "descartada" and e["datos"]["familia"] != "Cartera"]
+             if e["datos"]["estado"] != "descartada" and e["datos"]["familia"] not in ("Cartera", "Riesgo")]
     variantes = [("BH", "buy_hold")] + [(i["id"], v) for i in ideas for v in i["configuraciones_permitidas"]]
     fallos = 0
     for eid, var in variantes:
@@ -111,10 +112,19 @@ def cartera() -> int:
     return 0
 
 
+def riesgo() -> int:
+    from copilot import riesgo as rg
+
+    rg.ejecutar()
+    print("Simulaciones de riesgo ejecutadas y registradas. Informe en docs/riesgo.md")
+    return 0
+
+
 if __name__ == "__main__":
     ordenes = {"verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
-               "robustez": robustez, "cartera": cartera}
+               "robustez": robustez, "cartera": cartera,
+               "riesgo": riesgo}
     if len(sys.argv) != 2 or sys.argv[1] not in ordenes:
         print(__doc__)
         sys.exit(2)

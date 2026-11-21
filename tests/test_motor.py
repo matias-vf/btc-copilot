@@ -117,7 +117,7 @@ class TestEstrategias(unittest.TestCase):
 
     def test_todas_las_variantes_registradas_se_construyen(self):
         ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"]["estado"] != "descartada"
-                 and e["datos"]["familia"] != "Cartera"]
+                 and e["datos"]["familia"] not in ("Cartera", "Riesgo")]
         total = 0
         for idea in ideas:
             for var in idea["configuraciones_permitidas"]:
@@ -130,7 +130,7 @@ class TestAnticipacion(unittest.TestCase):
     def test_todas_las_variantes_son_causales(self):
         v = velas_aleatorias(420)
         ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"]["estado"] != "descartada"
-                 and e["datos"]["familia"] != "Cartera"]
+                 and e["datos"]["familia"] not in ("Cartera", "Riesgo")]
         variantes = [("BH", "buy_hold")] + [(i["id"], x) for i in ideas for x in i["configuraciones_permitidas"]]
         for eid, var in variantes:
             with self.subTest(eid=eid, var=var):
@@ -196,3 +196,43 @@ class TestCartera(unittest.TestCase):
         otra, _ = cartera(fechas, alt)
         self.assertEqual(base.equity[: t + 1], otra.equity[: t + 1])
         self.assertNotEqual(base.equity[-1], otra.equity[-1])
+
+
+class TestRiesgo(unittest.TestCase):
+    def test_dimensionar(self):
+        from copilot.riesgo import dimensionar
+        siempre = lambda h, pos: 1.0
+        f = dimensionar(siempre, lambda h: 90.0, 0.02)       # salida a un 10 % -> 2 % / 10 % = 20 %
+        h = velas_fijas([100, 100])
+        self.assertAlmostEqual(f(h, 0), 0.2)
+        self.assertEqual(f(h, 0.2), 0.2)                       # se mantiene hasta salir
+        self.assertEqual(dimensionar(siempre, lambda h: 99.5, 0.02)(h, 0), 1.0)   # tope 100 %
+        self.assertEqual(dimensionar(siempre, lambda h: 101, 0.02)(h, 0), 0.0)    # nivel incoherente: no entra
+        self.assertEqual(dimensionar(lambda h, p: 0.0, lambda h: 90, 0.02)(h, 0.2), 0.0)
+
+    def test_escalar_y_ruina(self):
+        from copilot.riesgo import escalar
+        v = velas_fijas([100, 100, 100, 100])
+        v[2] = v[2]._replace(low=45)                           # caída intradía del 55 %
+        c = backtest(v, estrategias.buy_hold, SIN_COSTES)
+        c.senales = [0.0] + [1.0] * 3
+        _, ruina1 = escalar(c, v, 1.0)
+        r2, ruina2 = escalar(c, v, 2.0)
+        self.assertFalse(ruina1)
+        self.assertTrue(ruina2)
+        self.assertEqual(r2.equity[-1], 0.0)
+
+    def test_vol_objetivo_no_apalanca(self):
+        from copilot.riesgo import vol_objetivo
+        v = velas_aleatorias(200)
+        c = backtest(v, estrategias.buy_hold, SIN_COSTES)
+        c.senales = [0.0] + [1.0] * 199
+        r = vol_objetivo(c, 0.30)
+        self.assertTrue(all(0 <= x <= 1 for x in r.senales))
+        self.assertLess(max(r.senales[100:]), 1.0)             # vol ~76 % > 30 %: reduce exposición
+
+    def test_operaciones(self):
+        from copilot.riesgo import operaciones
+        alterna = lambda h, pos: 1.0 if len(h) == 1 else 0.0
+        r = backtest(velas_fijas([100, 100, 110, 110]), alterna, SIN_COSTES)
+        self.assertEqual(len(operaciones(r)), 1)
