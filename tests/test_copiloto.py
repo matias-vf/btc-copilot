@@ -80,13 +80,22 @@ class TestCopiloto(unittest.TestCase):
             i = next(k for k, x in enumerate(velas) if x.fecha == date(2020, 11, 10))
             ahora = lambda t: datetime(velas[t].fecha.year, velas[t].fecha.month, velas[t].fecha.day,
                                        tzinfo=timezone.utc) + timedelta(days=1, minutes=5)
-            s1 = cp.ciclo(velas[: i + 1], rutas, ahora(i))
+            s1 = cp.ciclo(velas[: i + 1], rutas, ahora(i), solo_validadas=False)
             self.assertGreater(s1["exposicion_objetivo"], 0)              # noviembre 2020: tendencia alcista
             registro.anadir(rutas["paper"], {"tipo": "parada_manual", "fecha": "2020-11-10", "motivo": "prueba"})
-            s2 = cp.ciclo(velas[: i + 2], rutas, ahora(i + 1))
+            s2 = cp.ciclo(velas[: i + 2], rutas, ahora(i + 1), solo_validadas=False)
             self.assertEqual(s2["decision"], "VENTA")
             self.assertEqual(s2["exposicion_objetivo"], 0.0)
             self.assertTrue(any("PARADA" in a for a in s2["avisos"]))
+
+    def test_sin_validadas_no_opera(self):
+        velas = cargar_velas(train.FICHERO)
+        i = next(k for k, x in enumerate(velas) if x.fecha == date(2020, 11, 10))
+        ahora = datetime(2020, 11, 11, 0, 5, tzinfo=timezone.utc)
+        s = cp.decidir(velas[: i + 1], {}, 0.0, None, [], None, ahora)
+        self.assertEqual(s["decision"], "NO OPERAR")
+        s = cp.decidir(velas[: i + 1], {}, 0.2, None, [], None, ahora)
+        self.assertEqual((s["decision"], s["orden"]["exposicion_objetivo"]), ("VENTA", 0.0))
 
     def test_lectura_visual(self):
         s = {"precio_referencia": 20000.0}

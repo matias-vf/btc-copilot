@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## 2026-11-21. TEST desbloqueado y evaluado
+- «UNLOCK» del usuario (D20). Datos de TEST 2023-01-01 a 2026-11-20 descargados y validados.
+- Regla de TEST elegida por el usuario antes de ver resultados (D21). Orden `python -m copilot test`.
+- Ninguna estrategia del copiloto supera a Buy & Hold en rentabilidad en TEST (D22): el copiloto queda en NO OPERAR.
+
 ## 2026-11-21. Prompt 9: copiloto y paper trading
 - Ciclo diario: datos, orden pendiente en la apertura, valoración, límite de pérdidas, vigilancia v2, señal y seguimiento.
 - Ficha de señal COMPRA/VENTA/MANTENER/NO OPERAR con precio, estrategias, justificación, riesgo, invalidación,

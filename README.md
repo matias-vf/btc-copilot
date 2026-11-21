@@ -15,11 +15,12 @@ Solo descarga precios públicos.
 | Prompt 2: registros y datos | Hecho |
 | Prompt 3: motor de backtesting | Hecho |
 | Prompt 4: ejecutar estrategias en TRAIN | Hecho (`docs/resultados_train.md`) |
-| Prompt 5: robustez y filtrado | Parcial: falta TRAIN frente a TEST (necesita «UNLOCK») |
+| Prompt 5: robustez y filtrado | Hecho; TEST evaluado: ninguna estrategia lo supera (`docs/test.md`) |
 | Prompt 6: cartera combinada | Hecho, provisional (`docs/cartera.md`) |
 | Prompt 7: riesgo y tamaño de posición | Hecho, provisional (`docs/riesgo.md`) |
 | Prompt 8: deterioro y reglas de parada | Hecho, reglas v2 (`docs/vigilancia_v2.md`; la v1 en `docs/vigilancia.md`) |
-| Prompt 9: copiloto y paper trading | Construido y probado en repetición; **en vivo bloqueado** hasta decidir sobre TEST |
+| Prompt 9: copiloto y paper trading | Construido; sin estrategias validadas, solo dice NO OPERAR |
+| Segunda búsqueda de estrategias | En curso (D23) |
 
 ## Estructura
 ```
@@ -60,6 +61,7 @@ docs/vigilancia_v2.md       Prompt 8: simulación con las reglas v2 (las vigente
 docs/copiloto.md            Prompt 9: cómo funciona el copiloto y sus límites
 docs/pantalla_compartida.md Prompt 9: cómo analizar un gráfico con Claude
 docs/paper_repeticion.md    Prompt 9: repetición 2021-2022, paper frente a backtest
+docs/test.md                evaluación final en TEST (2023-2026)
 repeticion/                 registros y panel de cada repetición
 tests/                      pruebas automáticas
 ```

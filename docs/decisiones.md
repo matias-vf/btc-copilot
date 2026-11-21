@@ -248,3 +248,12 @@ Respuesta del usuario: «Mismo criterio: fuera».
 - **Consistencia (D9):** Spearman entre el Sharpe de TRAIN y el de TEST de las variantes de T1 (4 variantes). B1 solo
   tiene 2 variantes, así que su "clasificación" solo indica si el orden se mantiene.
 - **Información adicional:** la cartera C1 al 25 % en TEST (y si respeta el límite del 35 % de drawdown).
+
+## D22. 2026-11-21. Resultado de TEST: ninguna estrategia del copiloto lo supera
+Lote `test-v1` (experimentos 85 a 90, `docs/test.md`). Buy & Hold en TEST: +255,8 %, Sharpe 0,93, drawdown -53,0 %.
+Ninguna variante supera a Buy & Hold en rentabilidad. T1 SMA 100 (+208,0 %, Sharpe 1,00, drawdown -36,8 %) y
+T1 SMA 150 cumplen drawdown y Sharpe, pero no rentabilidad. B1 20/10 y B1 55/20 solo cumplen drawdown.
+Consistencia D9: Spearman de T1 = 0,60 (superficie estable); el orden de B1 se mantiene, pero su Sharpe cae a la mitad.
+Aplicando D21: **el copiloto se queda sin estrategias validadas y solo dice NO OPERAR** (y, si hubiera posición, VENTA
+para cerrarla). Las estrategias no se borran. Las repeticiones técnicas siguen pudiendo usar las del Prompt 9.
+El usuario pide entonces repetir el proceso con una búsqueda intensiva desde el Prompt 1 (ver D23).

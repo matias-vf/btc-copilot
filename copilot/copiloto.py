@@ -20,6 +20,8 @@ ENTRADA = {("T1", "sma_n=100"): lambda h: estrategias._sma(h, 100),
            ("B1", "N=55,M=20"): lambda h: max(v.high for v in h[-55:]) if len(h) >= 55 else None}
 ESTADO_VALIDACION = ("VALIDACIÓN PARCIAL: aprobada en TRAIN (2017-2022) y en otra época (Bitstamp 2011-2016); "
                      "pendiente la comprobación con TEST. No es una estrategia plenamente validada.")
+# D22: ninguna variante del copiloto aprobó TEST (regla D21). Sin estrategias validadas, el copiloto no opera.
+VALIDADAS: set = set()
 MIN_CAMBIO = 0.01  # reequilibrios menores de 1 punto de exposición no se ejecutan
 NY = ZoneInfo("America/New_York")
 RUTAS_VIVO = {"senales": registro.SENALES, "paper": registro.REGISTROS / "paper.jsonl", "vigilancia": vg.REGISTRO}
@@ -97,7 +99,8 @@ def _pesos(velas) -> dict[str, float]:
 
 
 def decidir(velas, posiciones: dict, objetivo_prev: float, vig_dia: dict | None, problemas: list[str],
-            parada: dict | None, ahora: datetime) -> dict:
+            parada: dict | None, ahora: datetime, solo_validadas: bool = True) -> dict:
+    """solo_validadas=False solo para repeticiones técnicas y pruebas de la maquinaria."""
     ref = referencia_train()
     v = velas[-1]
     c = v.close
@@ -109,6 +112,17 @@ def decidir(velas, posiciones: dict, objetivo_prev: float, vig_dia: dict | None,
              "confianza": "Sin porcentaje de confianza: no hay datos para calibrarlo como probabilidad.",
              "sesion": sesion(ahora), "avisos": [], "componentes": [], "justificacion": [], "invalidacion": [],
              "condiciones_para_operar": []}
+    if solo_validadas and not VALIDADAS:
+        senal.update(decision="VENTA" if objetivo_prev > 0 else "NO OPERAR", exposicion_anterior=objetivo_prev,
+                     exposicion_objetivo=0.0, posiciones={}, estado_validacion="NINGUNA ESTRATEGIA VALIDADA")
+        if objetivo_prev > 0:
+            senal["orden"] = {"exposicion_objetivo": 0.0, "se_ejecuta": "en la apertura de la vela siguiente (paper)"}
+        senal["justificacion"].append(
+            "No hay ninguna estrategia validada: B1 20/10, B1 55/20 y T1 SMA 100 no superaron a Buy & Hold en TEST "
+            "(regla D21, docs/test.md). Sin una estrategia validada no se recomienda ninguna operación.")
+        senal["condiciones_para_operar"].append(
+            "Que una estrategia nueva, registrada antes de probarla, supere todo el proceso (docs/decisiones.md, D22).")
+        return senal
     if problemas:
         senal.update(decision="MANTENER" if objetivo_prev > 0 else "NO OPERAR", exposicion_objetivo=objetivo_prev,
                      exposicion_anterior=objetivo_prev, posiciones=posiciones)
@@ -202,7 +216,8 @@ def _ultima(entradas, tipo):
     return next((d for d in reversed(entradas) if d["tipo"] == tipo), None)
 
 
-def ciclo(velas, rutas: dict, ahora: datetime | None = None, vig: tuple[dict, list] | None = None) -> dict:
+def ciclo(velas, rutas: dict, ahora: datetime | None = None, vig: tuple[dict, list] | None = None,
+          solo_validadas: bool = True) -> dict:
     """Un día del copiloto, justo después del cierre de la vela velas[-1]. Solo usa velas hasta hoy."""
     v = velas[-1]
     ahora = ahora or datetime.now(timezone.utc)
@@ -252,7 +267,7 @@ def ciclo(velas, rutas: dict, ahora: datetime | None = None, vig: tuple[dict, li
     # 4) Señal del día
     posiciones = previa["posiciones"] if previa else {}
     obj_prev = previa["exposicion_objetivo"] if previa else 0.0
-    senal = decidir(velas, posiciones, obj_prev, dia, problemas, parada, ahora)
+    senal = decidir(velas, posiciones, obj_prev, dia, problemas, parada, ahora, solo_validadas)
     senal["cuenta"] = {"valor": val["valor"], "exposicion": val["exposicion"], "drawdown": cuenta.drawdown_actual()}
     registro.anadir(rutas["senales"], senal)
     # 5) Seguimiento de señales pasadas (1, 7 y 30 días)
@@ -288,7 +303,8 @@ def repeticion(desde: date, hasta: date, carpeta: Path) -> Path:
     for t in range(i0, i1 + 1):
         f = velas[t].fecha
         ahora = datetime(f.year, f.month, f.day, tzinfo=timezone.utc) + timedelta(days=1, minutes=5)
-        ciclo(velas[: t + 1], rutas, ahora, (r["diario"][t - i0], [e for e in r["eventos"] if e["fecha"] == f.isoformat()]))
+        ciclo(velas[: t + 1], rutas, ahora, (r["diario"][t - i0], [e for e in r["eventos"] if e["fecha"] == f.isoformat()]),
+              solo_validadas=False)  # repetición técnica de la maquinaria con las estrategias del Prompt 9
     return carpeta
 
 
