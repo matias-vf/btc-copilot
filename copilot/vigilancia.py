@@ -104,7 +104,7 @@ def _vol30(velas, t) -> float:
 def series(velas, grupos: dict | None = None) -> dict[str, Resultado]:
     """Resultados causales de cada componente y de la cartera al 25 %."""
     grupos = grupos or GRUPOS_C1
-    base = {f"{e} {v}": backtest(velas, estrategias.crear(e, v)) for ks in grupos.values() for e, v in ks}
+    base = {f"{e} {v}": estrategias.backtest_de((e, v), velas) for ks in grupos.values() for e, v in ks}
     mangas = {g: [(ca.rents(base[f"{e} {v}"]), ca.exposiciones(base[f"{e} {v}"])) for e, v in ks]
               for g, ks in grupos.items()}
     c, _ = ca.cartera([v.fecha for v in velas], mangas)

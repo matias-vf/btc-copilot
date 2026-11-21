@@ -71,6 +71,20 @@ class TestRegistro(unittest.TestCase):
         with self.assertRaises(ValueError):
             registrar_experimento({"estrategia_id": "S1", "variante": "x"}, ideas, Path(self.dir.name) / "e.jsonl")
 
+    def test_anadir_varios_igual_cadena(self):
+        from copilot.registro import anadir_varios, registrar_experimentos
+        anadir(self.ruta, {"x": 0})
+        self.assertEqual(anadir_varios(self.ruta, [{"x": 1}, {"x": 2}]), 2)
+        anadir(self.ruta, {"x": 3})
+        self.assertEqual([e["datos"]["x"] for e in leer(self.ruta)], [0, 1, 2, 3])
+        ideas, exps = Path(self.dir.name) / "i.jsonl", Path(self.dir.name) / "e.jsonl"
+        anadir(ideas, {"id": "F01", "estado": "registrada", "configuraciones_permitidas": ["n=5"]})
+        with self.assertRaises(ValueError):
+            registrar_experimentos([{"estrategia_id": "F01", "variante": "n=6"}], ideas, exps)
+        self.assertEqual(leer(exps), [])                              # nada escrito si alguna falla
+        registrar_experimentos([{"estrategia_id": "F01", "variante": "n=5"}] * 2, ideas, exps)
+        self.assertEqual([e["datos"]["contador_acumulado"] for e in leer(exps)], [1, 2])
+
     def test_registros_reales_intactos(self):
         for ruta in (registro.IDEAS, registro.EXPERIMENTOS, registro.SENALES):
             leer(ruta)  # lanza si están corruptos

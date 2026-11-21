@@ -168,4 +168,18 @@ def crear(estrategia_id: str, variante: str) -> Estrategia:
         return t2_tsmom(int(p["L"]))  # N1 comprobada cada día: misma regla que T2 con L = 28 (D34)
     if estrategia_id == "N4":
         return n4_maximo_52s(float(p["x"].rstrip("%")) / 100)
+    if len(estrategia_id) == 3 and estrategia_id[0] == "F" and estrategia_id[1:].isdigit():
+        from copilot import universo
+        return universo.como_estrategia(estrategia_id, variante)  # tercera búsqueda (D36)
     raise ValueError(f"Estrategia desconocida: {estrategia_id}")
+
+
+def backtest_de(k, velas, costes=None):
+    """Backtest de una variante registrada; las del universo (F01-F31) usan el cálculo rápido (mismo resultado)."""
+    from copilot import universo
+    from copilot.costes import BINANCE_SPOT
+    from copilot.motor import backtest
+    c = costes or BINANCE_SPOT
+    if k[0].startswith("F") and k[0][1:].isdigit():
+        return universo.backtest_rapido(velas, universo.senales(k[0], k[1], velas), c)
+    return backtest(velas, crear(*k), c)

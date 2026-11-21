@@ -92,7 +92,8 @@ def anticipacion() -> int:
 
     velas = motor.cargar_velas()
     ideas = [e["datos"] for e in registro.leer(registro.IDEAS)
-             if e["datos"]["estado"] != "descartada" and e["datos"]["familia"] not in ("Cartera", "Riesgo")]
+             if e["datos"]["estado"] != "descartada" and e["datos"]["familia"] not in ("Cartera", "Riesgo")
+             and e["datos"].get("busqueda", 1) < 3]  # el universo (búsqueda 3) se comprueba con universo.causal
     variantes = [("BH", "buy_hold")] + [(i["id"], v) for i in ideas for v in i["configuraciones_permitidas"]]
     fallos = 0
     for eid, var in variantes:

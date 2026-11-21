@@ -88,6 +88,27 @@ def anadir(ruta: Path, datos: dict) -> dict:
     return entrada
 
 
+def anadir_varios(ruta: Path, lista: list[dict]) -> int:
+    """Como `anadir`, pero verifica la cadena una sola vez y añade todas las entradas en orden. Devuelve cuántas."""
+    ruta = Path(ruta)
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    previas = leer(ruta)
+    n, hash_prev = len(previas), previas[-1]["hash"] if previas else GENESIS
+    lineas = []
+    for datos in lista:
+        n += 1
+        fecha_hora = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        e = {"n": n, "fecha_hora": fecha_hora, "datos": datos, "hash_prev": hash_prev,
+             "hash": _calcular_hash(hash_prev, n, fecha_hora, datos)}
+        lineas.append(_canonico(e) + "\n")
+        hash_prev = e["hash"]
+    with ruta.open("a", encoding="utf-8", newline="\n") as f:
+        f.writelines(lineas)
+        f.flush()
+        os.fsync(f.fileno())
+    return len(lista)
+
+
 # --- Registros concretos -------------------------------------------------
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -114,3 +135,18 @@ def registrar_experimento(datos: dict, ideas: Path = IDEAS, experimentos: Path =
     previos = leer(experimentos)
     datos = {**datos, "contador_acumulado": len(previos) + 1}
     return anadir(experimentos, datos)
+
+
+def registrar_experimentos(lista: list[dict], ideas: Path = IDEAS, experimentos: Path = EXPERIMENTOS) -> int:
+    """Como `registrar_experimento` para muchos a la vez: mismas comprobaciones, una sola lectura de los registros."""
+    reg = {e["datos"].get("id"): e["datos"] for e in leer(ideas)}
+    for d in lista:
+        idea = reg.get(d.get("estrategia_id"))
+        if idea is None:
+            raise ValueError(f"Estrategia {d.get('estrategia_id')!r} no registrada en ideas: no se puede probar")
+        if idea.get("estado") == "descartada":
+            raise ValueError(f"Estrategia {d.get('estrategia_id')!r} está descartada")
+        if d.get("variante") not in idea.get("configuraciones_permitidas", []):
+            raise ValueError(f"Variante {d.get('variante')!r} no registrada en {d.get('estrategia_id')}")
+    base = len(leer(experimentos))
+    return anadir_varios(experimentos, [{**d, "contador_acumulado": base + i + 1} for i, d in enumerate(lista)])

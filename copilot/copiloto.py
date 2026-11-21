@@ -63,7 +63,7 @@ def referencia_train() -> dict:
         for k in g:
             m = next(e["metricas"] for e in exps if e.get("lote") in (train.LOTE, train2.LOTE, "busqueda3-train-v1")
                      and e["estrategia_id"] == k[0] and e["variante"] == k[1])
-            ops = riesgo.operaciones(backtest(velas, estrategias.crear(*k)))
+            ops = riesgo.operaciones(estrategias.backtest_de(k, velas))
             ganadoras = sorted(x for x in ops if x > 0)
             semanas = sorted(velas[t].close / velas[t - 7].close - 1 for t in range(7, len(velas)))
             hist[k] = {"p5_semana": semanas[len(semanas) // 20],
@@ -113,7 +113,7 @@ def mercado(velas, ref_vig) -> dict:
 
 def _pesos(velas) -> dict[str, float]:
     """Pesos C1 que regirán mañana (D11), solo con datos hasta hoy."""
-    res = {k: backtest(velas, estrategias.crear(*k)) for g in GRUPOS.values() for k in g}
+    res = {k: estrategias.backtest_de(k, velas) for g in GRUPOS.values() for k in g}
     mangas = {g: [(ca.rents(res[k]), ca.exposiciones(res[k])) for k in ks] for g, ks in GRUPOS.items()}
     _, hist = ca.cartera([v.fecha for v in velas], mangas)
     if (velas[-1].fecha + timedelta(days=1)).month != velas[-1].fecha.month:  # mañana empieza mes: nuevos pesos

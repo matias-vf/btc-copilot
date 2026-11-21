@@ -423,3 +423,13 @@ de una sola». Sustituye el punto 6 de D36:
 - Todas juntas en el copiloto con pesos inversos a la volatilidad, reequilibrio mensual y exposición total máxima del 25 %.
 - **Ventana común:** todas las variantes del universo (y Buy & Hold) se miden desde la vela 365 de cada época, la ventana
   más larga del universo, así todas tienen el mismo número de días (necesario para el Sharpe deflactado).
+
+## D38. 2026-11-21. Prompts 1 a 3 de la tercera búsqueda
+- **Prompt 1:** universo de 1000 variantes en 31 familias publicadas (`docs/prompt1_v3_universo.md`, `copilot/universo.py`).
+  Para llegar a 1000, el momentum semanal (F05) incluye también 65 y 78 semanas.
+- **Prompt 2:** las 31 familias, con sus 1000 variantes y el criterio v3 (D36 y D37), están registradas en
+  `registros/ideas.jsonl` (entradas 19 a 49) antes de calcular ningún resultado. No hacen falta datos nuevos: velas diarias.
+- **Prompt 3:** motor de señales del universo. `backtest_rapido` da exactamente el mismo resultado que el motor normal
+  (prueba automática), con la misma ejecución (cierre de t, apertura de t+1) y los mismos costes. Las 1000 variantes
+  pasan la prueba de causalidad (alterar el futuro no cambia ninguna señal pasada) con los datos de TRAIN. El registro
+  puede añadir muchas entradas de una vez (`anadir_varios`) conservando la cadena de hashes.
