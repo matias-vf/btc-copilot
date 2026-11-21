@@ -42,8 +42,8 @@ class TestDatos(unittest.TestCase):
 
     def test_ficheros_reales_sin_test(self):
         for ruta in datos.DATOS.glob("*.csv"):
-            if "_test" in ruta.name:
-                continue
+            if "_test" in ruta.name or ruta.name.startswith("gld_"):
+                continue  # el oro tiene calendario de bolsa: lo comprueba validar_bolsa
             filas = datos.cargar(ruta)
             v = datos.validar(filas)
             self.assertEqual(v["duplicados"], [], ruta.name)
@@ -52,3 +52,20 @@ class TestDatos(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestDatosOro(unittest.TestCase):
+    def test_bloquea_test_del_oro(self):
+        self.assertFalse(datos.TEST_ORO_DESBLOQUEADO)
+        with self.assertRaises(datos.DatosTestBloqueados):
+            datos.descargar_yahoo("GLD", date(2018, 12, 1), date(2019, 1, 2))  # falla antes de tocar la red
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(datos.DatosTestBloqueados):
+                datos.guardar_oro([["2019-01-02", 1, 1, 1, 1, 1]], Path(d) / "x.csv")
+
+    def test_validar_bolsa(self):
+        filas = [["2018-01-05", 1, 2, 1, 1, 5], ["2018-01-08", 1, 2, 1, 1, 5], ["2018-01-15", 1, 2, 1, 1, 5]]
+        v = datos.validar_bolsa(filas)
+        self.assertEqual(v["huecos"], [])
+        self.assertEqual(v["huecos_largos"], ["2018-01-08 -> 2018-01-15"])
+        self.assertEqual(v["velas_en_fin_de_semana"], [])

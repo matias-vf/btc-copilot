@@ -140,3 +140,64 @@ def cargar(ruta: Path) -> list[list]:
     if filas:
         comprobar_no_test(max(date.fromisoformat(r[0]) for r in filas))
     return filas
+
+
+# --- Segundo mercado: oro (GLD), D42 ------------------------------------------------------------------
+
+INICIO_TEST_ORO = date(2019, 1, 1)
+TEST_ORO_DESBLOQUEADO = False  # cambiar solo tras recibir «UNLOCK» del usuario para el oro
+
+
+def comprobar_no_test_oro(fin: date) -> None:
+    if fin >= INICIO_TEST_ORO and not TEST_ORO_DESBLOQUEADO:
+        raise DatosTestBloqueados(f"{fin} pertenece al TEST del oro (>= {INICIO_TEST_ORO}). Bloqueado hasta «UNLOCK».")
+
+
+def descargar_yahoo(simbolo: str, inicio: date, fin: date) -> list[list]:
+    """Velas diarias de bolsa (datos públicos del gráfico de Yahoo Finance, sin claves). Fecha = día de mercado en NY."""
+    comprobar_no_test_oro(fin)
+    p1 = _ms(inicio) // 1000
+    p2 = (_ms(fin) + DIA_MS) // 1000
+    q = urllib.parse.urlencode({"period1": p1, "period2": p2, "interval": "1d"})
+    req = urllib.request.Request(f"https://query1.finance.yahoo.com/v8/finance/chart/{simbolo}?{q}",
+                                 headers={"User-Agent": "Mozilla/5.0 (btc-copilot-research)"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        d = json.loads(r.read().decode("utf-8"))["chart"]["result"][0]
+    desfase = int(d["meta"].get("gmtoffset", 0))
+    qd = d["indicators"]["quote"][0]
+    filas = []
+    for i, ts in enumerate(d.get("timestamp", [])):
+        dia = datetime.fromtimestamp(ts + desfase, tz=timezone.utc).date()
+        vals = [qd["open"][i], qd["high"][i], qd["low"][i], qd["close"][i], qd["volume"][i]]
+        if inicio <= dia <= fin and all(x is not None for x in vals):
+            filas.append([dia.isoformat(), *[f"{x:.6f}" for x in vals[:4]], str(vals[4])])
+    return filas
+
+
+def validar_bolsa(filas: list[list]) -> dict:
+    """Como `validar`, pero en bolsa solo hay velas los días de mercado: los huecos normales no son errores.
+    Se listan los huecos de más de 4 días naturales (cierres largos) y las velas en fin de semana."""
+    v = validar(filas)
+    fechas = sorted(date.fromisoformat(f[0]) for f in filas)
+    v["huecos"] = []
+    v["huecos_largos"] = [f"{a} -> {b}" for a, b in zip(fechas, fechas[1:]) if (b - a).days > 4]
+    v["velas_en_fin_de_semana"] = [f.isoformat() for f in fechas if f.weekday() >= 5]
+    return v
+
+
+def guardar_oro(filas: list[list], ruta: Path) -> str:
+    comprobar_no_test_oro(max(date.fromisoformat(f[0]) for f in filas))
+    ruta.parent.mkdir(parents=True, exist_ok=True)
+    with ruta.open("w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f, lineterminator="\n")
+        w.writerow(COLUMNAS)
+        w.writerows(filas)
+    return hashlib.sha256(ruta.read_bytes()).hexdigest()
+
+
+def cargar_oro(ruta: Path) -> list[list]:
+    with Path(ruta).open(encoding="utf-8") as f:
+        filas = list(csv.reader(f))[1:]
+    if filas:
+        comprobar_no_test_oro(max(date.fromisoformat(r[0]) for r in filas))
+    return filas

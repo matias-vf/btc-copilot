@@ -51,3 +51,18 @@ TRAIN empieza ese día. Las medias largas (SMA 200, L = 365) necesitan velas pre
 
 ## Datos de pago
 No hay. Si más adelante me dices que tienes ficheros de pago, se añadirán como fuente nueva aquí, sin reemplazar estos.
+
+## 3. Oro: GLD (SPDR Gold Shares), segundo mercado (D42)
+- Fuente: Yahoo Finance, gráfico diario público (`query1.finance.yahoo.com/v8/finance/chart/GLD`, interval=1d), sin claves.
+  Precios sin ajustar (GLD no reparte dividendos). Fecha = día de mercado en Nueva York. Descargado el 2026-11-21.
+- `gld_yahoo_1d_otra_epoca_2004_2010.csv`: 2004-11-18 (primer día de cotización de GLD) a 2010-12-31, 1541 velas.
+  SHA-256 `1c571e1486020a1e09f4c3127df28481bbba0a70be199c80848367bddcfc653a`
+- `gld_yahoo_1d_train_2011_2018.csv`: 2011-01-03 a 2018-12-31, 2012 velas. SHA-256 `c8cd5f4809e97d620cf213177f49d8c96a38c876edf4f033be706548b8340ac7`
+- Calidad: sin duplicados, OHLC coherente, ningún día con volumen 0, ninguna vela en fin de semana. Solo hay velas los
+  días de mercado (por eso "faltan" fines de semana y festivos). Huecos de más de 4 días: 2006-12-29 a 2007-01-03
+  (bolsa cerrada el 2 de enero de 2007 por el funeral del presidente Ford) y 2012-10-26 a 2012-10-31 (huracán Sandy).
+  Son cierres reales del mercado, no datos perdidos.
+- **TEST del oro (desde 2019-01-01): NO descargado.** El código se niega a pedirlo, guardarlo o leerlo
+  (`TEST_ORO_DESBLOQUEADO = False`) hasta que el usuario escriba «UNLOCK».
+- Limitaciones: Yahoo es una fuente gratuita y no oficial; sus datos pueden tener errores puntuales. GLD cotiza solo en
+  horario de bolsa de EE. UU.; entre el cierre y la apertura puede haber saltos de precio.
