@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from copilot.motor import pct as _p
+
 import hashlib
 import subprocess
 from math import log, sqrt
@@ -15,8 +17,7 @@ FICHERO = datos.DATOS / "btcusd_bitstamp_1d_2011_2016.csv"
 SALIDA = registro.RAIZ / "docs" / "robustez.md"
 
 
-def _r(m):
-    return {k: (round(v, 6) if isinstance(v, float) else v) for k, v in m.items()}
+_r = train._redondear
 
 
 def regimenes(velas) -> dict[str, list[str]]:
@@ -116,8 +117,6 @@ def veredictos(filas, bh) -> dict[str, dict]:
     return out
 
 
-def _p(x):
-    return f"{x * 100:,.1f} %".replace(",", " ")
 
 
 def _escribir(inf) -> None:

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from copilot.motor import pct as _p
+
 import hashlib
 import subprocess
 from datetime import date
 
 from copilot import datos, estrategias, registro, robustez, train, vigilancia as vg
-from copilot.motor import Resultado, backtest, cargar_velas, metricas
+from copilot.motor import backtest, cargar_velas, metricas, recortar
 
 LOTE = "test-v1"
 FICHERO = datos.DATOS / "btcusdt_binance_1d_test.csv"
@@ -18,13 +20,7 @@ EN_COPILOTO = {("B1", "N=20,M=10"), ("B1", "N=55,M=20"), ("T1", "sma_n=100")}
 INICIO = date(2023, 1, 1)
 
 
-def tramo(r: Resultado, i0: int) -> Resultado:
-    """Solo el tramo de TEST, partiendo del capital al cierre de la víspera."""
-    t = Resultado(capital=r.equity[i0 - 1])
-    t.fechas, t.equity, t.senales = r.fechas[i0:], r.equity[i0:], r.senales[i0:]
-    t.ejecuciones = [e for e in r.ejecuciones if e["fecha"] >= INICIO]
-    t.costes_pagados = sum(e["coste"] for e in t.ejecuciones)
-    return t
+tramo = recortar  # nombre usado en este módulo
 
 
 def ejecutar() -> dict:
@@ -56,8 +52,6 @@ def ejecutar() -> dict:
     return out
 
 
-def _p(x):
-    return f"{x * 100:,.1f} %".replace(",", " ")
 
 
 def _escribir(o) -> None:

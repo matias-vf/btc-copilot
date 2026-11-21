@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from copilot.motor import pct as _p
+
 import hashlib
 import subprocess
 from math import sqrt
@@ -110,8 +112,6 @@ def ejecutar() -> dict:
     return out
 
 
-def _p(x):
-    return f"{x * 100:,.1f} %".replace(",", " ")
 
 
 def _escribir(out) -> None:

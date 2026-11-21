@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+from copilot.motor import pct as _p
+
 from html import escape
 from pathlib import Path
 
 
-def _p(x: float) -> str:
-    return f"{x * 100:,.1f} %".replace(",", " ")
 
 
 def _svg(fechas, a, b) -> str:

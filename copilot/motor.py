@@ -127,3 +127,17 @@ def alertas(m: dict, bh: dict) -> list[str]:
     if m["operaciones"] > 0 and m["max_drawdown"] > -0.15:
         a.append(f"Drawdown máximo {m['max_drawdown']:.0%}: demasiado pequeño para BTC 2017-2022")
     return a
+
+
+def pct(x: float) -> str:
+    """12.345 -> '1 234,5 %' en estilo de los informes."""
+    return f"{x * 100:,.1f} %".replace(",", " ")
+
+
+def recortar(r: Resultado, i0: int) -> Resultado:
+    """Solo el tramo desde la vela i0, partiendo del capital al cierre de la víspera (D21, D27)."""
+    t = Resultado(capital=r.equity[i0 - 1])
+    t.fechas, t.equity, t.senales = r.fechas[i0:], r.equity[i0:], r.senales[i0:]
+    t.ejecuciones = [e for e in r.ejecuciones if e["fecha"] >= r.fechas[i0]]
+    t.costes_pagados = sum(e["coste"] for e in t.ejecuciones)
+    return t

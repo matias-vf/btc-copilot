@@ -6,6 +6,7 @@ Sin datos suficientes para calcular un indicador, la regla devuelve 0 (no operar
 
 from __future__ import annotations
 
+from datetime import timedelta
 from math import log, sqrt
 from typing import Sequence
 
@@ -105,8 +106,10 @@ def n1_momentum_semanal(L: int) -> Estrategia:
     def f(h, pos):
         if h[-1].fecha.weekday() != 6:
             return 1.0 if pos > 0 else 0.0
-        i = len(h) - 1 - 7 * L  # el domingo de hace L semanas (velas diarias consecutivas)
-        return 1.0 if i >= 0 and h[-1].close / h[i].close - 1 > 0 else 0.0
+        i = len(h) - 1 - 7 * L  # el domingo de hace L semanas
+        if i < 0 or h[i].fecha != h[-1].fecha - timedelta(days=7 * L):
+            return 0.0  # falta historia o hay un hueco en las velas: no operar (D27)
+        return 1.0 if h[-1].close / h[i].close - 1 > 0 else 0.0
     return f
 
 
@@ -127,6 +130,13 @@ def n4_maximo_52s(x: float) -> Estrategia:
             return 0.0
         return 1.0 if h[-1].close >= (1 - x) * max(v.high for v in h[-365:]) else 0.0
     return f
+
+
+def calentamiento(estrategia_id: str, variante: str) -> int:
+    """Índice de la primera vela con la que la variante puede dar una señal (D27). Solo segunda búsqueda."""
+    p = dict(kv.split("=", 1) for kv in variante.split(","))
+    return {"N1": lambda: 7 * int(p["L"]), "N2": lambda: int(p["n"]) - 1, "N3": lambda: int(p["n"]),
+            "N4": lambda: 364}[estrategia_id]()
 
 
 def crear(estrategia_id: str, variante: str) -> Estrategia:

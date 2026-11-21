@@ -362,3 +362,34 @@ class TestEstrategiasV2(unittest.TestCase):
             with self.subTest(eid=eid, var=var):
                 self.assertEqual(anticipacion.comprobar(v, lambda _d, e=eid, x=var: estrategias.crear(e, x),
                                                         cortes=[380, 470]), [])
+
+
+class TestArreglosD27(unittest.TestCase):
+    def test_n1_no_opera_si_falta_una_vela(self):
+        v = velas_aleatorias(30)                                   # 2019-01-06 es domingo
+        domingo = 14
+        self.assertEqual(v[domingo].fecha.weekday(), 6)
+        hueco = v[:3] + v[4:domingo + 1]                           # falta una vela en medio
+        self.assertEqual(estrategias.n1_momentum_semanal(1)(hueco, 0.0), 0.0)
+        sube = velas_fijas([100.0] * 8 + [110.0] * 7)              # 15 velas; el domingo previo vale 100
+        h = [x._replace(fecha=date(2019, 1, 6) + timedelta(days=i - 14)) for i, x in enumerate(sube)]
+        self.assertEqual(estrategias.n1_momentum_semanal(1)(h, 0.0), 1.0)
+
+    def test_calentamiento(self):
+        self.assertEqual(estrategias.calentamiento("N1", "L=4"), 28)
+        self.assertEqual(estrategias.calentamiento("N2", "n=20"), 19)
+        self.assertEqual(estrategias.calentamiento("N3", "n=50"), 50)
+        self.assertEqual(estrategias.calentamiento("N4", "x=10%"), 364)
+        f, v = estrategias.crear("N3", "n=5"), velas_aleatorias(50)
+        self.assertEqual([f(v[: t + 1], 0.0) for t in range(5)], [0.0] * 5)   # antes del arranque no opera
+
+    def test_recortar_reproduce_test_registrado(self):
+        from copilot import evaluacion_test as et, train
+        from copilot.motor import cargar_velas, recortar
+        velas = cargar_velas(train.FICHERO) + cargar_velas(et.FICHERO)
+        i0 = next(i for i, x in enumerate(velas) if x.fecha >= et.INICIO)
+        reg = next(e["datos"] for e in registro.leer(registro.EXPERIMENTOS)
+                   if e["datos"].get("lote") == et.LOTE and e["datos"]["variante"] == "sma_n=100")
+        m = metricas(recortar(backtest(velas, estrategias.crear("T1", "sma_n=100")), i0))
+        self.assertAlmostEqual(m["sharpe"], reg["metricas"]["sharpe"], places=5)
+        self.assertAlmostEqual(m["max_drawdown"], reg["metricas"]["max_drawdown"], places=5)
