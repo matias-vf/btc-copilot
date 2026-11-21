@@ -116,7 +116,8 @@ class TestEstrategias(unittest.TestCase):
         self.assertTrue(all(0 <= s <= 1 for s in r.senales))
 
     def test_todas_las_variantes_registradas_se_construyen(self):
-        ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"]["estado"] != "descartada"]
+        ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"]["estado"] != "descartada"
+                 and e["datos"]["familia"] != "Cartera"]
         total = 0
         for idea in ideas:
             for var in idea["configuraciones_permitidas"]:
@@ -128,7 +129,8 @@ class TestEstrategias(unittest.TestCase):
 class TestAnticipacion(unittest.TestCase):
     def test_todas_las_variantes_son_causales(self):
         v = velas_aleatorias(420)
-        ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"]["estado"] != "descartada"]
+        ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"]["estado"] != "descartada"
+                 and e["datos"]["familia"] != "Cartera"]
         variantes = [("BH", "buy_hold")] + [(i["id"], x) for i in ideas for x in i["configuraciones_permitidas"]]
         for eid, var in variantes:
             with self.subTest(eid=eid, var=var):
@@ -161,3 +163,36 @@ class TestRobustez(unittest.TestCase):
         self.assertEqual(set(reg["vol. alta"]) | set(reg["vol. baja"]), meses)
         r = backtest(v, estrategias.buy_hold, SIN_COSTES)
         self.assertAlmostEqual(rent_en_meses(r, sorted(meses)), r.equity[-1] / 100 - 1)
+
+
+class TestCartera(unittest.TestCase):
+    def _mangas(self, n=300, semilla=3):
+        rnd = random.Random(semilla)
+        r = lambda: [rnd.gauss(0, 0.02 * k) for k in [1] * n]
+        x = [1.0] * n
+        return {"B1": [(r(), x), (r(), x)], "T1": [([v * 3 for v in r()], x)]}
+
+    def test_pesos_inversos_a_volatilidad(self):
+        from copilot.cartera import pesos
+        w = pesos({"A": [0.01, -0.01] * 50, "B": [0.02, -0.02] * 50})
+        self.assertAlmostEqual(w["A"], 2 / 3)
+        self.assertEqual(pesos({"A": [0.1], "B": [0.2]}), {"A": 0.5, "B": 0.5})  # pocos datos
+        self.assertEqual(pesos({"A": [0.0] * 100, "B": [0.02, -0.02] * 50}), {"A": 0.0, "B": 1.0})
+
+    def test_sin_costes_y_un_mes_es_la_media_ponderada(self):
+        from copilot.cartera import cartera
+        fechas = [date(2020, 1, 1) + timedelta(days=i) for i in range(10)]
+        m = {"A": [([0.01] * 10, [1.0] * 10)], "B": [([0.0] * 10, [0.0] * 10)]}
+        c, _ = cartera(fechas, m, SIN_COSTES)
+        self.assertAlmostEqual(c.equity[-1], 50 * 1.01 ** 10 + 50)
+
+    def test_cartera_causal(self):
+        from copilot.cartera import cartera
+        m = self._mangas()
+        fechas = [date(2020, 1, 1) + timedelta(days=i) for i in range(300)]
+        base, _ = cartera(fechas, m)
+        t = 200
+        alt = {k: [([*rr[:t + 1], *[v * 5 + 0.03 for v in rr[t + 1:]]], xx) for rr, xx in vs] for k, vs in m.items()}
+        otra, _ = cartera(fechas, alt)
+        self.assertEqual(base.equity[: t + 1], otra.equity[: t + 1])
+        self.assertNotEqual(base.equity[-1], otra.equity[-1])

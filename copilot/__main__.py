@@ -5,6 +5,7 @@
   descargar   descarga los datos de TRAIN (Binance) y de la otra época (Bitstamp 2011-2016)
   train       Prompt 4: ejecuta todas las variantes registradas en TRAIN (una sola vez) y las anota
   robustez    Prompt 5: otra época (Bitstamp), regímenes, sensibilidad y veredicto (una sola vez)
+  cartera     Prompt 6: correlaciones y cartera inversa a la volatilidad (una sola vez)
   anticipacion comprueba en TRAIN que ninguna variante registrada mira el futuro (no muestra resultados)
 """
 
@@ -74,7 +75,8 @@ def anticipacion() -> int:
     from copilot import anticipacion as la, estrategias, motor
 
     velas = motor.cargar_velas()
-    ideas = [e["datos"] for e in registro.leer(registro.IDEAS) if e["datos"]["estado"] != "descartada"]
+    ideas = [e["datos"] for e in registro.leer(registro.IDEAS)
+             if e["datos"]["estado"] != "descartada" and e["datos"]["familia"] != "Cartera"]
     variantes = [("BH", "buy_hold")] + [(i["id"], v) for i in ideas for v in i["configuraciones_permitidas"]]
     fallos = 0
     for eid, var in variantes:
@@ -101,10 +103,18 @@ def robustez() -> int:
     return 0
 
 
+def cartera() -> int:
+    from copilot import cartera as ca
+
+    ca.ejecutar()
+    print("Cartera ejecutada en TRAIN y en la otra época y registrada. Informe en docs/cartera.md")
+    return 0
+
+
 if __name__ == "__main__":
     ordenes = {"verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
-               "robustez": robustez}
+               "robustez": robustez, "cartera": cartera}
     if len(sys.argv) != 2 or sys.argv[1] not in ordenes:
         print(__doc__)
         sys.exit(2)
