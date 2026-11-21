@@ -68,5 +68,23 @@
       "2015-01-08"
     ],
     "ordenadas": true
+  },
+  "btcusdt_binance_1d_test.csv": {
+    "fuente": "Binance spot BTCUSDT, GET https://data-api.binance.vision/api/v3/klines (interval=1d)",
+    "pedido": [
+      "2023-01-01",
+      "2026-11-20"
+    ],
+    "descargado_utc": "2026-11-21T14:52:39+00:00",
+    "sha256": "6530a851b2b8576e77bf16fe6fd84479da6976dccd9388f7f9637c9a8afa5bcb",
+    "primera": "2023-01-01",
+    "ultima": "2026-11-20",
+    "velas": 1420,
+    "dias_esperados": 1420,
+    "duplicados": [],
+    "huecos": [],
+    "ohlc_incoherentes": [],
+    "dias_volumen_cero": [],
+    "ordenadas": true
   }
 }

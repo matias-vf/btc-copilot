@@ -227,3 +227,9 @@ enero de 2015); 53 alertas frente a 446 en la v1. La v2 queda como versión por 
 - **Pendiente del usuario:** el modo en vivo y el mes de paper trading real necesitan precios posteriores al 01/01/2023,
   que son TEST. `python -m copilot hoy` y `en-marcha` se niegan a funcionar hasta que el usuario decida.
 - El proyecto no se considera terminado hasta superar el mes de paper trading real.
+
+## D20. 2026-11-21. TEST desbloqueado por el usuario
+El usuario escribió exactamente «UNLOCK». Se cambia `TEST_DESBLOQUEADO = True` en `copilot/datos.py`. A partir de aquí,
+los datos desde el 2023-01-01 se pueden descargar y leer. Todas las reglas (estrategias, criterios D3, robustez D9,
+cartera D11, riesgo D13, vigilancia D17) quedaron fijadas antes de este momento y no se cambian a la vista de TEST.
+Las pruebas del bloqueo siguen comprobando la lógica forzando el bloqueo dentro de la prueba.

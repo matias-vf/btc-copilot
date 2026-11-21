@@ -7,6 +7,12 @@ from copilot import datos
 
 
 class TestDatos(unittest.TestCase):
+    def setUp(self):  # la lógica del bloqueo se sigue probando aunque TEST ya esté desbloqueado (D20)
+        self._antes, datos.TEST_DESBLOQUEADO = datos.TEST_DESBLOQUEADO, False
+
+    def tearDown(self):
+        datos.TEST_DESBLOQUEADO = self._antes
+
     def test_bloquea_test(self):
         for fn in (datos.descargar_binance, datos.descargar_bitstamp):
             with self.assertRaises(datos.DatosTestBloqueados):
@@ -36,6 +42,8 @@ class TestDatos(unittest.TestCase):
 
     def test_ficheros_reales_sin_test(self):
         for ruta in datos.DATOS.glob("*.csv"):
+            if "_test" in ruta.name:
+                continue
             filas = datos.cargar(ruta)
             v = datos.validar(filas)
             self.assertEqual(v["duplicados"], [], ruta.name)

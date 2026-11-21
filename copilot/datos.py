@@ -20,7 +20,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 DATOS = RAIZ / "data"
 
 INICIO_TEST = date(2023, 1, 1)
-TEST_DESBLOQUEADO = False  # cambiar solo tras recibir «UNLOCK»
+TEST_DESBLOQUEADO = True  # «UNLOCK» recibido del usuario el 2026-11-21 (D20)
 
 COLUMNAS = ["fecha_utc", "open", "high", "low", "close", "volumen_btc"]
 DIA_MS = 86_400_000

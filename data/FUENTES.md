@@ -25,8 +25,15 @@ TRAIN empieza ese día. Las medias largas (SMA 200, L = 365) necesitan velas pre
 - En 2017-2018 Binance tenía menos liquidez que hoy: el slippage real pudo ser mayor que el estimado.
 - El volumen es el de Binance, no el del mercado total.
 
-**TEST bloqueado:** el código se niega a pedir, guardar o leer cualquier vela desde el 2023-01-01
+**TEST (antes bloqueado, abierto el 2026-11-21 con «UNLOCK»):** el código se negaba a pedir, guardar o leer cualquier vela desde el 2023-01-01
 (`copilot/datos.py`, `TEST_DESBLOQUEADO = False`) hasta que escribas «UNLOCK». Hay pruebas automáticas que lo comprueban.
+
+## 1b. `btcusdt_binance_1d_test.csv` (TEST, descargado tras «UNLOCK», D20)
+- Fuente: la misma que TRAIN. Descargado el 2026-11-21.
+- Rango: 2023-01-01 a 2026-11-20 (última vela cerrada). 1420 velas = 1420 días. Sin huecos, sin duplicados, OHLC
+  coherente, ningún día con volumen 0. Ninguna apertura se separa más de un 1 % del cierre anterior.
+- Continuidad con TRAIN: último cierre de TRAIN 16 542,40; primera apertura de TEST 16 541,77.
+- SHA-256: `6530a851b2b8576e77bf16fe6fd84479da6976dccd9388f7f9637c9a8afa5bcb`
 
 ## 2. `btcusd_bitstamp_1d_2011_2016.csv` (otra época, para el Prompt 5)
 - Fuente: Bitstamp, par BTC/USD, `GET https://www.bitstamp.net/api/v2/ohlc/btcusd/?step=86400`.
