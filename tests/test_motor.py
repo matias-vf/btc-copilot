@@ -416,3 +416,19 @@ class TestUniverso(unittest.TestCase):
                 self.assertEqual(a.equity, b.equity)
                 self.assertTrue(U.causal(fid, var, v, cortes=[300, 450]))
                 self.assertEqual(U.como_estrategia(fid, var)(v[:400], 0.0), sig[399])
+
+
+class TestSharpeDeflactado(unittest.TestCase):
+    def test_valores_de_control(self):
+        from math import e, sqrt
+        from statistics import NormalDist
+        from copilot.universo_eval import momentos, sharpe_deflactado
+        nd, g = NormalDist(), 0.5772156649015329
+        var, N = 0.0004, 1000
+        sr0 = sqrt(var) * ((1 - g) * nd.inv_cdf(1 - 1 / N) + g * nd.inv_cdf(1 - 1 / (N * e)))
+        self.assertAlmostEqual(sharpe_deflactado(sr0, 1500, 0.0, 3.0, var, N), 0.5)   # justo lo esperable por azar
+        self.assertGreater(sharpe_deflactado(sr0 + 0.05, 1500, 0.0, 3.0, var, N), 0.95)
+        self.assertLess(sharpe_deflactado(sr0 + 0.05, 1500, 0.0, 3.0, var * 4, N), 0.5)  # más dispersión: más exigente
+        m, s, a, k = momentos([1.0, 2.0, 3.0, 4.0, 5.0])
+        self.assertAlmostEqual((m, a), (3.0, 0.0))
+        self.assertAlmostEqual(k, 1.7)

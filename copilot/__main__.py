@@ -13,6 +13,7 @@
   robustez2   segunda búsqueda, Prompt 5: otra época y TEST (una sola vez)
   riesgo2     segunda búsqueda, Prompts 6 y 7: cartera y exposición (una sola vez)
   test        evaluación final en TEST (regla D21, una sola vez)
+  universo    tercera búsqueda: las 1000 en TRAIN, otra época y TEST (D36, una sola vez)
   n1d         evalúa N1 con revisión diaria (D34, una sola vez)
   vigia       observación horaria del mercado (no opera; D33)
   resumen     resumen del paper trading en vivo (solo lee los registros)
@@ -185,6 +186,15 @@ def riesgo2() -> int:
     return 0
 
 
+def universo() -> int:
+    from copilot import universo_eval as ue
+
+    out = ue.ejecutar()
+    print(f"Universo de 1000 evaluado y registrado: {len(out['pasan'])} pasan TRAIN, {len(out['finalistas'])} pasan las tres "
+          f"épocas, {len(out['elegidas'])} elegidas. Informe en docs/universo_resultados.md")
+    return 0
+
+
 def n1d() -> int:
     from copilot import busqueda3
 
@@ -272,7 +282,7 @@ if __name__ == "__main__":
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
-    ordenes = {"n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
+    ordenes = {"universo": universo, "n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}
