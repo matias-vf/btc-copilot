@@ -196,3 +196,17 @@ Simulación en Bitstamp 2013-2016: la regla de drawdown funciona (parada de emer
 "peor que la mediana aleatoria" suspende por ruido el primer día y, sin reactivación, deja el copiloto apagado mientras
 las estrategias suspendidas ganan miles de por cien en la sombra. Falta exigir volumen > 0 en los datos. Las reglas v1
 no se tocan; queda pendiente que el usuario decida una versión 2 antes del Prompt 9. Informe en `docs/vigilancia.md`.
+
+## D17. 2026-11-21. Reglas de vigilancia versión 2 (aprobadas por el usuario: «Sí, registra la v2»)
+La v1 (D15) no se borra: su código sigue disponible (`version="v1"`) y su resultado queda en `docs/vigilancia.md`.
+Cambios de la v2 (lo demás, igual que en la v1):
+1. **Azar:** se suspende solo si la rentabilidad de 365 días queda por debajo del **percentil 25** de las 200 estrategias
+   aleatorias durante **30 días seguidos**.
+2. **Reactivación automática** (solo de las suspensiones por azar): cuando la rentabilidad de 365 días está por encima de
+   la **mediana** aleatoria durante 30 días seguidos. Se anota en el registro como evento "reactivacion".
+3. **Drawdown:** sin cambios. La reactivación tras una suspensión por drawdown o una parada de emergencia solo con
+   aprobación explícita del usuario.
+4. **Volatilidad:** la alerta salta solo cuando la volatilidad de 30 días entra o sale de la banda normal de TRAIN.
+5. **Datos:** además, no se generan señales si la última vela tiene volumen 0.
+Aviso: la v2 se diseñó después de ver la simulación v1 en Bitstamp 2013-2016, así que volver a simularla en esos mismos
+datos es una prueba débil. Su prueba de verdad será el paper trading.
