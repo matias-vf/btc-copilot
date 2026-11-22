@@ -642,3 +642,26 @@ variante posterior registrada»: esta es esa variante. Antes había pedido «una
 - **"Que opere cada día":** se informa del porcentaje de días con operación de cada regla. No es criterio de aprobación:
   operar más no es bueno en sí mismo y cada operación cuesta un 0,16 %.
 - Si alguna aprueba: cuenta de paper propia de 100 USD ficticios, exposición máxima 25 %, vigilancia cada hora.
+
+## D55. 2026-11-22. Day trading de QQQ con costes de IBKR (elegido por el usuario: «QQQ en IBKR»). Fijado ANTES de descargar datos
+El usuario: «piensa que operaremos en IBKR, que no cobra muchas comisiones». **El bot nunca se conecta a IBKR ni envía
+órdenes**: sigue siendo solo paper trading; si el usuario opera en IBKR, lo hará él. Sustituye al plan de BTC de D54 (sus
+datos horarios quedan descargados en `data/btc_1h/`, sin evaluar).
+- **Instrumento:** QQQ (Nasdaq-100), compras y **ventas en corto**, sin apalancamiento (1x), solo dentro de la sesión
+  regular de Nueva York (9:30-16:00): toda posición se cierra al cierre de la última vela del día.
+- **Costes (IBKR Pro escalonado, página oficial consultada el 2026-11-22):** 0,0035 USD por participación, mínimo 0,35 USD
+  y máximo 1 % del importe por orden; más 0,02 % de spread y slippage por lado. Sin coste de préstamo para cortos de un
+  solo día (no pasan la noche).
+- **Capital ficticio de esta cuenta: 25.000 USD**, para que el mínimo por orden no distorsione y por encima del umbral de
+  la regla de *pattern day trader*. Exposición máxima en el copiloto: 25 %.
+- **Datos:** velas de 1 hora de Yahoo, lo máximo que da (unos 730 días). TRAIN = desde el inicio de los datos hasta el
+  2026-03-31; TEST = 2026-04-01 a 2026-11-20. Otra época: SPY (S&P 500) en las fechas de TRAIN. Aviso: la dirección
+  diaria de QQQ en 2026 ya se vio en la búsqueda diaria (D50); el comportamiento hora a hora no.
+- **Universo (40 variantes):** momentum intradía (Gao, Han, Li y Zhou 2018: la rentabilidad de las primeras horas predice
+  la última), ruptura del rango de las primeras 1-2 horas con stop y objetivo (Crabel 1990), seguir o llevar la contraria
+  al hueco de apertura, cruces de medias horarias, reversión con RSI horario y ruptura solo a favor de la tendencia diaria.
+  Todas con compras y cortos.
+- **Criterio:** igual que D54 (rentabilidad neta > 0, drawdown menor y Sharpe >= Buy & Hold de QQQ en TRAIN; Sharpe
+  deflactado >= 0,95 con N = 40; después el criterio v2 en la otra época y en TEST). Hasta 3 elegidas por Sharpe deflactado
+  con correlación <= 0,9; si ninguna supera el Sharpe deflactado, las que cumplan las tres, marcadas «SIN significación».
+  Se informa del porcentaje de días con operación.
