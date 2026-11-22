@@ -593,3 +593,18 @@ El ordenador estuvo apagado la noche del 21 al 22 de noviembre y el ciclo de las
 recuperó al encender). Se procesó a mano a las 09:32 (vela de BTC del 2026-11-21: NO OPERAR; oro y Nasdaq sin velas nuevas
 en fin de semana). Las tareas «BTCCopilot diario» y «BTCCopilot vigia» tienen ahora también un disparador al iniciar sesión,
 así que cualquier día perdido se recupera solo al encender (el copiloto marca esas señales como "recuperada_tarde").
+
+## D52. 2026-11-22. Estrategia I02: el flujo de la Day Trader skill en acciones (pedido por el usuario: «pruébala»). Fijado ANTES de descargar datos
+- **Universo:** las 234 acciones líquidas de EE. UU. del ejemplo de la propia skill
+  (`day-trader-skill/tests/fixtures/trader-scanner/wall5m-2026-10-19.json.gz`). No las elijo yo mirando resultados.
+- **Regla (valores por defecto de trader-scanner, trader-entry y trader-exit):** rango de apertura = velas de 5 min de
+  9:30, 9:35 y 9:40 (Nueva York). Señal = la primera vela de 5 min ya cerrada cuyo CIERRE supera el máximo del rango,
+  sin entradas después de las 15:30. Cada día se opera **solo la primera acción que da señal** (si varias a la vez, la más
+  negociada hasta ese momento, precio por volumen, como ordena la skill). Entrada en la apertura de la vela siguiente.
+  Stop en la mitad del rango (or-mid); si la entrada no queda por encima del stop, no se opera. Objetivo a 2R. Si no
+  salta nada, salida al cierre de la vela de las 15:50 (fuera a las 15:55). El stop tiene prioridad si en la misma vela se
+  tocan stop y objetivo; si una vela abre por debajo del stop, se sale a esa apertura. Solo compra.
+- **Tamaño y costes:** exposición min(25 %, 1 % / distancia al stop); 0,05 % por lado (acciones líquidas, como D42).
+- **Prueba:** los últimos 60 días de velas de 5 min de Yahoo (lo máximo que da). Muestra corta, sin TRAIN ni TEST.
+- **Criterio (el mismo que I01, D48):** rentabilidad neta > 0 y Sharpe diario (252) >= Buy & Hold de QQQ en los mismos
+  días. Si lo cumple, entra en paper como EXPERIMENTAL; si no, no se usa. Nunca se usa trader-broker.
