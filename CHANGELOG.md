@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## 2026-11-22. Reglas de paper-bot (Day Trader skill) comprobadas
+- Datos de ETH de 1 hora de Binance (spot y perpetuo, con funding) hasta el 2024-11-13.
+- La regla de corto de paper-bot en BTC y ETH, y su versión de day trading: ninguna aprueba (D57, D58).
+  Comando `python -m copilot paperbot`; informe en `docs/paperbot.md`.
+
 ## 2026-11-22. Day trading de QQQ con compras y cortos (IBKR)
 - Velas de 1 hora de QQQ y SPY (Yahoo, 730 días). Motor horario con cortos, stops, objetivos, cierre al final de la
   sesión y costes de IBKR Pro escalonado (D55). Comando `python -m copilot qqq-daytrading`.

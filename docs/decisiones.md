@@ -705,3 +705,16 @@ he usado la trading skill y he obtenido 7$ de ganancia con 4 operaciones ganador
   Aprueba si cumple las cuatro.
 - **Si alguna aprueba:** se recomienda dejarla en `paper-bot` (que ya la opera) con costes; no se duplica en BTCCopilot.
   Si no, se recomienda quitarla de `paper-bot`. Este repositorio no toca `paper-bot`.
+
+## D58. 2026-11-22. Las reglas de paper-bot no aprueban con datos que su validador no vio
+Ejecutado `python -m copilot paperbot` con las reglas de D57. Informe: `docs/paperbot.md`. Datos de Binance de 1 hora,
+2017-08-17 a 2024-11-13, costes 0,08 % por lado y funding real. Sharpe deflactado con N = 600 y varianza de los Sharpe
+bajo azar = 1/T (no hay los Sharpe de las 600 pruebas del validador).
+- **Ninguna de las 4 aprueba.** El corto de BTC que el validador aprobó: 380 operaciones, media -0,012 R. La regla viva
+  de ETH que dio los dos aciertos: 512 operaciones, media +0,004 R (casi cero) y negativa con costes x2. Las versiones de
+  day trading (todo cerrado a las 23:00 UTC) son peores: -0,072 R y -0,042 R.
+- Casi todo el beneficio viene de 2018 (+25 R en BTC y ETH), el año de la gran caída de las criptomonedas; casi todos los
+  demás años pierden. Es una regla que gana en mercados que se hunden y pierde el resto del tiempo.
+- **Conclusión:** los +7,70 USD de paper-bot son una racha corta en un mercado bajista, sin costes, no una ventaja.
+  Recomendación al usuario: no tomarla como estrategia de day trading; si mantiene paper-bot, que lo vea como
+  experimento. Este repositorio no modifica paper-bot.
