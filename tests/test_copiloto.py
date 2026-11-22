@@ -253,3 +253,30 @@ print("NASDAQ OK")
         r = subprocess.run([sys.executable, "-c", codigo], capture_output=True, text=True, encoding="utf-8",
                            cwd=str(Path(__file__).resolve().parents[1]))
         self.assertIn("NASDAQ OK", r.stdout, r.stderr[-2000:])
+
+
+class TestI02(unittest.TestCase):
+    def _dia(self, precios, vol=1.0):
+        from copilot.intradia import NY, Barra
+        h0 = datetime(2026, 11, 2, 9, 30, tzinfo=NY)
+        return [Barra(h0 + timedelta(minutes=5 * i), o, hi, lo, c, vol) for i, (o, hi, lo, c) in enumerate(precios)]
+
+    def test_senal_y_operacion(self):
+        from copilot.intradia import elegir_skill, operar_skill, senal_skill
+        rango = [(100, 101, 99, 100.5), (100.5, 101, 100, 100.8), (100.8, 101, 100.2, 100.9)]
+        a = self._dia(rango + [(100.9, 101.2, 100.8, 100.95), (100.95, 101.6, 100.9, 101.5), (101.6, 104, 101.5, 103)])
+        self.assertEqual(senal_skill(a), 4)                      # cierra 101.5 > máximo 101 en la vela 4
+        ev = operar_skill(a, 4)
+        self.assertEqual((ev[0]["precio"], ev[0]["stop"]), (101.6, 100.0))
+        self.assertAlmostEqual(ev[0]["objetivo"], 104.8)
+        self.assertEqual(len(ev), 1)                             # 104 no llega a 104.8: sigue dentro
+
+    def test_eleccion_y_stop(self):
+        from copilot.intradia import elegir_skill, operar_skill
+        rango = [(100, 101, 99, 100.5), (100.5, 101, 100, 100.8), (100.8, 101, 100.2, 100.9)]
+        tarde = self._dia(rango + [(100.9, 101, 100.8, 100.9), (100.9, 101.5, 100.9, 101.4), (101.4, 101.5, 99.5, 99.8)])
+        pronto = self._dia(rango + [(100.9, 101.5, 100.9, 101.4), (101.4, 101.5, 99.5, 99.8)])
+        self.assertEqual(elegir_skill({"A": tarde, "B": pronto}), ("B", 3))
+        ev = operar_skill(pronto, 3)
+        self.assertEqual((ev[1]["motivo"], ev[1]["precio"]), ("stop", 100.0))
+        self.assertIsNone(elegir_skill({"A": self._dia(rango + [(100.9, 101, 100.5, 100.6)])}))

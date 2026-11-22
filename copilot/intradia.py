@@ -163,3 +163,56 @@ def ciclo(barras_hoy: Sequence[Barra], ahora: datetime, rutas: dict = RUTAS) -> 
 def en_horario(ahora: datetime) -> bool:
     ny = ahora.astimezone(NY)
     return ny.weekday() < 5 and time(9, 35) <= ny.time() <= time(16, 10)
+
+
+# --- I02: flujo de la Day Trader skill en acciones (D52) ------------------------------------------------
+
+NO_ENTRADAS_DESPUES, FUERA = time(15, 30), time(15, 50)  # la vela de las 15:50 cierra a las 15:55 (flat_by)
+
+
+def senal_skill(barras: Sequence[Barra]) -> int | None:
+    """Índice de la primera vela que CIERRA sobre el máximo del rango 9:30-9:45 (o None)."""
+    if len(barras) < 4 or [b.hora.time() for b in barras[:3]] != [time(9, 30), time(9, 35), time(9, 40)]:
+        return None
+    alto = max(b.high for b in barras[:3])
+    for j in range(3, len(barras)):
+        if (barras[j].hora + timedelta(minutes=5)).time() > NO_ENTRADAS_DESPUES:
+            return None
+        if barras[j].close > alto:
+            return j
+    return None
+
+
+def operar_skill(barras: Sequence[Barra], j: int) -> list[dict]:
+    """Entrada en la apertura de la vela j+1; stop or-mid; objetivo 2R; fuera con la vela de las 15:50."""
+    if j + 1 >= len(barras):
+        return []
+    alto, bajo = max(b.high for b in barras[:3]), min(b.low for b in barras[:3])
+    stop, entrada = (alto + bajo) / 2, barras[j + 1].open
+    r = entrada - stop
+    if r <= 0:
+        return []
+    objetivo = entrada + 2 * r
+    ev = [{"tipo": "entrada", "hora": barras[j + 1].hora.isoformat(), "precio": entrada, "stop": stop,
+           "objetivo": objetivo, "exposicion": min(EXPOSICION_MAX, RIESGO / (r / entrada))}]
+    for b in barras[j + 1:]:
+        if b.low <= stop:
+            ev.append({"tipo": "salida", "hora": b.hora.isoformat(), "precio": min(stop, b.open), "motivo": "stop"})
+            return ev
+        if b.high >= objetivo:
+            ev.append({"tipo": "salida", "hora": b.hora.isoformat(), "precio": max(objetivo, b.open), "motivo": "objetivo"})
+            return ev
+        if b.hora.time() >= FUERA:
+            ev.append({"tipo": "salida", "hora": b.hora.isoformat(), "precio": b.close, "motivo": "15:55"})
+            return ev
+    return ev
+
+
+def elegir_skill(dia: dict[str, Sequence[Barra]]) -> tuple[str, int] | None:
+    """La acción que da señal antes; empate: la más negociada hasta esa vela (precio x volumen)."""
+    mejores = []
+    for s, barras in dia.items():
+        j = senal_skill(barras)
+        if j is not None:
+            mejores.append((barras[j].hora, -sum(b.close * b.volumen for b in barras[: j + 1]), s, j))
+    return (min(mejores)[2], min(mejores)[3]) if mejores else None
