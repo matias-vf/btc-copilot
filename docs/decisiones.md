@@ -616,3 +616,29 @@ Lote `intradia-i02-v1` (233 de 234 acciones; SQ falló porque cambió de símbol
 22 ganadoras; 31 salidas por stop, 24 a las 15:55 y 5 en el objetivo. Las acciones que más veces salieron primero: TSLA y MU
 (6), MSFT y NVDA (5). Resultado: **-3,9 %, Sharpe -3,02, drawdown -5,1 %**, peor que Buy & Hold de QQQ en Sharpe (-2,43)
 aunque con mucha menos caída (QQQ -14,9 %). No cumple el criterio de D52: no se usa en el paper trading.
+
+## D54. 2026-11-22. Day trading en BTC con cortos (pedido por el usuario). Fijado ANTES de descargar datos
+El usuario: «yo nunca he dicho de solo ir en compras. puedes hacer futuros, stop loss, todo lo que se pueda en el
+trading». Su primer mensaje decía «Solo posiciones compradas o en liquidez. Los cortos con perpetuos quedan para una
+variante posterior registrada»: esta es esa variante. Antes había pedido «una estrategia de day trading que opere cada día».
+- **Instrumento:** futuro perpetuo BTCUSDT de Binance (USDⓈ-M), solo en paper. Compras y **ventas en corto**.
+  **Apalancamiento máximo 1x** (con 1,5x y 2x la cuenta se arruinó el 2013-04-10, D14): solo se subiría si el usuario
+  lo pide expresamente, como variante aparte.
+- **Day trading:** velas de 1 hora; decisión al cierre de una vela, orden en la apertura de la siguiente; toda posición se
+  cierra como muy tarde al cierre de la vela de las 23:00 UTC (fin del día UTC). Nada pasa la noche.
+- **Costes por lado:** comisión 0,05 % (taker, usuario normal, página oficial binance.com/en/fee/futureFee consultada el
+  2026-11-22) + medio spread 0,01 % + slippage 0,02 % = **0,08 %**. **Funding** real de Binance en cada cobro
+  (00, 08 y 16 UTC) si hay posición abierta en ese momento: los largos pagan la tasa y los cortos la cobran (o al revés si es negativa).
+- **Épocas:** otra época = spot BTCUSDT 1h del 2017-08-17 al 2019-09-08 (no había perpetuo: mismos costes, sin funding);
+  TRAIN = perpetuo 2019-09-09 a 2022-12-31; TEST = perpetuo 2023-01-01 a 2026-11-20. **TEST intradía no se ha visto nunca.**
+- **Universo:** reglas intradía publicadas, con compras y cortos, en rejillas pequeñas (menos pruebas = menos suerte):
+  momentum intradía (Gao, Han, Li y Zhou 2018), ruptura del rango del inicio del día UTC (Crabel 1990), ruptura de
+  volatilidad sobre el rango del día anterior (Williams), cruces de medias horarias, reversión con RSI horario, y las mismas
+  con stop por ATR. El número exacto se fija en el código antes de ejecutar.
+- **Criterio (v2 + corrección):** en TRAIN, rentabilidad neta > 0, drawdown menor que Buy & Hold de BTC y Sharpe >= Buy & Hold
+  en la misma ventana; Sharpe deflactado >= 0,95 con N = tamaño del universo; después, el criterio v2 en la otra época y en
+  TEST. Selección de hasta 3 por Sharpe deflactado con correlación <= 0,9. Si ninguna supera el Sharpe deflactado, se
+  completan con las que cumplan las tres épocas, marcadas «SIN significación estadística» (como D40).
+- **"Que opere cada día":** se informa del porcentaje de días con operación de cada regla. No es criterio de aprobación:
+  operar más no es bueno en sí mismo y cada operación cuesta un 0,16 %.
+- Si alguna aprueba: cuenta de paper propia de 100 USD ficticios, exposición máxima 25 %, vigilancia cada hora.
