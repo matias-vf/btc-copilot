@@ -718,3 +718,17 @@ bajo azar = 1/T (no hay los Sharpe de las 600 pruebas del validador).
 - **Conclusión:** los +7,70 USD de paper-bot son una racha corta en un mercado bajista, sin costes, no una ventaja.
   Recomendación al usuario: no tomarla como estrategia de day trading; si mantiene paper-bot, que lo vea como
   experimento. Este repositorio no modifica paper-bot.
+
+## D59. 2026-11-22. El copiloto pasa a GitHub Actions (funciona con el PC apagado)
+Pedido por el usuario («puedes hacer como el bot de trader scanner que opera aunque apague el ordenador?»; eligió
+«Sí, repo público»).
+- Repositorio público `matias-vf/btc-copilot`. Público porque los minutos de Actions son gratis e ilimitados; en privado
+  harían falta unos 2.500 al mes y solo hay 2.000 gratis. No contiene claves ni contraseñas.
+- `.github/workflows/copiloto.yml`: ciclo diario a las 00:15 UTC, vigía cada hora y el intradía de QQQ cada 5 minutos
+  de 13:00 a 20:59 UTC de lunes a viernes. Un solo escritor a la vez (`concurrency`), y cada pasada guarda los registros
+  con commit y push. Git sigue siendo el ancla externa de las cadenas de hashes.
+- Las tareas de Windows «BTCCopilot diario», «vigia» e «intradia» quedan **deshabilitadas** para no tener dos
+  escritores. Se pueden reactivar si se abandona GitHub. El resumen de las 20:00 hace `git pull` antes de leer.
+- Probado el 2026-11-22: la vigía y el ciclo diario funcionan desde GitHub (Binance y Yahoo responden).
+- Las demás skills de la trading skill: solo como información en el futuro, nunca para decidir (D53, D58);
+  trader-broker nunca.

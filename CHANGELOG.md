@@ -1,5 +1,9 @@
 # Historial de cambios
 
+## 2026-11-22. El copiloto funciona en GitHub, con el PC apagado
+- Repositorio público matias-vf/btc-copilot con GitHub Actions: ciclo diario, vigía e intradía (D59).
+- Tareas de Windows deshabilitadas; el resumen de las 20:00 trae antes los registros de GitHub.
+
 ## 2026-11-22. Reglas de paper-bot (Day Trader skill) comprobadas
 - Datos de ETH de 1 hora de Binance (spot y perpetuo, con funding) hasta el 2024-11-13.
 - La regla de corto de paper-bot en BTC y ETH, y su versión de day trading: ninguna aprueba (D57, D58).
