@@ -224,6 +224,14 @@ def nasdaq_universo() -> int:
     return 0
 
 
+def paperbot() -> int:
+    from copilot import paperbot as p
+    for k, r in p.ejecutar().items():
+        print(k, r["operaciones"], "operaciones, media R", round(r["media_r"], 3), "aprueba" if r["aprueba"] else "NO aprueba")
+    print("Informe en docs/paperbot.md")
+    return 0
+
+
 def qqq_daytrading() -> int:
     from copilot import qqq_intradia as q
     out = q.ejecutar()
@@ -360,7 +368,7 @@ if __name__ == "__main__":
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
-    ordenes = {"qqq-daytrading": qqq_daytrading, "nasdaq": nasdaq, "nasdaq-universo": nasdaq_universo, "intradia": intradia, "oro-universo": oro_universo, "oro": oro, "diversificar": diversificar, "universo": universo, "n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
+    ordenes = {"paperbot": paperbot, "qqq-daytrading": qqq_daytrading, "nasdaq": nasdaq, "nasdaq-universo": nasdaq_universo, "intradia": intradia, "oro-universo": oro_universo, "oro": oro, "diversificar": diversificar, "universo": universo, "n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}
