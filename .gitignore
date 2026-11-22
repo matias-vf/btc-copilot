@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 .venv/
 logs/
+data/acciones_5m_*.json.gz

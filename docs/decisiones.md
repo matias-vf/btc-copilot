@@ -608,3 +608,11 @@ así que cualquier día perdido se recupera solo al encender (el copiloto marca 
 - **Prueba:** los últimos 60 días de velas de 5 min de Yahoo (lo máximo que da). Muestra corta, sin TRAIN ni TEST.
 - **Criterio (el mismo que I01, D48):** rentabilidad neta > 0 y Sharpe diario (252) >= Buy & Hold de QQQ en los mismos
   días. Si lo cumple, entra en paper como EXPERIMENTAL; si no, no se usa. Nunca se usa trader-broker.
+
+## D53. 2026-11-22. Resultado de I02 (flujo de la Day Trader skill en acciones): NO aprueba
+Lote `intradia-i02-v1` (233 de 234 acciones; SQ falló porque cambió de símbolo; datos en
+`data/acciones_5m_60d_hasta_2026-11-20.json.gz`, fuera de Git por tamaño, SHA-256
+6950745c781b2609a5c2fe0a547185b0c25150f27e0dbd533f820deb237cbfa2). 60 sesiones (2026-08-28 a 2026-11-20), 60 operaciones,
+22 ganadoras; 31 salidas por stop, 24 a las 15:55 y 5 en el objetivo. Las acciones que más veces salieron primero: TSLA y MU
+(6), MSFT y NVDA (5). Resultado: **-3,9 %, Sharpe -3,02, drawdown -5,1 %**, peor que Buy & Hold de QQQ en Sharpe (-2,43)
+aunque con mucha menos caída (QQQ -14,9 %). No cumple el criterio de D52: no se usa en el paper trading.
