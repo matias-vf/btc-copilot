@@ -679,3 +679,29 @@ Ejecutado `python -m copilot qqq-daytrading` con las reglas de D55 (ideas Q1-Q6 
   intradía, ruptura del rango inicial, huecos, medias, RSI) mejora a comprar y mantener. **No se añade cuenta de paper.**
   Cambiar las rejillas o los criterios para que alguna pase sería buscar hasta encontrar suerte: no se hace sin una
   decisión nueva registrada antes.
+
+## D57. 2026-11-22. Comprobar las reglas del bot de la Day Trader skill (`paper-bot`). Fijado ANTES de ejecutar
+El usuario: «crea una estrategia de day trading usando la trading skill. revisa el chat llamado trader scanner, en el que
+he usado la trading skill y he obtenido 7$ de ganancia con 4 operaciones ganadoras».
+- **Lo que hay en ese chat** (leído el 2026-11-22): un bot de paper trading en GitHub Actions (`paper-bot`), con 110 USD
+  ficticios que llegaron a 117,70 USD (+7,70) en 4 operaciones: MSFT ruptura de 15 min (+0,45), dos cortos de ETH
+  (+3,31 y +3,41, abiertos 18 horas y 7 días: **no son day trading**) y CL=F reversión RSI (+0,52). Sin comisiones ni
+  slippage. Su validador probó unas 600 combinaciones (4 familias por 11 mercados con rejillas) con 2 años de velas de
+  1 hora de Yahoo, y **rechazó** la regla de corto de ETH que dio los dos aciertos grandes.
+- **4 operaciones no son evidencia.** Ganar 4 de 4 con un 50 % de acierto pasa 1 vez de cada 16 por pura suerte.
+- **Qué se prueba (reglas copiadas tal cual del código del bot, `quant/generator.py` y `quant/engine.py`):**
+  1. `breakdown_short` en BTC (n=24, rr=2): la elección «APPROVED» del validador.
+  2. `breakdown_short` en ETH (n=12, rr=1,5): la regla viva de los dos cortos ganadores.
+  3. Las dos mismas, **en versión day trading**: se cierra todo al cierre de la vela de las 23:00 UTC.
+  Las de CL=F, XLE y EURUSD no se prueban: solo hay 2 años de velas de 1 hora en Yahoo y el validador ya los usó todos;
+  no hay datos limpios con los que comprobarlas.
+- **Datos que el validador nunca vio:** BTCUSDT y ETHUSDT de Binance en velas de 1 hora, desde el inicio (2017-08-17)
+  hasta el 2024-11-13 (el validador empieza el 2024-11-14). Spot hasta el lanzamiento del perpetuo (BTC 2019-09-08,
+  ETH 2019-11-26) y perpetuo después.
+- **Costes:** 0,08 % por lado (como D54) más el funding real de Binance cuando la posición está abierta en un cobro
+  (los cortos lo cobran si es positivo). Prueba de estrés con costes x2.
+- **Criterio (por regla):** al menos 30 operaciones; media >= +0,05 R con costes; media > 0 R con costes x2; y Sharpe
+  deflactado >= 0,95 de las rentabilidades por operación con N = 600 (las pruebas que ya hizo el validador).
+  Aprueba si cumple las cuatro.
+- **Si alguna aprueba:** se recomienda dejarla en `paper-bot` (que ya la opera) con costes; no se duplica en BTCCopilot.
+  Si no, se recomienda quitarla de `paper-bot`. Este repositorio no toca `paper-bot`.
