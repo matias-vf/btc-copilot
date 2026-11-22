@@ -66,3 +66,12 @@ No hay. Si más adelante me dices que tienes ficheros de pago, se añadirán com
   (`TEST_ORO_DESBLOQUEADO = False`) hasta que el usuario escriba «UNLOCK».
 - Limitaciones: Yahoo es una fuente gratuita y no oficial; sus datos pueden tener errores puntuales. GLD cotiza solo en
   horario de bolsa de EE. UU.; entre el cierre y la apertura puede haber saltos de precio.
+
+## 4. QQQ y SPY, velas de 1 hora (day trading, D55)
+- Fuente: Yahoo Finance, gráfico público (`query1.finance.yahoo.com/v8/finance/chart/{QQQ,SPY}`, interval=1h,
+  range=730d, includePrePost=false), sin claves. Descargado el 2026-11-22. Hora convertida a Nueva York.
+- `qqq_yahoo_1h_730d.csv.gz`: 5092 velas, 2023-12-26 a 2026-11-20, 730 sesiones. SHA-256
+  `be1eb91485d8635c253681643b0d6a689bec048e2dc5cfb3a62eb481fe1a93e1`
+- `spy_yahoo_1h_730d.csv.gz`: misma estructura. SHA-256 `4ad0b899d8fd46b55b9cd5cfe2893063b051bf6753594d6a615925cdb917fd1e`
+- Las velas empiezan a las :30; la de las 15:30 dura media hora. Los días de cierre anticipado tienen 4 velas. Se
+  descarta la vela suelta de las 16:00 (subasta de cierre) si aparece.
