@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## 2026-11-22. Day trading de QQQ con compras y cortos (IBKR)
+- Velas de 1 hora de QQQ y SPY (Yahoo, 730 días). Motor horario con cortos, stops, objetivos, cierre al final de la
+  sesión y costes de IBKR Pro escalonado (D55). Comando `python -m copilot qqq-daytrading`.
+- 40 variantes (Q1-Q6): ninguna aprueba TRAIN; no se añade cuenta de paper (D56). Informe en `docs/qqq_intradia.md`.
+
 ## 2026-11-21. Nasdaq (QQQ): diario e intradía
 - Datos diarios de QQQ 1999-2026 (Yahoo) y 60 días de velas de 5 minutos.
 - Intradía: ruptura del rango de apertura de 5 minutos (Zarattini y Aziz 2023), solo compra, en paper cada 5 minutos (D48, D49).

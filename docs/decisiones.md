@@ -665,3 +665,17 @@ datos horarios quedan descargados en `data/btc_1h/`, sin evaluar).
   deflactado >= 0,95 con N = 40; después el criterio v2 en la otra época y en TEST). Hasta 3 elegidas por Sharpe deflactado
   con correlación <= 0,9; si ninguna supera el Sharpe deflactado, las que cumplan las tres, marcadas «SIN significación».
   Se informa del porcentaje de días con operación.
+
+## D56. 2026-11-22. Day trading de QQQ con compras y cortos: ninguna de las 40 aprueba
+Ejecutado `python -m copilot qqq-daytrading` con las reglas de D55 (ideas Q1-Q6 registradas antes). Informe:
+`docs/qqq_intradia.md`. TRAIN 2024-02-06 a 2026-03-31 (las 28 primeras sesiones son arranque, para todas igual).
+- Buy & Hold de QQQ en TRAIN: +34,7 %, Sharpe 0,77, peor caída -22,9 %.
+- **Ninguna variante cumple las tres condiciones en TRAIN** (ganar, caer menos y Sharpe >= Buy & Hold). La mejor es
+  llevar la contraria a huecos de apertura de más del 1 % (Q3 g=0.01, contra): +9,1 %, Sharpe 0,60, caída -5,1 %, opera el
+  16 % de los días; cae menos pero su Sharpe no llega al de Buy & Hold. 37 de 40 pierden dinero después de costes.
+- Sharpe deflactado más alto: 0,097 (hace falta 0,95). Nada es distinguible de la suerte.
+- Como ninguna pasa TRAIN, SPY y TEST no se miraron para elegir (sí se calcularon, sin efecto).
+- **Conclusión:** con velas de 1 hora y costes realistas de IBKR, ninguna regla publicada de day trading en QQQ (momentum
+  intradía, ruptura del rango inicial, huecos, medias, RSI) mejora a comprar y mantener. **No se añade cuenta de paper.**
+  Cambiar las rejillas o los criterios para que alguna pase sería buscar hasta encontrar suerte: no se hace sin una
+  decisión nueva registrada antes.
