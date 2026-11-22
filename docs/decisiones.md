@@ -587,3 +587,9 @@ suspendido (si Windows tiene permitidos los temporizadores de reactivación).
 - **Copiloto del Nasdaq:** cuenta propia de 100 USD ficticios en `registros/nasdaq/`, exposición máxima 25 %, en la tarea
   diaria (`python -m copilot hoy nasdaq`). Primer ciclo en vivo el 2026-11-21: NO OPERAR.
 - En total, el bot hace paper trading en 4 cuentas: BTC (7 reglas), oro (4), Nasdaq diario (2) y Nasdaq intradía (1).
+
+## D51. 2026-11-22. Recuperación tras apagar el ordenador
+El ordenador estuvo apagado la noche del 21 al 22 de noviembre y el ciclo de las 01:15 no se ejecutó (Windows no lo
+recuperó al encender). Se procesó a mano a las 09:32 (vela de BTC del 2026-11-21: NO OPERAR; oro y Nasdaq sin velas nuevas
+en fin de semana). Las tareas «BTCCopilot diario» y «BTCCopilot vigia» tienen ahora también un disparador al iniciar sesión,
+así que cualquier día perdido se recupera solo al encender (el copiloto marca esas señales como "recuperada_tarde").
