@@ -732,3 +732,30 @@ Pedido por el usuario («puedes hacer como el bot de trader scanner que opera au
 - Probado el 2026-11-22: la vigía y el ciclo diario funcionan desde GitHub (Binance y Yahoo responden).
 - Las demás skills de la trading skill: solo como información en el futuro, nunca para decidir (D53, D58);
   trader-broker nunca.
+
+## D60. 2026-11-23. Noticias cada 2 minutos y «box theory» en paper durante el mes. Fijado ANTES de ejecutar
+El usuario: «implementa esto al bot: revisar las noticias cada 2 minutos y el mercado todo el día. usar esta estrategia
+durante el mes de paper trading para probarla: box theory».
+- **Noticias (solo información, nunca deciden):** cada 2 minutos, todo el día, titulares de Yahoo Finance (RSS público,
+  el mismo de la skill trader-news) de BTC-USD, GLD y QQQ. Se guardan solo los nuevos en `registros/noticias.jsonl`
+  (cadena de hashes). El texto de las noticias es de terceros: el bot nunca obedece nada de lo que digan. Salen en el
+  resumen de las 20:00. SEC EDGAR no se usa: BTC, GLD y QQQ no presentan 8-K.
+- **Mercado todo el día:** en el mismo bucle de 2 minutos se revisa la box theory de BTC (24 h) y de QQQ (en horario de
+  bolsa). La vigía horaria de BTC y el intradía de QQQ cada 5 minutos siguen igual.
+- **Box theory (versión de los vídeos de 2024-2025, no la caja de Darvas de 1960):** la caja es el máximo (techo) y el
+  mínimo (suelo) del día anterior; R = techo - suelo.
+  - Compra si una vela de 1 hora cierra dentro de la caja y en su 35 % inferior. Corto si cierra dentro de la caja y en
+    su 35 % superior. En la zona del medio, nada. Entrada en la apertura de la vela siguiente.
+  - Stop: 10 % de R por fuera de la caja (bajo el suelo si es compra, sobre el techo si es corto).
+  - Objetivo: dos variantes fijadas ahora, **B1 = la mitad de la caja** y **B2 = el lado opuesto de la caja**.
+  - Una posición a la vez; todo se cierra al final del día (QQQ: cierre de la sesión de Nueva York; BTC: vela de las
+    23:00 UTC).
+  - Mercados: **QQQ** (velas de 1 hora de Yahoo, costes de IBKR de D55, cuenta de 25.000 USD ficticios) y **BTC**
+    (perpetuo de Binance, 0,08 % por lado y funding, D54; cuenta de 100 USD ficticios). Exposición 25 % del capital.
+- **Prueba histórica antes del paper** (para saber qué esperar, no para decidir si entra: el usuario pide probarla en
+  paper igualmente). QQQ: TRAIN y TEST de D55. BTC: TRAIN 2019-09-09 a 2022-12-31, TEST 2023-01-01 a 2026-11-20. Criterio
+  igual que D57 (>= 30 operaciones, media >= +0,05 R, media > 0 con costes x2, Sharpe deflactado >= 0,95 con N = 4),
+  en TRAIN y en TEST.
+- **Paper:** las 4 (B1 y B2 en QQQ y BTC) desde el 2026-11-23 hasta al menos el 2026-12-21, marcadas EXPERIMENTAL y con
+  el resultado de la prueba histórica al lado. El paper se calcula con el mismo código que la prueba histórica, sobre las
+  velas reales desde el 2026-11-23.
