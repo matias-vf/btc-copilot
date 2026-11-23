@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## 2026-11-23. Noticias cada 2 minutos y box theory en paper
+- Bucle de 2 minutos en GitHub (`vigilante.yml`): titulares de Yahoo de BTC, GLD y QQQ (solo información) y box theory.
+- Box theory (rango del día anterior) en QQQ y BTC: no aprueba la prueba histórica (pierde en TRAIN y TEST); en paper
+  como EXPERIMENTAL durante el mes (D60, D61). El resumen de las 20:00 muestra sus cuentas y las últimas noticias.
+
 ## 2026-11-22. El copiloto funciona en GitHub, con el PC apagado
 - Repositorio público matias-vf/btc-copilot con GitHub Actions: ciclo diario, vigía e intradía (D59).
 - Tareas de Windows deshabilitadas; el resumen de las 20:00 trae antes los registros de GitHub.

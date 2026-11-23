@@ -41,7 +41,8 @@ def verificar() -> int:
     vivos = [registro.REGISTROS / n for n in ("paper.jsonl", "vigilancia.jsonl", "vigia.jsonl",
                                               "oro/senales.jsonl", "oro/paper.jsonl", "oro/vigilancia.jsonl",
                                               "nasdaq_intradia/senales.jsonl", "nasdaq_intradia/paper.jsonl",
-                                              "nasdaq/senales.jsonl", "nasdaq/paper.jsonl", "nasdaq/vigilancia.jsonl")]
+                                              "nasdaq/senales.jsonl", "nasdaq/paper.jsonl", "nasdaq/vigilancia.jsonl",
+                                              "noticias.jsonl", "box/paper.jsonl")]
     for ruta in (registro.IDEAS, registro.EXPERIMENTOS, registro.SENALES, *[r for r in vivos if r.exists()]):
         try:
             n = len(registro.leer(ruta))
@@ -298,6 +299,33 @@ def resumen() -> int:
     if (intra / "paper.jsonl").exists():
         print()
         print(rs.texto({k: intra / f"{k}.jsonl" for k in ("senales", "paper", "vigilancia")}, "NASDAQ intradía"))
+    from copilot import box, noticias
+    print()
+    print("BOX THEORY (EXPERIMENTAL: no aprobó la prueba histórica, D61)")
+    for (mk, var), st in box.estado().items():
+        ab = st["abierta"]
+        print(f"- {mk} {var}: capital ficticio {st['capital']:,.2f} USD, {st['cerradas']} cerradas "
+              f"({st['ganadoras']} ganadoras)" + (f", abierta {'compra' if ab['lado'] > 0 else 'corto'} "
+                                                  f"a {ab['entrada']:,.2f}" if ab else ""))
+    ult = noticias.ultimas(24)
+    print()
+    print(f"NOTICIAS (solo información) últimas 24 h: {len(ult)} titulares")
+    for x in sorted(ult, key=lambda x: x.get("publicada_utc") or "")[-8:]:
+        print(f"- [{x['simbolo']}] {x['titulo']}")
+    return 0
+
+
+def vigilante() -> int:
+    """Una pasada del bucle de 2 minutos (D60): noticias y box theory. Nunca envía órdenes."""
+    from copilot import box, noticias
+    print(f"noticias nuevas: {noticias.revisar()}, eventos de box theory nuevos: {box.tick()}")
+    return 0
+
+
+def box_historico() -> int:
+    from copilot import box
+    box.ejecutar()
+    print("Prueba histórica de box theory registrada. Informe en docs/box.md")
     return 0
 
 
@@ -368,7 +396,7 @@ if __name__ == "__main__":
                 "parar": lambda m: _parada("parada_manual", m), "reanudar": lambda m: _parada("reanudacion", m)}
     if len(sys.argv) >= 3 and sys.argv[1] in con_args:
         sys.exit(con_args[sys.argv[1]](*sys.argv[2:]))
-    ordenes = {"paperbot": paperbot, "qqq-daytrading": qqq_daytrading, "nasdaq": nasdaq, "nasdaq-universo": nasdaq_universo, "intradia": intradia, "oro-universo": oro_universo, "oro": oro, "diversificar": diversificar, "universo": universo, "n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
+    ordenes = {"vigilante": vigilante, "box": box_historico, "paperbot": paperbot, "qqq-daytrading": qqq_daytrading, "nasdaq": nasdaq, "nasdaq-universo": nasdaq_universo, "intradia": intradia, "oro-universo": oro_universo, "oro": oro, "diversificar": diversificar, "universo": universo, "n1d": n1d, "vigia": vigia, "resumen": resumen, "train2": train2, "robustez2": robustez2, "riesgo2": riesgo2, "test": test, "hoy": hoy, "en-marcha": en_marcha, "verificar": verificar, "registrar": registrar, "descargar": descargar,
                "anticipacion": anticipacion, "train": train,
                "robustez": robustez, "cartera": cartera,
                "riesgo": riesgo, "vigilancia": vigilancia}

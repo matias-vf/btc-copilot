@@ -759,3 +759,13 @@ durante el mes de paper trading para probarla: box theory».
 - **Paper:** las 4 (B1 y B2 en QQQ y BTC) desde el 2026-11-23 hasta al menos el 2026-12-21, marcadas EXPERIMENTAL y con
   el resultado de la prueba histórica al lado. El paper se calcula con el mismo código que la prueba histórica, sobre las
   velas reales desde el 2026-11-23.
+
+## D61. 2026-11-23. Box theory: no aprueba la prueba histórica; entra en paper como EXPERIMENTAL
+Ejecutada la prueba de D60 (informe `docs/box.md`). Las 4 combinaciones pierden en TRAIN y en TEST:
+- QQQ B1: -0,289 R por operación en TRAIN (606 operaciones) y -0,313 R en TEST (129). QQQ B2: -0,280 R y -0,355 R.
+- BTC B1: -0,223 R (2910) y -0,317 R (3612). BTC B2: -0,214 R (2127) y -0,326 R (2544).
+- Pierde incluso sin costes (QQQ B1, de 2024 a 2026: -0,126 R por operación). Sharpe deflactado máximo 0,008.
+- Aun así entra en paper desde el 2026-11-23, como pidió el usuario, marcada EXPERIMENTAL. Lo esperable, según la
+  prueba, es que pierda. El paper se recalcula con el mismo código sobre las velas reales en cada pasada
+  (`python -m copilot vigilante`), en el bucle de 2 minutos de GitHub (`.github/workflows/vigilante.yml`).
+- Noticias: primera pasada el 2026-11-23, 59 titulares guardados. Solo informan; salen en el resumen de las 20:00.

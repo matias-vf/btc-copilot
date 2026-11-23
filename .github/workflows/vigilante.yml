@@ -1,0 +1,37 @@
+# Bucle de 2 minutos, todo el día (D60): noticias de Yahoo (solo información) y box theory en paper (BTC 24 h, QQQ en
+# horario de bolsa). Cada ejecución dura unos 58 minutos y GitHub lanza una nueva cada hora. Nunca envía órdenes.
+name: vigilante
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: vigilante    # escribe solo registros/noticias.jsonl y registros/box/, distinto del copiloto
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bucle de 2 minutos
+        run: |
+          git config user.name "btc-copilot"
+          git config user.email "btc-copilot@users.noreply.github.com"
+          for i in $(seq 1 29); do
+            git pull -q --rebase origin main || true
+            python -m copilot vigilante || true
+            git add registros/noticias.jsonl registros/box 2>/dev/null || true
+            if ! git diff --cached --quiet; then
+              git commit -q -m "vigilante $(date -u +%Y-%m-%dT%H:%M)Z"
+              git pull -q --rebase origin main && git push -q origin HEAD:main || echo "push fallido"
+            fi
+            [ "$i" -lt 29 ] && sleep 120
+          done
