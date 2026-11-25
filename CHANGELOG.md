@@ -1,5 +1,9 @@
 # Historial de cambios
 
+## 2026-11-25. Estrategia del vídeo «1 BOX» probada
+- Ruptura del rango de 15 minutos con entrada en el retroceso, en QQQ, SPY y 233 acciones (60 días de 5 minutos):
+  no aprueba en ninguno (D63, D64). Informe en `docs/video_retroceso.md`.
+
 ## 2026-11-23. Noticias cada 2 minutos y box theory en paper
 - Bucle de 2 minutos en GitHub (`vigilante.yml`): titulares de Yahoo de BTC, GLD y QQQ (solo información) y box theory.
 - Box theory (rango del día anterior) en QQQ y BTC: no aprueba la prueba histórica (pierde en TRAIN y TEST); en paper

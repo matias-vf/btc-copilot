@@ -804,3 +804,11 @@ el precio vuelva al borde del rango y entrar ahí; stop por debajo (o por encima
 - **Criterio (por mercado y en las 233 acciones juntas):** >= 30 operaciones, media >= +0,05 R con costes, media > 0
   con costes x2, Sharpe deflactado >= 0,95 con N = 1 (una sola regla). Si aprueba en QQQ y en las acciones, entra en paper
   en QQQ como EXPERIMENTAL; si no, solo informe.
+
+## D64. 2026-11-25. La estrategia del vídeo no aprueba
+Prueba de D63 (informe `docs/video_retroceso.md`), velas de 5 minutos de los últimos 60 días, costes de IBKR:
+- QQQ: 53 operaciones, acierto 25 %, -0,295 R por operación sin costes y -0,492 R con costes.
+- SPY: 49 operaciones, acierto 33 %, -0,039 R sin costes y -0,418 R con costes.
+- 233 acciones juntas: 11.189 operaciones, acierto 39 %, +0,009 R sin costes (nada) y -0,078 R con costes.
+- Ninguna cumple el criterio. Esperar el retroceso no arregla la ruptura del rango de apertura: antes de costes queda
+  en cero y los costes la hacen perder. No entra en paper (D63). Solo son 60 días: orienta, no demuestra.
