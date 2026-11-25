@@ -31,7 +31,10 @@ jobs:
             git add registros/noticias.jsonl registros/box 2>/dev/null || true
             if ! git diff --cached --quiet; then
               git commit -q -m "vigilante $(date -u +%Y-%m-%dT%H:%M)Z"
-              git pull -q --rebase origin main && git push -q origin HEAD:main || echo "push fallido"
+              for n in 1 2 3; do
+                git pull -q --rebase origin main && git push -q origin HEAD:main && break
+                sleep 5
+              done
             fi
-            [ "$i" -lt 29 ] && sleep 120
+            if [ "$i" -lt 29 ]; then sleep 120; fi
           done

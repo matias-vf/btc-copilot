@@ -769,3 +769,15 @@ Ejecutada la prueba de D60 (informe `docs/box.md`). Las 4 combinaciones pierden 
   prueba, es que pierda. El paper se recalcula con el mismo código sobre las velas reales en cada pasada
   (`python -m copilot vigilante`), en el bucle de 2 minutos de GitHub (`.github/workflows/vigilante.yml`).
 - Noticias: primera pasada el 2026-11-23, 59 titulares guardados. Solo informan; salen en el resumen de las 20:00.
+
+## D62. 2026-11-25. Arreglos de la revisión del bucle (puntos 1 a 3) y del fallo de la última pasada
+- **BTC en paper, siempre con precios spot** (`data-api.binance.vision`). El perpetuo (fapi) está bloqueado desde los
+  servidores de GitHub en EE. UU. y GitHub ya usaba spot. El funding se pide aparte y, si falla, cuenta 0 (se anota en
+  `fuente`). **Aviso en el registro:** las dos operaciones de BTC (B1 y B2) con entrada el 2026-11-23 a las 04:00 UTC se
+  calcularon en el PC con precios del perpetuo; con spot no habrían existido. Las demás coinciden. El registro no se
+  puede corregir: quedan como están y este aviso lo explica.
+- **Ventana de BTC móvil:** desde las 00:00 UTC de hace 3 días (antes, fija desde el 2026-11-21: se habría quedado sin
+  velas nuevas hacia el 2027-01-21).
+- **Subidas a GitHub con reintentos** (5 en el copiloto, 3 en el vigilante), porque los dos flujos suben a la vez.
+- **Fallo encontrado al arreglarlo:** en la última pasada de cada bucle, `[ "$i" -lt N ] && sleep` devolvía error y GitHub
+  marcaba como fallidas las ejecuciones del intradía y del vigilante, aunque su trabajo se guardaba bien. Cambiado a `if`.

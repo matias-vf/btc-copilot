@@ -190,16 +190,18 @@ def qi_descargar_1h() -> list:
 
 
 def _velas_btc(ahora: datetime) -> tuple[list[V], dict, str]:
-    desde = int(datetime.combine(INICIO_PAPER - timedelta(days=2), time(0), timezone.utc).timestamp() * 1000)
-    q = urllib.parse.urlencode({"symbol": "BTCUSDT", "interval": "1h", "startTime": desde, "limit": 1500})
+    # Precios siempre de spot: el perpetuo (fapi) está bloqueado desde los servidores de GitHub en EE. UU. y mezclar
+    # fuentes cambiaría operaciones ya registradas. Ventana desde las 00:00 UTC de hace 3 días: cajas de días completos.
+    desde = int(datetime.combine(ahora.date() - timedelta(days=3), time(0), timezone.utc).timestamp() * 1000)
+    q = urllib.parse.urlencode({"symbol": "BTCUSDT", "interval": "1h", "startTime": desde, "limit": 1000})
+    k = datos._get_json(f"https://data-api.binance.vision/api/v3/klines?{q}")
     try:
-        k = datos._get_json(f"https://fapi.binance.com/fapi/v1/klines?{q}")
         fq = urllib.parse.urlencode({"symbol": "BTCUSDT", "startTime": desde, "limit": 1000})
         fu = {datetime.fromtimestamp(x["fundingTime"] / 1000, timezone.utc).replace(minute=0, second=0, microsecond=0):
               float(x["fundingRate"]) for x in datos._get_json(f"https://fapi.binance.com/fapi/v1/fundingRate?{fq}")}
-        fuente = "Binance perpetuo"
-    except Exception:  # Binance puede bloquear los servidores de EE. UU.: spot sin funding
-        k, fu, fuente = datos._get_json(f"https://data-api.binance.vision/api/v3/klines?{q}"), {}, "Binance spot (sin funding)"
+        fuente = "Binance spot + funding"
+    except Exception:
+        fu, fuente = {}, "Binance spot (sin funding)"
     v = [V(datetime.fromtimestamp(x[0] / 1000, timezone.utc), *map(float, x[1:5])) for x in k
          if x[0] / 1000 + 3600 <= ahora.timestamp()]
     return v, fu, fuente
