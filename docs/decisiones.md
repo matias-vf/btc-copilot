@@ -884,3 +884,19 @@ day trading que entra en la apertura y sale ese mismo día desde el año 2000, e
 - **Embudo:** el de D65 con más operaciones exigidas por haber más días: TRAIN >= 500 operaciones, VALIDACIÓN >= 200 y
   TEST >= 200. TRAIN con Sharpe deflactado sobre todas las combinaciones; 200 a VALIDACIÓN (N = 200); hasta 5 al
   TEST (N = finalistas, media positiva en cada mitad).
+
+## D68. 2026-11-26. Ninguna de las 59.778 reglas de apertura a cierre aprueba; lo más cercano: llevar la contraria a los huecos extremos
+Búsqueda de D67 (informe `docs/dt_diario.md`; resultados de TRAIN en `registros/dt_diario/train.csv.gz`):
+- 233 acciones, 6.766 sesiones (2000-01-03 a 2026-11-25). Todas las combinaciones: 59.778 reglas.
+- TRAIN (2000-2012): 826 cumplen los mínimos; ninguna con Sharpe deflactado alto con N = 59.778 (máximo 0,00004).
+- VALIDACIÓN (2013-2018): de las 200 mejores, 143 siguen con Sharpe positivo (más de lo que daría el azar), pero
+  ninguna cumple todo. La media en R baja de +0,10 a +0,03 (medianas).
+- **Lo más cercano a una ventaja real:** cada mañana, comprar el 5 % de acciones que más caen en la apertura y vender
+  en corto el 5 % que más sube, con stop a 0,5 ATR, y cerrar al final del día. En VALIDACIÓN, con 25.907 operaciones,
+  su Sharpe deflactado es 0,996, pero gana +0,043 R por operación (el mínimo es +0,05) y con costes x2 pierde
+  (-0,025 R). Es decir: el efecto existe, pero es tan pequeño que los costes se lo comen. Coincide con lo que dice la
+  literatura sobre la reversión de huecos y la «guerra» entre rentabilidad nocturna e intradía.
+- No hay finalistas: el TEST (2019-2026) no se ha mirado. No se cambian costes ni criterios para que pase (sería
+  hacer trampa); probarla otra vez sería un experimento nuevo con su propia decisión previa.
+- **Conclusión de D65-D68:** en 160.000 reglas de day trading en acciones de EE. UU., con 2 años de velas de 1 hora y
+  26 años de velas diarias, ninguna aprueba. Nada entra en paper.

@@ -1,5 +1,12 @@
 # Historial de cambios
 
+## 2026-11-26
+- D65-D66: búsqueda de 100.000 reglas de day trading en 230 acciones con velas de 1 hora (2 años). Ninguna aprueba.
+  `copilot/dt100k.py`, informe `docs/dt100k.md`.
+- D67-D68: búsqueda de 59.778 reglas de apertura a cierre con velas diarias desde 2000. Ninguna aprueba; la más
+  cercana (llevar la contraria a los huecos extremos) no cubre los costes. `copilot/dt_diario.py`, `docs/dt_diario.md`.
+- Descargador `tools/descargar_acciones_1h.py` (1h o diario; arreglado para fechas antes de 1970 en Windows).
+
 ## 2026-11-25. Estrategia del vídeo «1 BOX» probada
 - Ruptura del rango de 15 minutos con entrada en el retroceso, en QQQ, SPY y 233 acciones (60 días de 5 minutos):
   no aprueba en ninguno (D63, D64). Informe en `docs/video_retroceso.md`.
