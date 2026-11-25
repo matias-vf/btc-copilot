@@ -4,3 +4,4 @@ __pycache__/
 logs/
 data/acciones_5m_*.json.gz
 data/acciones_1h_*.json.gz
+data/acciones_1d_*.json.gz

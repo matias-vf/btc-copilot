@@ -860,3 +860,27 @@ Búsqueda de D65 (informe `docs/dt100k.md`; lista de reglas y resultados de TRAI
 - No hay finalistas: el TEST no se ha mirado y queda intacto.
 - **Conclusión:** con velas de 1 hora de los dos últimos años, en estas acciones, ninguna de las 12 familias da una
   ventaja que se sostenga fuera de las fechas con las que se eligió. Nada entra en paper.
+
+## D67. 2026-11-25. Segunda búsqueda: day trading de apertura a cierre con 26 años de velas diarias. Fijado ANTES de descargar
+Por qué: D66 solo tenía dos años de velas de 1 hora (Yahoo no da más gratis). Con velas diarias se puede probar el
+day trading que entra en la apertura y sale ese mismo día desde el año 2000, en muchos más mercados (crisis de 2000,
+2008, 2020, 2022). Es la misma idea del usuario (day trading en acciones de EE. UU., ir descartando), con más historia.
+- **Datos:** velas diarias de Yahoo (range=max) de las mismas 234 acciones y SPY, desde el 2000-01-03. Sesgo de
+  supervivencia mayor que en D65: la lista es de empresas que hoy siguen siendo grandes. Precios ajustados por splits.
+- **Tramos:** arranque de 25 sesiones; TRAIN hasta 2012-12-31; VALIDACIÓN 2013-01-01 a 2018-12-31; TEST 2019-01-01
+  al final. El TEST solo se mira para las finalistas.
+- **Operación:** entra a la apertura con lo que se sabe a esa hora (velas de días anteriores y la apertura de hoy) y
+  sale al cierre del mismo día, o antes si toca el stop o el objetivo. Con velas diarias no se sabe qué tocó antes:
+  si el día toca los dos, cuenta el stop.
+- **Familias (12):** hueco de apertura; rentabilidad de ayer; apertura dentro de la caja de ayer; cierre de ayer en
+  su rango (IBS); RSI(2); rentabilidad de 5 días; ruptura del máximo o mínimo de 20 días; ranking del hueco entre
+  acciones; ranking de la rentabilidad de ayer; día de la semana; cambio de mes; hueco de SPY. Modo seguir o
+  contraria; solo compras, solo cortos o ambos.
+- **Filtros:** hueco de SPY (ninguno, a favor, en contra), volatilidad (todas, tercio bajo, tercio alto) y volumen de
+  ayer frente a su media de 20 días (ninguno, > 1,5, < 0,8).
+- **Salidas:** stop a 0,5 o 1 ATR o sin stop; objetivo 1R o 2R o sin objetivo (sin stop, 1R = 1 ATR). Se prueban
+  TODAS las combinaciones (sin sorteo).
+- **Costes:** los de D65 (IBKR Pro escalonado con 5.000 USD por operación + 0,02 % por lado).
+- **Embudo:** el de D65 con más operaciones exigidas por haber más días: TRAIN >= 500 operaciones, VALIDACIÓN >= 200 y
+  TEST >= 200. TRAIN con Sharpe deflactado sobre todas las combinaciones; 200 a VALIDACIÓN (N = 200); hasta 5 al
+  TEST (N = finalistas, media positiva en cada mitad).

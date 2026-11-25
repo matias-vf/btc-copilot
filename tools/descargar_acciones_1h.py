@@ -1,4 +1,4 @@
-"""Descarga velas de 1 hora (730 días) de Yahoo para el universo de 234 acciones + SPY (D65). Solo datos públicos."""
+"""Descarga velas (por defecto 1 hora, 730 días; o `1d max`) de Yahoo para el universo de 234 acciones + SPY (D65). Solo datos públicos."""
 
 import gzip
 import json
@@ -12,11 +12,12 @@ from zoneinfo import ZoneInfo
 
 RAIZ = Path(__file__).resolve().parents[1]
 NY = ZoneInfo("America/New_York")
-SALIDA = RAIZ / "data" / "acciones_1h_730d.json.gz"
+INTERVALO, RANGO = (sys.argv[1], sys.argv[2]) if len(sys.argv) > 2 else ("1h", "730d")
+SALIDA = RAIZ / "data" / f"acciones_{INTERVALO}_{RANGO}.json.gz"
 
 
 def bajar(s: str) -> list:
-    q = urllib.parse.urlencode({"interval": "1h", "range": "730d", "includePrePost": "false"})
+    q = urllib.parse.urlencode({"interval": INTERVALO, "range": RANGO, "includePrePost": "false"})
     for intento in range(4):
         try:
             req = urllib.request.Request(f"https://query1.finance.yahoo.com/v8/finance/chart/{s}?{q}",
