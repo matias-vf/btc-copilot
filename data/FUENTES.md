@@ -75,3 +75,10 @@ No hay. Si más adelante me dices que tienes ficheros de pago, se añadirán com
 - `spy_yahoo_1h_730d.csv.gz`: misma estructura. SHA-256 `4ad0b899d8fd46b55b9cd5cfe2893063b051bf6753594d6a615925cdb917fd1e`
 - Las velas empiezan a las :30; la de las 15:30 dura media hora. Los días de cierre anticipado tienen 4 velas. Se
   descarta la vela suelta de las 16:00 (subasta de cierre) si aparece.
+
+## 5. 234 acciones + SPY, velas de 1 hora (búsqueda de 100.000 reglas, D65)
+- Fuente: Yahoo Finance, gráfico público (`query1.finance.yahoo.com/v8/finance/chart/{símbolo}`, interval=1h,
+  range=730d, includePrePost=false), sin claves. Descargado el 2026-11-25 con `tools/descargar_acciones_1h.py`.
+- `acciones_1h_730d.json.gz` (no se sube a git por tamaño): 2023-12-29 a 2026-11-25, 723 sesiones completas de SPY.
+  SHA-256 `ab5b96f4d697b36d5a7945b10cb6fe229ff32dc10f25b285c1fdcbcfc90aaca4`. Sin datos: RDDT (error 422 de Yahoo) y SQ (ya no cotiza con ese símbolo).
+  Quedan 230 acciones con más de 300 sesiones. Faltan el 0,04 % de las velas.

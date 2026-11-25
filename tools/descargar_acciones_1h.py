@@ -1,0 +1,47 @@
+"""Descarga velas de 1 hora (730 días) de Yahoo para el universo de 234 acciones + SPY (D65). Solo datos públicos."""
+
+import gzip
+import json
+import sys
+import time
+import urllib.parse
+import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+RAIZ = Path(__file__).resolve().parents[1]
+NY = ZoneInfo("America/New_York")
+SALIDA = RAIZ / "data" / "acciones_1h_730d.json.gz"
+
+
+def bajar(s: str) -> list:
+    q = urllib.parse.urlencode({"interval": "1h", "range": "730d", "includePrePost": "false"})
+    for intento in range(4):
+        try:
+            req = urllib.request.Request(f"https://query1.finance.yahoo.com/v8/finance/chart/{s}?{q}",
+                                         headers={"User-Agent": "Mozilla/5.0 (btc-copilot-research)"})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                d = json.loads(r.read().decode("utf-8"))["chart"]["result"][0]
+            qd, out = d["indicators"]["quote"][0], []
+            for i, ts in enumerate(d.get("timestamp", [])):
+                v = [qd[k][i] for k in ("open", "high", "low", "close", "volume")]
+                if all(x is not None for x in v):
+                    out.append([datetime.fromtimestamp(ts, tz=timezone.utc).astimezone(NY).isoformat(), *v])
+            return out
+        except Exception as e:  # noqa: BLE001
+            print(s, "reintento", intento, e, file=sys.stderr)
+            time.sleep(5 * (intento + 1))
+    return []
+
+
+if __name__ == "__main__":
+    simbolos = [l.strip() for l in (RAIZ / "data" / "universo_skill_234.txt").read_text().split() if l.strip()] + ["SPY"]
+    datos = {}
+    for s in simbolos:
+        datos[s] = bajar(s)
+        print(s, len(datos[s]), flush=True)
+        time.sleep(0.4)
+    with gzip.open(SALIDA, "wt", encoding="utf-8") as f:
+        json.dump(datos, f)
+    print("vacios:", [s for s, v in datos.items() if not v])
