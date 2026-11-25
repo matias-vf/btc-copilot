@@ -6,18 +6,21 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 RAIZ = Path(__file__).resolve().parents[1]
 NY = ZoneInfo("America/New_York")
+EPOCA = datetime(1970, 1, 1, tzinfo=timezone.utc)  # fromtimestamp falla antes de 1970 en Windows
 INTERVALO, RANGO = (sys.argv[1], sys.argv[2]) if len(sys.argv) > 2 else ("1h", "730d")
 SALIDA = RAIZ / "data" / f"acciones_{INTERVALO}_{RANGO}.json.gz"
 
 
 def bajar(s: str) -> list:
-    q = urllib.parse.urlencode({"interval": INTERVALO, "range": RANGO, "includePrePost": "false"})
+    # con range=max Yahoo devuelve velas mensuales: para "max" se piden fechas (desde 2000)
+    fechas = ({"period1": 946684800, "period2": int(time.time())} if RANGO == "max" else {"range": RANGO})
+    q = urllib.parse.urlencode({"interval": INTERVALO, **fechas, "includePrePost": "false"})
     for intento in range(4):
         try:
             req = urllib.request.Request(f"https://query1.finance.yahoo.com/v8/finance/chart/{s}?{q}",
@@ -28,7 +31,7 @@ def bajar(s: str) -> list:
             for i, ts in enumerate(d.get("timestamp", [])):
                 v = [qd[k][i] for k in ("open", "high", "low", "close", "volume")]
                 if all(x is not None for x in v):
-                    out.append([datetime.fromtimestamp(ts, tz=timezone.utc).astimezone(NY).isoformat(), *v])
+                    out.append([(EPOCA + timedelta(seconds=ts)).astimezone(NY).isoformat(), *v])
             return out
         except Exception as e:  # noqa: BLE001
             print(s, "reintento", intento, e, file=sys.stderr)

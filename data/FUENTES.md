@@ -82,3 +82,9 @@ No hay. Si más adelante me dices que tienes ficheros de pago, se añadirán com
 - `acciones_1h_730d.json.gz` (no se sube a git por tamaño): 2023-12-29 a 2026-11-25, 723 sesiones completas de SPY.
   SHA-256 `ab5b96f4d697b36d5a7945b10cb6fe229ff32dc10f25b285c1fdcbcfc90aaca4`. Sin datos: RDDT (error 422 de Yahoo) y SQ (ya no cotiza con ese símbolo).
   Quedan 230 acciones con más de 300 sesiones. Faltan el 0,04 % de las velas.
+
+## 6. 234 acciones + SPY, velas diarias desde 2000 (day trading de apertura a cierre, D67)
+- Fuente: Yahoo Finance, gráfico público, interval=1d, period1=2000-01-01 hasta hoy (con range=max Yahoo da velas
+  mensuales). Descargado el 2026-11-25 con `tools/descargar_acciones_1h.py 1d max`.
+- `acciones_1d_max.json.gz` (no se sube a git): 6.766 sesiones de SPY, 2000-01-03 a 2026-11-25. SHA-256 `b35818f63d23fda9063bf8bb87e2ef761960af3699cdb8a93e7797b5473b9170`.
+  Sin datos: SQ. Las empresas que salieron a bolsa después de 2000 solo tienen datos desde entonces.
