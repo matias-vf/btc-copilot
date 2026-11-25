@@ -781,3 +781,26 @@ Ejecutada la prueba de D60 (informe `docs/box.md`). Las 4 combinaciones pierden 
 - **Subidas a GitHub con reintentos** (5 en el copiloto, 3 en el vigilante), porque los dos flujos suben a la vez.
 - **Fallo encontrado al arreglarlo:** en la última pasada de cada bucle, `[ "$i" -lt N ] && sleep` devolvía error y GitHub
   marcaba como fallidas las ejecuciones del intradía y del vigilante, aunque su trabajo se guardaba bien. Cambiado a `if`.
+
+## D63. 2026-11-25. Estrategia del vídeo «1 BOX Trading Strategy» (Trade with Pat). Fijado ANTES de probar
+El usuario: «prueba la estrategia del video» (youtube.com/shorts/eTa-ph_8vFI, 47 s, publicado el 2026-11-01).
+Lo que dice el vídeo: rango = máximo y mínimo de la primera vela de 15 minutos desde las 9:30 de Nueva York; en velas de
+5 minutos, esperar a un cierre fuera del rango (arriba: compras; abajo: ventas); no perseguir la ruptura: esperar a que
+el precio vuelva al borde del rango y entrar ahí; stop por debajo (o por encima); objetivo «el siguiente nivel obvio».
+- **Regla exacta (R1)**, en velas de 5 minutos:
+  1. Rango: máximo y mínimo de las velas de 9:30, 9:35 y 9:40.
+  2. Ruptura: la primera vela desde las 9:45 que cierra por encima del máximo (compra) o por debajo del mínimo (corto).
+     Solo cuenta la primera ruptura del día.
+  3. Entrada: en una vela posterior que vuelve a tocar el borde roto (compra: mínimo <= máximo del rango; corto:
+     máximo >= mínimo del rango), al precio del borde (o a la apertura de esa vela si ya abre más allá).
+  4. Stop: la mitad del rango (lo concreto de «stops go below»). Objetivo: 2 veces el riesgo (lo concreto de «el
+     siguiente nivel obvio», que no es una regla). Si una vela toca stop y objetivo, cuenta el stop.
+  5. Sin entradas desde las 15:30; fuera al cierre de la vela de las 15:50. Una operación al día como máximo.
+  6. Si antes del retroceso el precio cierra al otro lado del rango (ruptura fallida), no hay operación ese día.
+- **Datos:** los únicos de 5 minutos que da Yahoo gratis son los últimos 60 días: QQQ y 233 acciones del universo de la
+  skill (2026-08-28 a 2026-11-20, ya usados en D53 para otra regla) y SPY (descargado ahora). Es poco: el resultado
+  orienta, no demuestra.
+- **Costes:** IBKR Pro escalonado + 0,02 % por lado (D55), con 25.000 USD por operación.
+- **Criterio (por mercado y en las 233 acciones juntas):** >= 30 operaciones, media >= +0,05 R con costes, media > 0
+  con costes x2, Sharpe deflactado >= 0,95 con N = 1 (una sola regla). Si aprueba en QQQ y en las acciones, entra en paper
+  en QQQ como EXPERIMENTAL; si no, solo informe.
