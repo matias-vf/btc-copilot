@@ -848,3 +848,15 @@ estadounidenses y ve descartando» y «investiga exhaustivamente en busca de la 
 - **Qué pasa después:** la que apruebe el TEST se ofrece para paper. Si ninguna aprueba, el informe dice cuál fue la
   mejor y en qué tramo falló, sin presentarla como buena.
 - **Herramienta:** este cálculo usa numpy (ya instalado en el PC), solo para investigación. El bot de GitHub no lo usa.
+
+## D66. 2026-11-25. Ninguna de las 100.000 reglas de day trading aprueba
+Búsqueda de D65 (informe `docs/dt100k.md`; lista de reglas y resultados de TRAIN en `registros/dt100k/`):
+- 230 acciones con datos (RDDT y SQ sin datos en Yahoo), 723 sesiones de 2023-12-29 a 2026-11-25.
+- TRAIN: 504 de 100.000 reglas cumplen los mínimos (>= 200 operaciones, >= +0,05 R, costes x2 > 0). Ninguna tiene
+  un Sharpe deflactado alto con N = 100.000: el mejor es 0,0003. Es decir, lo mejor de TRAIN es lo que cabe esperar
+  por suerte entre 100.000 pruebas.
+- VALIDACIÓN (fechas nuevas): de las 200 mejores, 94 siguen con Sharpe positivo (lo que daría una moneda al aire),
+  la media en R baja de +0,08 a -0,01 (medianas) y ninguna llega al Sharpe deflactado de 0,95 (la mejor, 0,135).
+- No hay finalistas: el TEST no se ha mirado y queda intacto.
+- **Conclusión:** con velas de 1 hora de los dos últimos años, en estas acciones, ninguna de las 12 familias da una
+  ventaja que se sostenga fuera de las fechas con las que se eligió. Nada entra en paper.

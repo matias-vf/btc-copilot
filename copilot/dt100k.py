@@ -460,8 +460,7 @@ def _escribir(resumen, filas, reglas, elegidas, finalistas) -> None:
          "## El embudo", "",
          "| Paso | Reglas |", "|---|---|",
          f"| Probadas en TRAIN | {N_REGLAS:,} |".replace(",", "."),
-         f"| Candidatas en TRAIN (>= 200 operaciones, >= +0,05 R, costes x2 > 0) | {resumen['candidatas_train']:,} |"
-         .replace(",", "."),
+         f"| Candidatas en TRAIN (>= 200 operaciones, >= +0,05 R, costes x2 > 0) | {resumen['candidatas_train']} |",
          f"| Con Sharpe deflactado >= 0,95 en TRAIN (N = 100.000) | {sum(f['dsr'] >= 0.95 for f in filas)} |",
          f"| A VALIDACIÓN (las mejores, sin parecidas) | {resumen['a_validacion']} |",
          f"| Pasan VALIDACIÓN | {resumen['pasan_validacion']} |",
