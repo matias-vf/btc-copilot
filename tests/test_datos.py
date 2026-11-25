@@ -42,7 +42,7 @@ class TestDatos(unittest.TestCase):
 
     def test_ficheros_reales_sin_test(self):
         for ruta in datos.DATOS.glob("*.csv"):
-            if "_test" in ruta.name or ruta.name.startswith(("gld_", "qqq_")):
+            if "_test" in ruta.name or ruta.name.startswith(("gld_", "qqq_", "spy_")):
                 continue  # el oro tiene calendario de bolsa: lo comprueba validar_bolsa
             filas = datos.cargar(ruta)
             v = datos.validar(filas)
