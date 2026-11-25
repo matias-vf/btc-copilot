@@ -812,3 +812,39 @@ Prueba de D63 (informe `docs/video_retroceso.md`), velas de 5 minutos de los úl
 - 233 acciones juntas: 11.189 operaciones, acierto 39 %, +0,009 R sin costes (nada) y -0,078 R con costes.
 - Ninguna cumple el criterio. Esperar el retroceso no arregla la ruptura del rango de apertura: antes de costes queda
   en cero y los costes la hacen perder. No entra en paper (D63). Solo son 60 días: orienta, no demuestra.
+
+## D65. 2026-11-25. Búsqueda masiva: 100.000 estrategias de day trading en acciones de EE. UU. Fijado ANTES de descargar
+El usuario: «haz la búsqueda de nuevo, desde el paso uno. Empieza buscando 100 mil estrategias de day trading en acciones
+estadounidenses y ve descartando» y «investiga exhaustivamente en busca de la MEJOR estrategia».
+- **Aviso previo:** con 100.000 pruebas, alguna sale bien por pura suerte. Por eso el embudo tiene tres tramos de fechas
+  y en cada uno se corrige por el número de reglas que llegan a él. Si nada aprueba, el resultado es «ninguna».
+- **Datos:** velas de 1 hora de Yahoo (gráfico público, range=730d, sin pre ni post) de las 234 acciones de
+  `data/universo_skill_234.txt` y SPY como referencia del mercado. Solo sesiones completas de 7 velas (9:30 a 16:00).
+  Sesgo conocido: la lista es de acciones que hoy son grandes y líquidas (supervivencia).
+- **Tramos:** arranque de 25 sesiones para medias; TRAIN hasta 2025-06-30; VALIDACIÓN 2025-07-01 a 2026-01-31;
+  TEST 2026-02-01 al final. El TEST solo se mira una vez y solo para las finalistas.
+- **Reglas (12 familias, todas con datos conocidos en el momento de entrar):** hueco de apertura, impulso desde la
+  apertura, ruptura de la primera vela, rentabilidad de ayer, fuerza frente a SPY, distancia al precio medio por
+  volumen (VWAP), ranking entre acciones, posición en la caja de ayer (box theory), RSI(2) diario, rentabilidad de 5
+  días, ruptura del máximo o mínimo de 20 días y combinación de hueco más primera vela. Cada una en modo «seguir» o
+  «llevar la contraria», con umbrales en ATR diario de 14 sesiones. Entrada a la apertura o al cierre de las velas
+  de 9:30 a 13:30; solo compras, solo cortos o ambas.
+- **Filtros:** volumen relativo (ninguno, >1,5, >2,5, <0,8; solo si se entra tras la primera vela), mercado (ninguno,
+  SPY a favor, SPY en contra) y volatilidad (todas, tercio bajo o tercio alto del día).
+- **Salidas:** stop a 0,25, 0,5 o 1 ATR (eso es 1R); objetivo 1R, 2R, 3R o ninguno; fuera 1 o 2 velas después o al
+  cierre. Si una vela toca stop y objetivo, cuenta el stop. Nada pasa la noche.
+- **Las 100.000:** de todas las combinaciones válidas se eligen 100.000 al azar con semilla 20261125. La lista
+  completa se guarda y su huella SHA-256 queda en el registro antes de calcular nada.
+- **Costes:** IBKR Pro escalonado (0,0035 USD por acción, mínimo 0,35 USD, máximo 1 %) con 5.000 USD por operación,
+  más 0,02 % por lado de spread y deslizamiento. Cartera: cada día, media de las operaciones de ese día.
+- **Embudo:**
+  1. TRAIN (las 100.000): candidata si >= 200 operaciones, media >= +0,05 R con costes, media > 0 con costes x2 y
+     Sharpe > 0. Se calcula el Sharpe deflactado con N = 100.000. Pasan a VALIDACIÓN las 200 candidatas con mejor
+     Sharpe deflactado, quitando las que se parecen más de un 90 % (correlación diaria) a otra ya elegida.
+  2. VALIDACIÓN: >= 60 operaciones, media >= +0,05 R, media > 0 con costes x2 y Sharpe deflactado >= 0,95 con N = 200.
+     Las 5 mejores (sin parecidas al 90 %) pasan al TEST.
+  3. TEST (una sola vez): >= 60 operaciones, media >= +0,05 R, media > 0 con costes x2, Sharpe deflactado >= 0,95 con
+     N = finalistas y media positiva en cada mitad del TEST.
+- **Qué pasa después:** la que apruebe el TEST se ofrece para paper. Si ninguna aprueba, el informe dice cuál fue la
+  mejor y en qué tramo falló, sin presentarla como buena.
+- **Herramienta:** este cálculo usa numpy (ya instalado en el PC), solo para investigación. El bot de GitHub no lo usa.
