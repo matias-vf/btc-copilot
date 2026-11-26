@@ -42,7 +42,7 @@ def verificar() -> int:
                                               "oro/senales.jsonl", "oro/paper.jsonl", "oro/vigilancia.jsonl",
                                               "nasdaq_intradia/senales.jsonl", "nasdaq_intradia/paper.jsonl",
                                               "nasdaq/senales.jsonl", "nasdaq/paper.jsonl", "nasdaq/vigilancia.jsonl",
-                                              "noticias.jsonl", "box/paper.jsonl")]
+                                              "noticias.jsonl", "box/paper.jsonl", "video/paper.jsonl")]
     for ruta in (registro.IDEAS, registro.EXPERIMENTOS, registro.SENALES, *[r for r in vivos if r.exists()]):
         try:
             n = len(registro.leer(ruta))
@@ -301,7 +301,15 @@ def resumen() -> int:
         print(rs.texto({k: intra / f"{k}.jsonl" for k in ("senales", "paper", "vigilancia")}, "NASDAQ intradía"))
     from copilot import box, noticias
     print()
-    print("BOX THEORY (EXPERIMENTAL: no aprobó la prueba histórica, D61)")
+    from copilot import retroceso
+    v = retroceso.estado()
+    ab = v["abierta"]
+    print("ESTRATEGIA DEL VÍDEO «1 BOX» en QQQ (EXPERIMENTAL: no aprobó la prueba, D64; en paper desde el 2026-11-27, D69)")
+    print(f"- {v['cerradas']} cerradas ({v['ganadoras']} ganadoras), {v['suma_r']:+.2f} R, resultado ficticio "
+          f"{v['resultado_usd']:+,.2f} USD (25.000 USD por operación)"
+          + (f", abierta {'compra' if ab['lado'] > 0 else 'corto'} a {ab['entrada']:,.2f}" if ab else ""))
+    print()
+    print("BOX THEORY (EXPERIMENTAL: no aprobó la prueba histórica, D61; sin entradas nuevas desde el 2026-11-27, D69)")
     for (mk, var), st in box.estado().items():
         ab = st["abierta"]
         print(f"- {mk} {var}: capital ficticio {st['capital']:,.2f} USD, {st['cerradas']} cerradas "
@@ -316,9 +324,13 @@ def resumen() -> int:
 
 
 def vigilante() -> int:
-    """Una pasada del bucle de 2 minutos (D60): noticias y box theory. Nunca envía órdenes."""
-    from copilot import box, noticias
-    print(f"noticias nuevas: {noticias.revisar()}, eventos de box theory nuevos: {box.tick()}")
+    """Una pasada del bucle de 2 minutos (D60, D69): noticias, box theory y regla del vídeo. Nunca envía órdenes."""
+    from copilot import box, noticias, retroceso
+    try:
+        vid = retroceso.tick()
+    except Exception as e:  # noqa: BLE001
+        vid = f"sin datos ({type(e).__name__})"
+    print(f"noticias nuevas: {noticias.revisar()}, eventos de box theory nuevos: {box.tick()}, del vídeo: {vid}")
     return 0
 
 

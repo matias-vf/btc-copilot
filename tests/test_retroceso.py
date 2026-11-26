@@ -45,5 +45,20 @@ class TestVideo(unittest.TestCase):
         self.assertEqual(o["motivo"], "stop")
 
 
+class TestVideoPaper(unittest.TestCase):
+    VELAS = RANGO + [(101, 104, 101, 103.5), (103.5, 104, 101.8, 102.5), (102.5, 103, 102.4, 103)]
+
+    def test_abierta_mientras_sigue_el_dia(self):
+        o = rt.operaciones_vivo(dia(self.VELAS), T0.date(), desde=T0.date())
+        self.assertEqual(len(o), 1)
+        self.assertTrue(o[0]["abierta"])
+        self.assertEqual([round(o[0][k], 6) for k in ("entrada", "stop", "objetivo")], [102, 100, 106])
+
+    def test_cerrada_si_el_dia_ya_paso_y_antes_del_inicio_nada(self):
+        o = rt.operaciones_vivo(dia(self.VELAS), T0.date() + timedelta(days=1), desde=T0.date())
+        self.assertFalse(o[0]["abierta"])
+        self.assertEqual(rt.operaciones_vivo(dia(self.VELAS), T0.date()), [])  # INICIO_PAPER es posterior
+
+
 if __name__ == "__main__":
     unittest.main()

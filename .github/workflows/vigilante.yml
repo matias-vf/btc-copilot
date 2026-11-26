@@ -1,5 +1,5 @@
-# Bucle de 2 minutos, todo el día (D60): noticias de Yahoo (solo información) y box theory en paper (BTC 24 h, QQQ en
-# horario de bolsa). Cada ejecución dura unos 58 minutos y GitHub lanza una nueva cada hora. Nunca envía órdenes.
+# Bucle de 2 minutos, todo el día (D60, D69): noticias de Yahoo (solo información), box theory y regla del vídeo en paper
+# (BTC 24 h, QQQ en horario de bolsa). Cada ejecución dura unos 58 minutos y GitHub lanza una nueva cada hora. Nunca envía órdenes.
 name: vigilante
 on:
   schedule:
@@ -28,7 +28,7 @@ jobs:
           for i in $(seq 1 29); do
             git pull -q --rebase origin main || true
             python -m copilot vigilante || true
-            git add registros/noticias.jsonl registros/box 2>/dev/null || true
+            git add registros/noticias.jsonl registros/box registros/video 2>/dev/null || true
             if ! git diff --cached --quiet; then
               git commit -q -m "vigilante $(date -u +%Y-%m-%dT%H:%M)Z"
               for n in 1 2 3; do

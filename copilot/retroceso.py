@@ -1,5 +1,6 @@
 """Estrategia del vídeo «1 BOX Trading Strategy» (D63): ruptura del rango de los primeros 15 minutos y entrada en el
-retroceso al borde roto. Velas de 5 minutos, compras y cortos, todo cerrado a las 15:55. Solo prueba histórica.
+retroceso al borde roto. Velas de 5 minutos, compras y cortos, todo cerrado a las 15:55. Paper EXPERIMENTAL en QQQ
+desde el 2026-11-27 (D69), con el mismo código. Nunca envía órdenes.
 """
 
 from __future__ import annotations
@@ -7,12 +8,12 @@ from __future__ import annotations
 import csv
 import gzip
 import json
-from datetime import datetime, time
+from datetime import date, datetime, time, timedelta, timezone
 from math import sqrt
 from statistics import NormalDist
 
 from copilot import datos, qqq_intradia as qi, registro, train
-from copilot.intradia import Barra, sesiones
+from copilot.intradia import NY, Barra, descargar, sesiones
 from copilot.universo_eval import momentos
 
 LOTE = "video-retroceso-v1"
@@ -141,3 +142,66 @@ def ejecutar() -> dict:
                  f"{m['dsr']:.3f} | {'sí' if m['aprueba'] else 'no'} |")
     SALIDA.write_text("\n".join(l) + "\n", encoding="utf-8", newline="\n")
     return res
+
+
+# --- Paper en vivo (D69) ---------------------------------------------------------------------------------
+
+INICIO_PAPER = date(2026, 11, 27)
+CAPITAL = 25_000.0  # ficticio, por operación
+PAPER = registro.REGISTROS / "video" / "paper.jsonl"
+
+
+def operaciones_vivo(barras: list[Barra], hoy: date, desde: date = INICIO_PAPER) -> list[dict]:
+    """Operaciones con las velas ya cerradas. 'abierta' si es de hoy, no ha salido y aún no llegó la vela de las 15:50."""
+    out = []
+    for d, b in sesiones(barras).items():
+        o = operar_dia(b) if d >= desde else None
+        if not o:
+            continue
+        lado, e, r = o["lado"], o["entrada"], o["riesgo"]
+        o.update(stop=e * (1 - lado * r), objetivo=e * (1 + 2 * lado * r),
+                 abierta=o["motivo"] == "cierre" and d >= hoy and b[-1].hora.time() < ULTIMA)
+        out.append(o)
+    return out
+
+
+def tick(ahora: datetime | None = None, barras: list[Barra] | None = None) -> int:
+    """Recalcula el paper desde el 2026-11-27 y guarda solo los eventos nuevos (abierta / cerrada)."""
+    ny = (ahora or datetime.now(timezone.utc)).astimezone(NY)
+    if barras is None:
+        if ny.weekday() >= 5 or not time(9, 30) <= ny.time() <= time(17, 0):
+            return 0
+        barras = [b for b in descargar("5d") if b.hora + timedelta(minutes=5) <= ny]
+    hechos = {(e["datos"]["fecha"], e["datos"]["evento"]) for e in registro.leer(PAPER)} if PAPER.exists() else set()
+    nuevos, campos = [], ("fecha", "lado", "entrada", "stop", "objetivo")
+    for o in operaciones_vivo(barras, ny.date()):
+        eventos = {"abierta": {k: o[k] for k in campos}}
+        if not o["abierta"]:
+            ret = o["bruto"] - o["coste"]
+            eventos["cerrada"] = {**{k: o[k] for k in campos + ("salida", "motivo")}, "ret": ret, "r": ret / o["riesgo"]}
+        for ev, d in eventos.items():
+            if (o["fecha"], ev) not in hechos:
+                nuevos.append({"mercado": "QQQ", "regla": "V1", "fuente": "Yahoo 5m", "estado": "EXPERIMENTAL",
+                               "evento": ev, **d})
+    if nuevos:
+        PAPER.parent.mkdir(parents=True, exist_ok=True)
+        registro.anadir_varios(PAPER, nuevos)
+    return len(nuevos)
+
+
+def estado() -> dict:
+    out = {"resultado_usd": 0.0, "cerradas": 0, "ganadoras": 0, "suma_r": 0.0, "abierta": None}
+    if not PAPER.exists():
+        return out
+    for e in registro.leer(PAPER):
+        d = e["datos"]
+        if d["evento"] == "cerrada":
+            out["resultado_usd"] += CAPITAL * d["ret"]
+            out["cerradas"] += 1
+            out["ganadoras"] += d["ret"] > 0
+            out["suma_r"] += d["r"]
+            if out["abierta"] and out["abierta"]["fecha"] == d["fecha"]:
+                out["abierta"] = None
+        else:
+            out["abierta"] = d
+    return out

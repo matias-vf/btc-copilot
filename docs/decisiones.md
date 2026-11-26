@@ -900,3 +900,17 @@ Búsqueda de D67 (informe `docs/dt_diario.md`; resultados de TRAIN en `registros
   hacer trampa); probarla otra vez sería un experimento nuevo con su propia decisión previa.
 - **Conclusión de D65-D68:** en 160.000 reglas de day trading en acciones de EE. UU., con 2 años de velas de 1 hora y
   26 años de velas diarias, ninguna aprueba. Nada entra en paper.
+
+## D69. 2026-11-26. La regla del vídeo sustituye a la box theory en paper (EXPERIMENTAL). Fijado ANTES de ponerla en marcha
+El usuario, tras ver que la box theory en paper (D60, caja del día anterior) no es la del vídeo «1 BOX Trading Strategy»:
+«usa la del vídeo».
+- **Box theory (D60):** no abre operaciones con entrada desde el 2026-11-27. Las abiertas terminan según su regla. Su
+  registro (`registros/box/paper.jsonl`) se queda como está.
+- **Regla del vídeo en paper:** exactamente la R1 de D63, con el mismo código (`retroceso.operar_dia`). QQQ, velas de 5
+  minutos de Yahoo (horario normal), compras y cortos, una operación al día como máximo, 25.000 USD ficticios por
+  operación (posición entera, sin apalancamiento) y costes de IBKR (D55). Desde el 2026-11-27.
+- **Estado: EXPERIMENTAL.** No aprobó la prueba (D64: QQQ -0,49 R por operación con costes). Lo esperable es que pierda.
+- Se recalcula cada 2 minutos en el bucle del vigilante con las velas ya cerradas. Una operación que tocó el borde
+  cuenta como abierta al precio del borde (orden límite). En un día que ya terminó (también los de cierre anticipado),
+  lo que siga abierto sale al cierre de la última vela. Registro `registros/video/paper.jsonl`, encadenado y solo
+  añadir. Nunca envía órdenes.

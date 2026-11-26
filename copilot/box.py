@@ -17,6 +17,7 @@ from copilot.universo_eval import momentos, sharpe_deflactado
 ZONA, FUERA = 0.35, 0.10
 VARIANTES = ("B1", "B2")
 INICIO_PAPER = date(2026, 11, 23)
+FIN_PAPER = date(2026, 11, 27)  # D69: sin entradas nuevas desde aquí; la regla del vídeo la sustituye
 EXPOSICION = 0.25
 CAPITAL = {"QQQ": 25_000.0, "BTC": 100.0}
 LADO = {"QQQ": qi.coste_lado(500.0), "BTC": bi.LADO}  # QQQ: el mínimo de 0,35 USD manda a cualquier precio de 2024-2026
@@ -209,7 +210,7 @@ def _velas_btc(ahora: datetime) -> tuple[list[V], dict, str]:
 
 def operaciones_vivo(mercado: str, v: list[V], fu: dict, variante: str) -> list[dict]:
     return [t for t in simular(mercado, v, senales(v, variante), LADO[mercado], fu)
-            if date.fromisoformat(t["entrada_t"][:10]) >= INICIO_PAPER]
+            if INICIO_PAPER <= date.fromisoformat(t["entrada_t"][:10]) < FIN_PAPER]
 
 
 def tick(ahora: datetime | None = None, mercados=("QQQ", "BTC")) -> int:

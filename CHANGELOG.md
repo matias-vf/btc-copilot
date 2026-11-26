@@ -139,3 +139,7 @@
 - Descargadas velas diarias: Binance BTCUSDT 2017-08-17 a 2022-12-31 y Bitstamp BTC/USD 2011-08-18 a 2016-12-31.
   Validadas: sin huecos ni duplicados. Limitaciones en `data/FUENTES.md`.
 - Bloqueo de datos TEST (>= 2023-01-01) en código, con pruebas.
+
+## 2026-11-26 (D69)
+- La regla del vídeo «1 BOX» entra en paper en QQQ como EXPERIMENTAL desde el 2026-11-27 (`retroceso.tick`, en el bucle
+  del vigilante, registro `registros/video/paper.jsonl`). La box theory (D60) ya no abre entradas nuevas desde ese día.
